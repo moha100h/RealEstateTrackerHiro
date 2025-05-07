@@ -71,11 +71,28 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // به‌روزرسانی وضعیت در UI
-                    statusBadge.textContent = data.status_name;
+                    // به‌روزرسانی وضعیت در UI - حتماً متن به‌روز شود
+                    statusBadge.innerHTML = data.status_name;  // استفاده از innerHTML به جای textContent
+                    console.log("Updated status to:", data.status_name);
                     
                     // تغییر کلاس
-                    statusBadge.className = statusBadge.className.replace(/bg-\w+/, data.status_class);
+                    let newClass = 'badge status-badge ';
+                    if (data.status_name === 'موجود') {
+                        newClass += 'bg-success';
+                    } else if (data.status_name === 'فروخته شده' || data.status_name === 'اجاره داده شده') {
+                        newClass += 'bg-danger';
+                    } else if (data.status_name === 'رزرو شده') {
+                        newClass += 'bg-primary';
+                    } else if (data.status_name === 'در حال ساخت') {
+                        newClass += 'bg-secondary';
+                    } else if (data.status_name === 'آماده تحویل') {
+                        newClass += 'bg-info';
+                    } else {
+                        newClass += 'bg-warning';
+                    }
+                    
+                    // اعمال کلاس جدید
+                    statusBadge.className = newClass;
                     
                     // نمایش پیام موفقیت‌آمیز
                     showAlert('success', data.message);
@@ -159,28 +176,76 @@
 <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header border-0">
                 <h5 class="modal-title" id="statusModalLabel">تغییر وضعیت ملک</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <h6 id="propertyTitle" class="mb-3 text-muted">عنوان ملک</h6>
-                <div class="d-flex flex-wrap gap-2 status-options">
-                    {% for status in property_statuses %}
-                    <div class="form-check status-radio-option">
-                        <input class="form-check-input" type="radio" name="statusOption" 
-                               id="status{{ status.id }}" value="{{ status.id }}">
-                        <label class="form-check-label status-label {% if status.name == 'موجود' %}text-success{% elif status.name == 'فروخته شده' or status.name == 'اجاره داده شده' %}text-danger{% else %}text-warning{% endif %}" 
-                               for="status{{ status.id }}">
-                            {{ status.name }}
-                        </label>
+            <div class="modal-body pt-0">
+                <h6 id="propertyTitle" class="mb-4 text-muted fs-6">عنوان ملک</h6>
+                
+                <div class="row mb-4">
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status1" value="1">
+                            <label class="form-check-label text-success status-box-label" for="status1">
+                                موجود
+                            </label>
+                        </div>
                     </div>
-                    {% endfor %}
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status2" value="2">
+                            <label class="form-check-label text-danger status-box-label" for="status2">
+                                فروخته شده
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status3" value="3">
+                            <label class="form-check-label text-danger status-box-label" for="status3">
+                                اجاره داده شده
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status4" value="4">
+                            <label class="form-check-label text-primary status-box-label" for="status4">
+                                رزرو شده
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status5" value="5">
+                            <label class="form-check-label text-secondary status-box-label" for="status5">
+                                در حال ساخت
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status6" value="6">
+                            <label class="form-check-label text-info status-box-label" for="status6">
+                                آماده تحویل
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                <button type="button" class="btn btn-primary" id="saveStatusBtn">ذخیره تغییرات</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="saveStatusBtn">ذخیره تغییرات</button>
             </div>
         </div>
     </div>

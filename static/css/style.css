@@ -590,22 +590,103 @@ h2 {
     transform: scale(1.1);
 }
 
-.status-radio-option {
+.status-radio-box {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.status-box-label {
+    display: block;
     background-color: #f8f9fa;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    min-width: 120px;
-    margin-bottom: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.7rem 0.5rem;
+    width: 100%;
+    font-weight: 600;
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.status-radio-option:hover {
-    background-color: #eee;
+.status-radio-box input[type="radio"] {
+    position: absolute;
+    opacity: 0;
 }
 
-.status-label {
-    font-weight: 600;
-    cursor: pointer;
+.status-radio-box input[type="radio"]:checked + .status-box-label {
+    color: #fff !important;
+    font-weight: 700;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* رنگ‌بندی وضعیت‌ها */
+.status-radio-box input[type="radio"]:checked + .text-success {
+    background-color: #10b981;
+    border-color: #10b981;
+}
+
+.status-radio-box input[type="radio"]:checked + .text-danger {
+    background-color: #ef4444;
+    border-color: #ef4444;
+}
+
+.status-radio-box input[type="radio"]:checked + .text-warning {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.status-radio-box input[type="radio"]:checked + .text-primary {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.status-radio-box input[type="radio"]:checked + .text-info {
+    background-color: #06b6d4;
+    border-color: #06b6d4;
+}
+
+.status-radio-box input[type="radio"]:checked + .text-secondary {
+    background-color: #6b7280;
+    border-color: #6b7280;
+}
+
+/* استایل مودال */
+.modal-header, .modal-footer {
+    padding: 1rem 1.5rem;
+}
+
+.modal-body {
+    padding: 0 1.5rem 1.5rem;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.text-success {
+    color: #10b981 !important;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-warning {
+    color: #f59e0b !important;
+}
+
+.text-primary {
+    color: #3b82f6 !important;
+}
+
+.text-info {
+    color: #06b6d4 !important;
+}
+
+.text-secondary {
+    color: #6b7280 !important;
 }
 
 .status-dropdown-menu {
