@@ -1,0 +1,75 @@
+{% if debug_params %}
+<div class="alert alert-info mb-3" dir="ltr">
+    <small>Debug: {{ debug_params }}</small>
+</div>
+{% endif %}
+<form method="get" action="{% url 'properties:property_search' %}">
+    <div class="mb-3">
+        <label for="{{ filter.form.property_code.id_for_label }}" class="form-label">کد ملک</label>
+        {{ filter.form.property_code }}
+    </div>
+    
+    <div class="mb-3">
+        <label for="{{ filter.form.address.id_for_label }}" class="form-label">آدرس</label>
+        {{ filter.form.address }}
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-6">
+            <label for="{{ filter.form.min_area.id_for_label }}" class="form-label">حداقل متراژ</label>
+            {{ filter.form.min_area }}
+        </div>
+        <div class="col-6">
+            <label for="{{ filter.form.max_area.id_for_label }}" class="form-label">حداکثر متراژ</label>
+            {{ filter.form.max_area }}
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-6">
+            <label for="{{ filter.form.min_price.id_for_label }}" class="form-label">حداقل قیمت</label>
+            {{ filter.form.min_price }}
+        </div>
+        <div class="col-6">
+            <label for="{{ filter.form.max_price.id_for_label }}" class="form-label">حداکثر قیمت</label>
+            {{ filter.form.max_price }}
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-6">
+            <label for="{{ filter.form.min_year.id_for_label }}" class="form-label">از سال</label>
+            {{ filter.form.min_year }}
+        </div>
+        <div class="col-6">
+            <label for="{{ filter.form.max_year.id_for_label }}" class="form-label">تا سال</label>
+            {{ filter.form.max_year }}
+        </div>
+    </div>
+    
+    <h6 class="mb-2">نوع معامله</h6>
+    <div class="mb-3 border p-3 rounded bg-light">
+        {{ filter.form.transaction_type }}
+    </div>
+    
+    <h6 class="mb-2">وضعیت</h6>
+    <div class="mb-3 border p-3 rounded bg-light">
+        {{ filter.form.status }}
+    </div>
+    
+    <h6 class="mb-2">نوع ملک</h6>
+    <div class="mb-3 border p-3 rounded bg-light">
+        {{ filter.form.property_type }}
+    </div>
+    
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary rounded-pill">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search me-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            اعمال فیلترها
+        </button>
+        <a href="{% url 'properties:property_search' %}" class="btn btn-outline-secondary rounded-pill">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            پاک کردن فیلترها
+        </a>
+    </div>
+</form>

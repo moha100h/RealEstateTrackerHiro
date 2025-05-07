@@ -98,9 +98,17 @@ def search_properties(request):
     """جستجوی پیشرفته املاک"""
     queryset = Property.objects.all()
     property_filter = PropertyFilter(request.GET, queryset=queryset)
+    
+    # گزارش تعداد املاک پیدا شده برای دیباگ
+    filtered_properties = property_filter.qs
+    print(f"GET params: {request.GET}")
+    print(f"Properties before filter: {queryset.count()}")
+    print(f"Properties after filter: {filtered_properties.count()}")
+    
     context = {
         'filter': property_filter,
-        'properties': property_filter.qs
+        'properties': filtered_properties,
+        'debug_params': dict(request.GET.items())
     }
     return render(request, 'properties/property_search.html', context)
 

@@ -397,7 +397,12 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="get" action="{% url 'properties:property_search' %}">
+                    {% if debug_params %}
+                    <div class="alert alert-info mb-3" dir="ltr">
+                        <small>Debug: {{ debug_params }}</small>
+                    </div>
+                    {% endif %}
+                    <form method="get" action="{% url 'properties:property_search' %}"&gt;
                         <div class="mb-3">
                             <label for="{{ filter.form.property_code.id_for_label }}" class="form-label">کد ملک</label>
                             {{ filter.form.property_code }}
