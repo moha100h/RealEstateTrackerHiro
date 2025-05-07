@@ -21,6 +21,17 @@ class PropertyListView(ListView):
     
     def get_queryset(self):
         queryset = super().get_queryset()
+        
+        # جستجوی سریع در همه فیلدهای مهم
+        search_query = self.request.GET.get('property_code', None)
+        if search_query:
+            queryset = queryset.filter(
+                Q(property_code__icontains=search_query) | 
+                Q(title__icontains=search_query) | 
+                Q(address__icontains=search_query) | 
+                Q(description__icontains=search_query)
+            )
+        
         self.filterset = PropertyFilter(self.request.GET, queryset=queryset)
         return self.filterset.qs
     

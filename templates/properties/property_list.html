@@ -149,31 +149,24 @@
 {% block content %}
 <div class="container">
     <div class="property-header mb-4">
-        <div class="row align-items-center">
-            <div class="col-lg-5">
-                <h1 class="property-title mb-0" style="background: linear-gradient(45deg, var(--primary-color), var(--primary-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">لیست املاک</h1>
-            </div>
-            <div class="col-lg-4">
-                <form method="get" action="{% url 'properties:property_list' %}" class="quick-search">
-                    <div class="input-group">
-                        <input type="text" name="property_code" class="form-control form-control-lg rounded-start-pill ps-4" placeholder="جستجو با کد ملک..." value="{{ request.GET.property_code|default:'' }}">
-                        <button type="submit" class="btn btn-primary rounded-end-pill px-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-lg-3 text-lg-end mt-3 mt-lg-0">
+        <div class="row align-items-center justify-content-between">
+            <div class="col-lg-6 mb-3 mb-lg-0">
                 {% if user.is_staff %}
-                <a href="{% url 'properties:property_create' %}" class="btn btn-primary btn-lg rounded-pill d-inline-flex align-items-center px-4">
+                <a href="{% url 'properties:property_create' %}" class="btn btn-primary rounded-pill d-inline-flex align-items-center px-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                     افزودن ملک جدید
                 </a>
                 {% endif %}
-                <a href="{% url 'properties:property_search' %}" class="btn btn-outline-primary rounded-pill d-inline-flex align-items-center ms-2 px-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter me-1"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                    فیلتر پیشرفته
-                </a>
+            </div>
+            <div class="col-lg-5">
+                <form method="get" action="{% url 'properties:property_list' %}" class="quick-search">
+                    <div class="input-group">
+                        <input type="text" name="property_code" class="form-control rounded-start-pill ps-4" placeholder="جستجو در عنوان، کد، آدرس یا توضیحات..." value="{{ request.GET.property_code|default:'' }}">
+                        <button type="submit" class="btn btn-primary rounded-end-pill px-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
