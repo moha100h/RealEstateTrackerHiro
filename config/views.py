@@ -62,7 +62,7 @@ def backup_view(request):
 @login_required
 @user_passes_test(is_superuser)
 def create_backup(request):
-    """ایجاد پشتیبان از پایگاه داده"""
+    """ایجاد پشتیبان از پایگاه داده و فایل‌های مدیا"""
     if request.method == 'POST':
         try:
             # ایجاد فولدر موقت
@@ -72,15 +72,51 @@ def create_backup(request):
             timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
             filename = f"backup_{timestamp}"
             backup_path = os.path.join(temp_dir, f"{filename}.json")
+            media_dir = os.path.join(temp_dir, 'media')
             zip_path = os.path.join(temp_dir, f"{filename}.zip")
             
             # استفاده از دستور dumpdata برای ایجاد فایل JSON
             with open(backup_path, 'w', encoding='utf-8') as f:
                 call_command('dumpdata', '--indent=2', '--exclude=contenttypes', '--exclude=auth.permission', stdout=f)
             
+            # کپی کردن فایل‌های مدیا
+            media_source = os.path.join(settings.BASE_DIR, 'media')
+            if os.path.exists(media_source):
+                # ایجاد دایرکتوری مدیا در فولدر موقت
+                os.makedirs(media_dir, exist_ok=True)
+                
+                # کپی تمام فایل‌های مدیا
+                for root, dirs, files in os.walk(media_source):
+                    for directory in dirs:
+                        source_dir = os.path.join(root, directory)
+                        # مسیر نسبی نسبت به دایرکتوری media
+                        relative_path = os.path.relpath(source_dir, media_source)
+                        target_dir = os.path.join(media_dir, relative_path)
+                        os.makedirs(target_dir, exist_ok=True)
+                    
+                    for file in files:
+                        source_file = os.path.join(root, file)
+                        # مسیر نسبی نسبت به دایرکتوری media
+                        relative_path = os.path.relpath(os.path.join(root, file), media_source)
+                        target_file = os.path.join(media_dir, relative_path)
+                        # اطمینان از وجود دایرکتوری مقصد
+                        os.makedirs(os.path.dirname(target_file), exist_ok=True)
+                        # کپی فایل
+                        shutil.copy2(source_file, target_file)
+            
             # ایجاد فایل زیپ
             with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                # افزودن فایل JSON
                 zf.write(backup_path, f"{filename}.json")
+                
+                # افزودن فایل‌های مدیا
+                if os.path.exists(media_dir):
+                    for root, dirs, files in os.walk(media_dir):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            # مسیر نسبی برای ذخیره در زیپ
+                            arcname = os.path.join('media', os.path.relpath(file_path, media_dir))
+                            zf.write(file_path, arcname)
             
             # خواندن فایل زیپ برای دانلود
             with open(zip_path, 'rb') as f:
@@ -110,7 +146,7 @@ def create_backup(request):
 @login_required
 @user_passes_test(is_superuser)
 def restore_backup(request):
-    """بازیابی پایگاه داده از فایل پشتیبان"""
+    """بازیابی پایگاه داده و فایل‌های مدیا از فایل پشتیبان"""
     if request.method == 'POST' and request.FILES.get('backup_file'):
         try:
             backup_file = request.FILES['backup_file']
@@ -131,7 +167,10 @@ def restore_backup(request):
             
             # باز کردن فایل زیپ
             with zipfile.ZipFile(zip_path, 'r') as zf:
+                # بررسی محتوای فایل پشتیبان
                 json_files = [f for f in zf.namelist() if f.endswith('.json')]
+                media_files = [f for f in zf.namelist() if f.startswith('media/')]
+                
                 if not json_files:
                     messages.error(request, 'فایل JSON در آرشیو پشتیبان یافت نشد.')
                     return redirect('config:backup')
@@ -143,6 +182,39 @@ def restore_backup(request):
                 # بازیابی از فایل JSON
                 json_path = os.path.join(temp_dir, json_file)
                 call_command('loaddata', json_path)
+                
+                # بازیابی فایل‌های مدیا
+                if media_files:
+                    media_dir = os.path.join(settings.BASE_DIR, 'media')
+                    
+                    # حذف فایل‌های مدیای قبلی (با احتیاط)
+                    if os.path.exists(media_dir):
+                        # به جای حذف کامل، پوشه‌ها را یکی یکی بررسی و پاک می‌کنیم
+                        for root, dirs, files in os.walk(media_dir):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                if os.path.isfile(file_path):
+                                    os.unlink(file_path)
+                    else:
+                        # ایجاد دایرکتوری مدیا اگر وجود ندارد
+                        os.makedirs(media_dir, exist_ok=True)
+                    
+                    # استخراج فایل‌های مدیا
+                    for file in media_files:
+                        # حذف 'media/' از ابتدای مسیر
+                        relative_path = file[6:] if file.startswith('media/') else file
+                        
+                        if relative_path:  # اگر رشته خالی نبود
+                            # مسیر کامل فایل
+                            file_path = os.path.join(media_dir, relative_path)
+                            
+                            # اطمینان از وجود دایرکتوری مقصد
+                            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                            
+                            # استخراج فایل مدیا
+                            source = zf.open(file)
+                            with open(file_path, 'wb') as target:
+                                shutil.copyfileobj(source, target)
             
             # پاکسازی فایل‌های موقت
             shutil.rmtree(temp_dir)
@@ -214,7 +286,7 @@ def export_properties_excel(request):
             properties_sheet.write(0, col, header, header_format)
         
         # دریافت داده‌های املاک
-        properties = Property.objects.all().select_related('property_type', 'transaction_type', 'status', 'created_by')
+        properties = Property.objects.all().select_related('property_type', 'transaction_type', 'status', 'document_type')
         
         # نوشتن داده‌ها
         for row, prop in enumerate(properties, start=1):
@@ -234,7 +306,7 @@ def export_properties_excel(request):
             
             properties_sheet.write(row, 10, created_at, date_format)
             properties_sheet.write(row, 11, updated_at, date_format)
-            properties_sheet.write(row, 12, prop.created_by.get_full_name() if prop.created_by else '', cell_format)
+            properties_sheet.write(row, 12, '', cell_format)  # فیلد ثبت کننده در حال حاضر در مدل Property وجود ندارد
         
         # ایجاد ورک‌شیت کاربران
         users_sheet = workbook.add_worksheet('کاربران')
