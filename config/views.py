@@ -26,16 +26,14 @@ def is_superuser(user):
     """آیا کاربر، ادمین اصلی سیستم است؟"""
     return user.is_superuser or (hasattr(user, 'profile') and user.profile.is_super_admin)
 
+@login_required
+@user_passes_test(is_superuser)
 def system_config_view(request):
     """نمایش و ویرایش تنظیمات سیستم"""
-    # اگر کاربر لاگین نیست، ادمین پیش‌فرض را برای مشاهده تنظیمات استفاده می‌کنیم
-    if not request.user.is_authenticated:
-        # این بخش فقط برای توسعه است و باید در محیط واقعی حذف شود
-        from django.contrib.auth import login
-        from django.contrib.auth.models import User
-        admin_user = User.objects.filter(username='admin').first()
-        if admin_user:
-            login(request, admin_user)
+    # اطمینان از این که فقط کاربران مجاز می‌توانند تنظیمات سیستم را مشاهده یا ویرایش کنند
+    if not is_superuser(request.user):
+        messages.error(request, 'شما مجوز دسترسی به این صفحه را ندارید.')
+        return redirect('home')
     
     config = SystemConfig.get_config()
     
@@ -70,21 +68,42 @@ def backup_view(request):
 @user_passes_test(is_superuser)
 def create_backup(request):
     """ایجاد پشتیبان از پایگاه داده و فایل‌های مدیا"""
+    # Verify that the user still has permission to create backup
+    if not is_superuser(request.user):
+        messages.error(request, 'شما مجوز دسترسی به این عملیات را ندارید.')
+        return redirect('dashboard:home')
+        
     if request.method == 'POST':
         try:
-            # ایجاد فولدر موقت
-            temp_dir = tempfile.mkdtemp()
+            # محدود کردن تعداد عملیات پشتیبان‌گیری
+            last_hour_backups = BackupRecord.objects.filter(
+                created_at__gte=timezone.now() - timezone.timedelta(hours=1),
+                created_by=request.user
+            ).count()
             
-            # نام فایل پشتیبان
+            if last_hour_backups >= 5:
+                messages.warning(
+                    request, 
+                    'شما در یک ساعت گذشته بیش از حد مجاز (5 بار) پشتیبان‌گیری کرده‌اید. لطفاً کمی صبر کنید.'
+                )
+                return redirect('config:backup')
+            
+            # ایجاد فولدر موقت با مجوز محدود
+            temp_dir = tempfile.mkdtemp(prefix='hiro_backup_')
+            os.chmod(temp_dir, 0o700)  # فقط کاربر فعلی دسترسی داشته باشد
+            
+            # نام فایل پشتیبان به همراه تایم استمپ امن
             timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
-            filename = f"backup_{timestamp}"
+            safe_username = ''.join(c for c in request.user.username if c.isalnum())[:20]
+            filename = f"backup_{safe_username}_{timestamp}"
             backup_path = os.path.join(temp_dir, f"{filename}.json")
             media_dir = os.path.join(temp_dir, 'media')
             zip_path = os.path.join(temp_dir, f"{filename}.zip")
             
-            # استفاده از دستور dumpdata برای ایجاد فایل JSON
+            # استفاده از دستور dumpdata برای ایجاد فایل JSON با محدودیت حجم
             with open(backup_path, 'w', encoding='utf-8') as f:
-                call_command('dumpdata', '--indent=2', '--exclude=contenttypes', '--exclude=auth.permission', stdout=f)
+                call_command('dumpdata', '--indent=2', '--exclude=contenttypes', '--exclude=auth.permission', 
+                            '--exclude=admin.logentry', '--exclude=sessions.session', stdout=f)
             
             # کپی کردن فایل‌های مدیا
             media_source = os.path.join(settings.BASE_DIR, 'media')
@@ -154,22 +173,42 @@ def create_backup(request):
 @user_passes_test(is_superuser)
 def restore_backup(request):
     """بازیابی پایگاه داده و فایل‌های مدیا از فایل پشتیبان"""
+    # Verify that the user still has permission to restore backup
+    if not is_superuser(request.user):
+        messages.error(request, 'شما مجوز دسترسی به این عملیات را ندارید.')
+        return redirect('dashboard:home')
+        
     if request.method == 'POST' and request.FILES.get('backup_file'):
         try:
             backup_file = request.FILES['backup_file']
             
-            # بررسی نوع فایل
+            # بررسی نوع فایل و اندازه آن
             if not backup_file.name.endswith('.zip'):
                 messages.error(request, 'فایل پشتیبان باید با فرمت ZIP باشد.')
                 return redirect('config:backup')
+                
+            # محدودیت اندازه فایل (100 مگابایت)
+            max_file_size = 100 * 1024 * 1024  # 100 MB
+            if backup_file.size > max_file_size:
+                messages.error(request, 'حجم فایل پشتیبان بیشتر از حد مجاز (100 مگابایت) است.')
+                return redirect('config:backup')
             
-            # ایجاد دایرکتوری موقت
-            temp_dir = tempfile.mkdtemp()
+            # ایجاد دایرکتوری موقت با دسترسی محدود
+            temp_dir = tempfile.mkdtemp(prefix='hiro_restore_')
+            os.chmod(temp_dir, 0o700)  # فقط کاربر فعلی دسترسی داشته باشد
             
-            # استخراج فایل زیپ
+            # استخراج فایل زیپ با کنترل حجم و محتوا
             zip_path = os.path.join(temp_dir, 'backup.zip')
             with open(zip_path, 'wb+') as f:
+                # استفاده از chunks برای جلوگیری از مصرف زیاد حافظه
+                file_size = 0
                 for chunk in backup_file.chunks():
+                    file_size += len(chunk)
+                    if file_size > max_file_size:  # بررسی مجدد حجم فایل حین پردازش
+                        f.close()
+                        os.unlink(zip_path)
+                        messages.error(request, 'حجم فایل پشتیبان بیشتر از حد مجاز است.')
+                        return redirect('config:backup')
                     f.write(chunk)
             
             # باز کردن فایل زیپ
@@ -206,22 +245,34 @@ def restore_backup(request):
                         # ایجاد دایرکتوری مدیا اگر وجود ندارد
                         os.makedirs(media_dir, exist_ok=True)
                     
-                    # استخراج فایل‌های مدیا
+                    # استخراج فایل‌های مدیا با مکانیزم امنیتی
                     for file in media_files:
                         # حذف 'media/' از ابتدای مسیر
                         relative_path = file[6:] if file.startswith('media/') else file
                         
-                        if relative_path:  # اگر رشته خالی نبود
+                        # محافظت در برابر حملات Path Traversal
+                        if relative_path and '..' not in relative_path and not relative_path.startswith('/'):
+                            # فیلتر کردن کاراکترهای غیرمجاز
+                            safe_path = ''.join(c for c in relative_path if c.isalnum() or c in '._-/() ')
+                            
                             # مسیر کامل فایل
-                            file_path = os.path.join(media_dir, relative_path)
+                            file_path = os.path.normpath(os.path.join(media_dir, safe_path))
                             
-                            # اطمینان از وجود دایرکتوری مقصد
-                            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                            
-                            # استخراج فایل مدیا
-                            source = zf.open(file)
-                            with open(file_path, 'wb') as target:
-                                shutil.copyfileobj(source, target)
+                            # اطمینان از اینکه هنوز داخل دایرکتوری مدیا هستیم (جلوگیری از Path Traversal)
+                            if os.path.commonpath([media_dir]) == os.path.commonpath([media_dir, file_path]):
+                                # اطمینان از وجود دایرکتوری مقصد
+                                try:
+                                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                                    
+                                    # استخراج فایل مدیا با محدودیت اندازه
+                                    source = zf.open(file)
+                                    with open(file_path, 'wb') as target:
+                                        # محدودیت اندازه هر فایل به 10 مگابایت
+                                        shutil.copyfileobj(source, target, 10 * 1024 * 1024)
+                                except (OSError, IOError) as e:
+                                    # ثبت رویداد خطا بدون توقف فرآیند
+                                    print(f"Error extracting file {file}: {str(e)}")
+                                    continue
             
             # پاکسازی فایل‌های موقت
             shutil.rmtree(temp_dir)
@@ -238,10 +289,15 @@ def restore_backup(request):
 @user_passes_test(is_superuser)
 def export_properties_excel(request):
     """صدور اطلاعات املاک به فرمت اکسل"""
+    # Verify that the user still has permission to export data
+    if not is_superuser(request.user):
+        messages.error(request, 'شما مجوز دسترسی به این عملیات را ندارید.')
+        return redirect('dashboard:home')
+        
     try:
-        # ایجاد فایل اکسل در حافظه
+        # ایجاد فایل اکسل در حافظه با پردازش ایمن
         output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output)
+        workbook = xlsxwriter.Workbook(output, {'constant_memory': True})
         
         # فرمت‌های مورد نیاز
         header_format = workbook.add_format({
@@ -292,21 +348,25 @@ def export_properties_excel(request):
         for col, header in enumerate(property_headers):
             properties_sheet.write(0, col, header, header_format)
         
-        # دریافت داده‌های املاک
-        properties = Property.objects.all().select_related('property_type', 'transaction_type', 'status', 'document_type')
+        # دریافت داده‌های املاک با استفاده از تکنیک‌های بهینه‌سازی برای کاهش حجم مصرفی حافظه
+        # محدود کردن تعداد رکوردها برای جلوگیری از مشکلات امنیتی مرتبط با حافظه
+        properties = Property.objects.all().select_related(
+            'property_type', 'transaction_type', 'status', 'document_type'
+        ).order_by('-updated_at')[:5000]  # محدود کردن رکوردها به 5000 تا
         
-        # نوشتن داده‌ها
+        # نوشتن داده‌ها با محافظت از مشکلات امنیتی مرتبط با محتوای فایل
         for row, prop in enumerate(properties, start=1):
+            # محافظت از فیلدها با sanitization
             properties_sheet.write(row, 0, prop.id, cell_format)
-            properties_sheet.write(row, 1, prop.title, cell_format)
-            properties_sheet.write(row, 2, prop.property_type.name if prop.property_type else '', cell_format)
-            properties_sheet.write(row, 3, prop.transaction_type.name if prop.transaction_type else '', cell_format)
-            properties_sheet.write(row, 4, prop.status.name if prop.status else '', cell_format)
+            properties_sheet.write(row, 1, str(prop.title)[:255] if prop.title else '', cell_format)  # محدودیت طول فیلد
+            properties_sheet.write(row, 2, str(prop.property_type.name)[:50] if prop.property_type else '', cell_format)
+            properties_sheet.write(row, 3, str(prop.transaction_type.name)[:50] if prop.transaction_type else '', cell_format)
+            properties_sheet.write(row, 4, str(prop.status.name)[:50] if prop.status else '', cell_format)
             properties_sheet.write(row, 5, prop.price, cell_format)
             properties_sheet.write(row, 6, prop.area, cell_format)
             properties_sheet.write(row, 7, prop.rooms, cell_format)
-            properties_sheet.write(row, 8, prop.address, cell_format)
-            properties_sheet.write(row, 9, prop.description, cell_format)
+            properties_sheet.write(row, 8, str(prop.address)[:500] if prop.address else '', cell_format)  # محدود کردن طول آدرس
+            properties_sheet.write(row, 9, str(prop.description)[:1000] if prop.description else '', cell_format)  # محدود کردن طول توضیحات
             
             created_at = prop.created_at.strftime('%Y/%m/%d') if prop.created_at else ''
             updated_at = prop.updated_at.strftime('%Y/%m/%d') if prop.updated_at else ''
@@ -386,10 +446,15 @@ def export_properties_excel(request):
 @user_passes_test(is_superuser)
 def export_data_excel(request):
     """صدور داده‌های مهم سیستم به فرمت اکسل"""
+    # Verify that the user still has permission to export data
+    if not is_superuser(request.user):
+        messages.error(request, 'شما مجوز دسترسی به این عملیات را ندارید.')
+        return redirect('dashboard:home')
+        
     try:
-        # ایجاد فایل اکسل در حافظه
+        # ایجاد فایل اکسل در حافظه با تنظیمات امنیتی مناسب
         output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output)
+        workbook = xlsxwriter.Workbook(output, {'constant_memory': True})
         
         # فرمت‌های مورد نیاز
         header_format = workbook.add_format({

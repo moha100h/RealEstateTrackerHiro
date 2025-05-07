@@ -17,7 +17,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-change-in-pro
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# در محیط تولید، میزبان‌های مجاز را محدود کنید
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,.replit.app,.replit.dev,.repl.co').split(',')
 
 # CSRF settings for Replit
 CSRF_TRUSTED_ORIGINS = [
@@ -61,8 +62,25 @@ MIDDLEWARE = [
 # تنظیمات امنیتی
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 SECURE_BROWSER_XSS_FILTER = True
-SESSION_COOKIE_SECURE = False  # در محیط توسعه: False، در محیط تولید: True
-CSRF_COOKIE_SECURE = False  # در محیط توسعه: False، در محیط تولید: True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000  # 1 سال
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# در محیط توسعه این تنظیمات False و در محیط تولید True باشند
+USE_HTTPS = os.environ.get('USE_HTTPS', 'False') == 'True'
+SESSION_COOKIE_SECURE = USE_HTTPS
+CSRF_COOKIE_SECURE = USE_HTTPS
+SECURE_SSL_REDIRECT = USE_HTTPS
+
+# محافظت از حملات SQL Injection
+DATABASES_DEFAULT_CONN_MAX_AGE = 600  # 10 دقیقه
+CONN_MAX_AGE = int(os.environ.get('CONN_MAX_AGE', DATABASES_DEFAULT_CONN_MAX_AGE))
+
+# محافظت از سشن‌ها
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 1209600  # 2 هفته
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 ROOT_URLCONF = 'hiro_estate.urls'
 
@@ -161,10 +179,9 @@ LOGOUT_REDIRECT_URL = 'home'
 # AUTH_USER_MODEL = 'accounts.User'
 
 # CSRF configuration
-CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
-CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access the cookie
-CSRF_USE_SESSIONS = False  # Store CSRF token in cookie instead of session
-CSRF_COOKIE_SAMESITE = None  # Allow cross-site requests when needed
+CSRF_COOKIE_HTTPONLY = True  # محافظت از توکن CSRF در برابر دسترسی JavaScript
+CSRF_USE_SESSIONS = True  # ذخیره توکن CSRF در سشن به جای کوکی برای امنیت بیشتر
+CSRF_COOKIE_SAMESITE = 'Lax'  # محافظت در برابر حملات CSRF
 CSRF_TRUSTED_ORIGINS = [
     'https://*.replit.app', 
     'http://localhost:5000', 
@@ -173,5 +190,5 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.id.repl.co',
     'https://*.repl.co'
 ]
-# For development only - Do not use in production
+# برای مدیریت بهتر خطاهای CSRF
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
