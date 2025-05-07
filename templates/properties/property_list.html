@@ -1,6 +1,140 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // انتخاب همه گزینه‌های تغییر وضعیت
+        const statusOptions = document.querySelectorAll('.status-option');
+        
+        // اضافه کردن رویداد کلیک به هر گزینه
+        statusOptions.forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // دریافت اطلاعات مورد نیاز
+                const propertyId = this.dataset.propertyId;
+                const statusId = this.dataset.statusId;
+                
+                // ارسال درخواست AJAX
+                changePropertyStatus(propertyId, statusId);
+            });
+        });
+        
+        // تابع ارسال درخواست تغییر وضعیت
+        function changePropertyStatus(propertyId, statusId) {
+            // تهیه داده‌های مورد نیاز برای ارسال
+            const formData = new FormData();
+            formData.append('status_id', statusId);
+            
+            // گرفتن توکن CSRF از cookie
+            const csrftoken = getCookie('csrftoken');
+            
+            // ارسال درخواست
+            fetch(`/properties/change-status/${propertyId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // به‌روزرسانی وضعیت در UI
+                    const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+                    
+                    // تغییر متن
+                    statusBadge.textContent = data.status_name;
+                    
+                    // حذف کلاس‌های قبلی و اضافه کردن کلاس جدید
+                    statusBadge.className = `badge ${data.status_class} property-status`;
+                    
+                    // نمایش پیام موفقیت‌آمیز
+                    showAlert('success', data.message);
+                    
+                    // به‌روزرسانی منوی وضعیت
+                    updateStatusMenu(propertyId, statusId);
+                } else {
+                    // نمایش پیام خطا
+                    showAlert('danger', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'خطایی در ارتباط با سرور رخ داد.');
+            });
+        }
+        
+        // تابع به‌روزرسانی منوی وضعیت
+        function updateStatusMenu(propertyId, statusId) {
+            // یافتن همه گزینه‌های مربوط به این ملک
+            const options = document.querySelectorAll(`.status-option[data-property-id="${propertyId}"]`);
+            
+            // به‌روزرسانی کلاس‌ها
+            options.forEach(option => {
+                if (option.dataset.statusId === statusId) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+        }
+        
+        // تابع دریافت توکن CSRF از کوکی
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (const cookie of cookies) {
+                    const cookieTrim = cookie.trim();
+                    if (cookieTrim.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookieTrim.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // تابع نمایش پیام هشدار
+        function showAlert(type, message) {
+            // ایجاد یک هشدار بوت‌استرپی
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.setAttribute('role', 'alert');
+            
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // افزودن به DOM
+            const container = document.querySelector('.container .messages');
+            if (container) {
+                container.appendChild(alertDiv);
+            } else {
+                // اگر کانتینر پیام‌ها وجود نداشت، یکی ایجاد می‌کنیم
+                const messagesContainer = document.createElement('div');
+                messagesContainer.className = 'messages';
+                messagesContainer.appendChild(alertDiv);
+                
+                const mainContainer = document.querySelector('.container');
+                mainContainer.insertBefore(messagesContainer, mainContainer.firstChild);
+            }
+            
+            // پس از 5 ثانیه، پیام را مخفی می‌کنیم
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 500);
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="property-header mb-4">
