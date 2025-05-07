@@ -1,5 +1,7 @@
 from django import forms
-from .models import Property, PropertyType, TransactionType, PropertyStatus, DocumentType
+from django.core.files.base import ContentFile
+from django.forms import ClearableFileInput
+from .models import Property, PropertyType, TransactionType, PropertyStatus, DocumentType, PropertyImage
 
 class PropertyForm(forms.ModelForm):
     """فرم ثبت و ویرایش ملک"""

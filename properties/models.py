@@ -98,3 +98,27 @@ class Property(models.Model):
     
     def __str__(self):
         return f"{self.title} ({self.property_code})"
+        
+    def get_additional_images(self):
+        """دریافت لیست تصاویر اضافی ملک"""
+        return self.images.all()
+
+
+class PropertyImage(models.Model):
+    """
+    مدل تصاویر اضافی ملک برای گالری تصاویر
+    """
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images', verbose_name="ملک")
+    image = models.ImageField(upload_to='property_images/', verbose_name="تصویر")
+    title = models.CharField(max_length=100, blank=True, null=True, verbose_name="عنوان تصویر")
+    is_default = models.BooleanField(default=False, verbose_name="تصویر پیش‌فرض")
+    created_at = jmodels.jDateTimeField(auto_now_add=True, verbose_name="تاریخ ثبت")
+    order = models.PositiveSmallIntegerField(default=0, verbose_name="ترتیب نمایش")
+    
+    class Meta:
+        verbose_name = "تصویر ملک"
+        verbose_name_plural = "تصاویر ملک"
+        ordering = ['order', '-created_at']
+        
+    def __str__(self):
+        return f"تصویر {self.property.property_code}"
