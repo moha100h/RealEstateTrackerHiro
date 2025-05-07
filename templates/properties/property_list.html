@@ -3,184 +3,158 @@
 
 {% block content %}
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">لیست املاک</h1>
-        {% if user.is_staff %}
-        <a href="{% url 'properties:property_create' %}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            افزودن ملک جدید
-        </a>
-        {% endif %}
-    </div>
-    
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">فیلترها</h5>
-                </div>
-                <div class="card-body">
-                    <form method="get" action="{% url 'properties:property_list' %}">
-                        <div class="mb-3">
-                            <label for="{{ filter.form.property_code.id_for_label }}" class="form-label">کد ملک</label>
-                            {{ filter.form.property_code }}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ filter.form.address.id_for_label }}" class="form-label">آدرس</label>
-                            {{ filter.form.address }}
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label for="{{ filter.form.min_area.id_for_label }}" class="form-label">حداقل متراژ</label>
-                                {{ filter.form.min_area }}
-                            </div>
-                            <div class="col-6">
-                                <label for="{{ filter.form.max_area.id_for_label }}" class="form-label">حداکثر متراژ</label>
-                                {{ filter.form.max_area }}
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label for="{{ filter.form.min_price.id_for_label }}" class="form-label">حداقل قیمت</label>
-                                {{ filter.form.min_price }}
-                            </div>
-                            <div class="col-6">
-                                <label for="{{ filter.form.max_price.id_for_label }}" class="form-label">حداکثر قیمت</label>
-                                {{ filter.form.max_price }}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">نوع معامله</label>
-                            <div>{{ filter.form.transaction_type }}</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">وضعیت</label>
-                            <div>{{ filter.form.status }}</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">نوع ملک</label>
-                            <div>{{ filter.form.property_type }}</div>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                                اعمال فیلتر
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <div class="property-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-5">
+                <h1 class="property-title mb-0" style="background: linear-gradient(45deg, var(--primary-color), var(--primary-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">لیست املاک</h1>
+            </div>
+            <div class="col-lg-4">
+                <form method="get" action="{% url 'properties:property_list' %}" class="quick-search">
+                    <div class="input-group">
+                        <input type="text" name="property_code" class="form-control form-control-lg rounded-start-pill ps-4" placeholder="جستجو با کد ملک..." value="{{ request.GET.property_code|default:'' }}">
+                        <button type="submit" class="btn btn-primary rounded-end-pill px-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-3 text-lg-end mt-3 mt-lg-0">
+                {% if user.is_staff %}
+                <a href="{% url 'properties:property_create' %}" class="btn btn-primary btn-lg rounded-pill d-inline-flex align-items-center px-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    افزودن ملک جدید
+                </a>
+                {% endif %}
+                <a href="{% url 'properties:property_search' %}" class="btn btn-outline-primary rounded-pill d-inline-flex align-items-center ms-2 px-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter me-1"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    فیلتر پیشرفته
+                </a>
             </div>
         </div>
-        
-        <div class="col-md-9">
-            {% if properties %}
-            <div class="row">
-                {% for property in properties %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm">
+    </div>
+    
+    <div class="property-content">
+        {% if properties %}
+        <div class="row g-4">
+            {% for property in properties %}
+            <div class="col-md-6 col-lg-4">
+                <div class="property-card">
+                    <div class="position-relative property-image-container rounded-top overflow-hidden">
                         {% if property.image %}
-                        <img src="{{ property.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 180px; object-fit: cover;">
+                        <img src="{{ property.image.url }}" class="property-image" alt="{{ property.title }}">
                         {% elif system_config.default_property_image %}
-                        <img src="{{ system_config.default_property_image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 180px; object-fit: cover;">
+                        <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
                         {% else %}
                         <div class="bg-light text-center py-5">
                             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home text-secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         </div>
                         {% endif %}
                         
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-primary">{{ property.property_code }}</span>
-                                <span class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %}">
-                                    {{ property.status.name }}
-                                </span>
+                        <div class="property-badges">
+                            <span class="badge bg-primary property-code">{{ property.property_code }}</span>
+                            <span class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status">
+                                {{ property.status.name }}
+                            </span>
+                        </div>
+                        <div class="property-overlay">
+                            <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-light rounded-pill px-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                مشاهده جزئیات
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <h5 class="property-name mb-2">{{ property.title }}</h5>
+                        <p class="property-address mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin me-1 text-muted"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <span class="text-muted small">{{ property.address|truncatechars:60 }}</span>
+                        </p>
+                        
+                        <div class="property-features mb-3">
+                            <div class="feature-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-maximize feature-icon"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                                <span class="feature-value">{{ property.area }} متر</span>
+                                <span class="feature-label">متراژ</span>
                             </div>
-                            
-                            <h5 class="card-title mb-1">{{ property.title }}</h5>
-                            <p class="card-text text-muted small mb-2">{{ property.address|truncatechars:60 }}</p>
-                            
-                            <div class="mb-3">
-                                <div class="row g-0 text-center">
-                                    <div class="col">
-                                        <div class="p-2 border-end">
-                                            <div class="small text-muted">متراژ</div>
-                                            <div><strong>{{ property.area }}</strong> متر</div>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="p-2">
-                                            <div class="small text-muted">اتاق</div>
-                                            <div><strong>{{ property.rooms }}</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="feature-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home feature-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                <span class="feature-value">{{ property.rooms }}</span>
+                                <span class="feature-label">اتاق</span>
                             </div>
-                            
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="small text-muted">{{ property.transaction_type.name }}</div>
-                                    <div class="h5 mb-0">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
-                                </div>
-                                <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-outline-primary">
-                                    جزئیات
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                                </a>
+                            <div class="feature-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar feature-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                <span class="feature-value">{{ property.year_built }}</span>
+                                <span class="feature-label">سال ساخت</span>
                             </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="property-transaction">
+                                <div class="transaction-badge">{{ property.transaction_type.name }}</div>
+                                <div class="property-price">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
+                            </div>
+                            <a href="{% url 'properties:property_detail' property.slug %}" class="property-more">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left-circle"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line></svg>
+                            </a>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
-            
-            <!-- پیجینیشن -->
-            {% if is_paginated %}
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">ابتدا</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">قبلی</a>
-                    </li>
-                    {% endif %}
-                    
-                    {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
-                    </li>
-                    {% endif %}
-                    {% endfor %}
-                    
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">بعدی</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">آخر</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
-            
-            {% else %}
-            <div class="alert alert-info">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info mb-1 me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                هیچ ملکی یافت نشد. لطفاً فیلترهای خود را تغییر دهید یا ملک جدیدی ثبت کنید.
-            </div>
-            {% endif %}
+            {% endfor %}
         </div>
+        
+        <!-- پیجینیشن -->
+        {% if is_paginated %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">ابتدا</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">قبلی</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">بعدی</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">آخر</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="alert alert-info d-flex align-items-center p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info me-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <div>
+                هیچ ملکی یافت نشد. لطفاً معیارهای جستجوی خود را تغییر دهید یا ملک جدیدی ثبت کنید.
+                {% if user.is_staff %}
+                <div class="mt-2">
+                    <a href="{% url 'properties:property_create' %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        افزودن ملک جدید
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
