@@ -60,7 +60,7 @@
             overflow-y: auto;
             z-index: 1020;
             padding: 15px;
-            padding-bottom: 100px;
+            padding-bottom: 90px; /* فضای بیشتر برای دکمه‌های پایین */
         }
         
         .mobile-filter-footer {
@@ -547,6 +547,9 @@
                 <div class="mb-3 border p-3 rounded bg-light">
                     {{ filter.form.property_type }}
                 </div>
+                
+                <!-- دکمه شناور اعمال فیلترها در صفحه فیلتر -->
+                <div style="height: 70px;"></div> <!-- فضای خالی برای جلوگیری از پوشاندن محتوا توسط دکمه‌های پایین -->
             </form>
         </div>
         
