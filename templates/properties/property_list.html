@@ -4,29 +4,47 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // انتخاب همه گزینه‌های تغییر وضعیت
-        const statusOptions = document.querySelectorAll('.status-option');
+        // متغیرهای مودال
+        let currentPropertyId = null;
+        const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+        const saveStatusBtn = document.getElementById('saveStatusBtn');
         
-        // اضافه کردن رویداد کلیک به هر گزینه
-        statusOptions.forEach(option => {
-            option.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // دریافت اطلاعات مورد نیاز
-                const propertyId = this.dataset.propertyId;
-                const statusId = this.dataset.statusId;
-                
-                // ارسال درخواست AJAX
-                changePropertyStatus(propertyId, statusId);
-            });
+        // ذخیره تغییرات وضعیت
+        saveStatusBtn.addEventListener('click', function() {
+            const selectedStatus = document.querySelector('input[name="statusOption"]:checked');
+            if (selectedStatus && currentPropertyId) {
+                changePropertyStatus(currentPropertyId, selectedStatus.value);
+                statusModal.hide();
+            } else {
+                showAlert('warning', 'لطفاً یک وضعیت را انتخاب کنید.');
+            }
         });
         
-        // مدیریت موقعیت منوی کشویی با Popper.js (Bootstrap 5)
-        document.querySelectorAll('.dropdown-menu').forEach(dropdownMenu => {
-            dropdownMenu.addEventListener('click', function(e) {
-                e.stopPropagation(); // جلوگیری از بسته شدن منو با کلیک روی خود منو
+        // تابع نمایش مودال تغییر وضعیت
+        window.showStatusModal = function(propertyId, propertyTitle) {
+            currentPropertyId = propertyId;
+            
+            // نمایش عنوان ملک در مودال
+            document.getElementById('propertyTitle').textContent = propertyTitle;
+            
+            // بررسی وضعیت فعلی ملک
+            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+            const currentStatus = statusBadge.textContent.trim();
+            
+            // پاک کردن انتخاب‌های قبلی
+            document.querySelectorAll('input[name="statusOption"]').forEach(radio => {
+                radio.checked = false;
+                
+                // یافتن وضعیت فعلی
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                if (label && label.textContent.trim() === currentStatus) {
+                    radio.checked = true;
+                }
             });
-        });
+            
+            // نمایش مودال
+            statusModal.show();
+        };
         
         // تابع ارسال درخواست تغییر وضعیت
         function changePropertyStatus(propertyId, statusId) {
@@ -36,6 +54,11 @@
             
             // گرفتن توکن CSRF از cookie
             const csrftoken = getCookie('csrftoken');
+            
+            // نمایش لودینگ
+            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+            const originalContent = statusBadge.innerHTML;
+            statusBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
             
             // ارسال درخواست
             fetch(`/properties/change-status/${propertyId}/`, {
@@ -49,53 +72,29 @@
             .then(data => {
                 if (data.success) {
                     // به‌روزرسانی وضعیت در UI
-                    const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+                    statusBadge.textContent = data.status_name;
                     
-                    // تغییر محتوای بج - نیاز به حفظ آیکون فلش در صورت وجود
-                    if (statusBadge.querySelector('svg')) {
-                        // اگر فلش داشت، محتوای متنی را تغییر می‌دهیم و آیکون را حفظ می‌کنیم
-                        const badgeText = statusBadge.childNodes[0];
-                        badgeText.nodeValue = ` ${data.status_name} `;
-                    } else {
-                        // اگر آیکون نداشت (برای کاربران عادی)، کل محتوا را تغییر می‌دهیم
-                        statusBadge.textContent = data.status_name;
-                    }
-                    
-                    // تغییر کلاس (حفظ کلاس‌های ثابت)
+                    // تغییر کلاس
                     statusBadge.className = statusBadge.className.replace(/bg-\w+/, data.status_class);
                     
                     // نمایش پیام موفقیت‌آمیز
                     showAlert('success', data.message);
-                    
-                    // بستن منو
-                    const dropdown = new bootstrap.Dropdown(statusBadge);
-                    dropdown.hide();
-                    
-                    // به‌روزرسانی منوی وضعیت
-                    updateStatusMenu(propertyId, statusId);
                 } else {
+                    // بازگرداندن وضعیت قبلی
+                    statusBadge.innerHTML = originalContent;
+                    
                     // نمایش پیام خطا
                     showAlert('danger', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                
+                // بازگرداندن وضعیت قبلی
+                statusBadge.innerHTML = originalContent;
+                
+                // نمایش پیام خطا
                 showAlert('danger', 'خطایی در ارتباط با سرور رخ داد.');
-            });
-        }
-        
-        // تابع به‌روزرسانی منوی وضعیت
-        function updateStatusMenu(propertyId, statusId) {
-            // یافتن همه گزینه‌های مربوط به این ملک
-            const options = document.querySelectorAll(`.status-option[data-property-id="${propertyId}"]`);
-            
-            // به‌روزرسانی کلاس‌ها
-            options.forEach(option => {
-                if (option.dataset.statusId === statusId) {
-                    option.classList.add('active');
-                } else {
-                    option.classList.remove('active');
-                }
             });
         }
         
@@ -134,15 +133,12 @@
             } else {
                 // اگر کانتینر پیام‌ها وجود نداشت، یکی ایجاد می‌کنیم
                 const messagesContainer = document.createElement('div');
-                messagesContainer.className = 'messages';
+                messagesContainer.className = 'messages mt-3 mb-3';
                 messagesContainer.appendChild(alertDiv);
                 
                 const mainContainer = document.querySelector('.container');
-                if (mainContainer.firstChild) {
-                    mainContainer.insertBefore(messagesContainer, mainContainer.firstChild);
-                } else {
-                    mainContainer.appendChild(messagesContainer);
-                }
+                const propertyHeader = document.querySelector('.property-header');
+                mainContainer.insertBefore(messagesContainer, propertyHeader.nextSibling);
             }
             
             // پس از 5 ثانیه، پیام را مخفی می‌کنیم
@@ -158,6 +154,37 @@
 {% endblock %}
 
 {% block content %}
+
+<!-- مودال تغییر وضعیت ملک -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">تغییر وضعیت ملک</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 id="propertyTitle" class="mb-3 text-muted">عنوان ملک</h6>
+                <div class="d-flex flex-wrap gap-2 status-options">
+                    {% for status in property_statuses %}
+                    <div class="form-check status-radio-option">
+                        <input class="form-check-input" type="radio" name="statusOption" 
+                               id="status{{ status.id }}" value="{{ status.id }}">
+                        <label class="form-check-label status-label {% if status.name == 'موجود' %}text-success{% elif status.name == 'فروخته شده' or status.name == 'اجاره داده شده' %}text-danger{% else %}text-warning{% endif %}" 
+                               for="status{{ status.id }}">
+                            {{ status.name }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary" id="saveStatusBtn">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container">
     <div class="property-header mb-4">
         <div class="row align-items-center justify-content-between">
@@ -203,28 +230,16 @@
                             <span class="badge bg-primary property-code">{{ property.property_code }}</span>
                         </div>
 
-                        {% if user.is_staff %}
-                        <div class="dropdown status-badge-dropdown">
-                            <button type="button" id="status-badge-{{ property.id }}" class="badge border-0 {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                {{ property.status.name }}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down ms-1"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
-                            <div class="dropdown-menu status-dropdown-menu" data-property-id="{{ property.id }}">
-                                <h6 class="dropdown-header">تغییر وضعیت ملک</h6>
-                                {% for status in property_statuses %}
-                                <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
-                                   href="#" 
-                                   data-property-id="{{ property.id }}" 
-                                   data-status-id="{{ status.id }}">
-                                    {{ status.name }}
-                                </a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% else %}
-                        <span id="status-badge-{{ property.id }}" class="badge status-badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status">
+                        <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} status-badge">
                             {{ property.status.name }}
                         </span>
+                        
+                        {% if user.is_staff %}
+                        <div class="change-status-wrapper">
+                            <button type="button" onclick="showStatusModal({{ property.id }}, '{{ property.title }}')" class="btn btn-sm position-absolute top-0 start-0 m-2 p-1 change-status-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                            </button>
+                        </div>
                         {% endif %}
                         <div class="property-overlay">
                             <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-light rounded-pill px-3">

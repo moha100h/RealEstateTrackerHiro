@@ -568,6 +568,46 @@ h2 {
     letter-spacing: 0.5px;
 }
 
+.change-status-btn {
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+.property-card:hover .change-status-btn {
+    opacity: 1;
+}
+
+.change-status-btn:hover {
+    background-color: white;
+    transform: scale(1.1);
+}
+
+.status-radio-option {
+    background-color: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    min-width: 120px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.status-radio-option:hover {
+    background-color: #eee;
+}
+
+.status-label {
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .status-dropdown-menu {
     min-width: 180px;
     font-size: 0.9rem;
