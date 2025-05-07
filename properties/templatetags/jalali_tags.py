@@ -23,7 +23,12 @@ def to_jalali(value, format_string="%Y/%m/%d"):
     if not isinstance(value, datetime) and not isinstance(value, timezone.datetime):
         return value
     
-    jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
+    # اگر نوع jdatetime باشد، مستقیماً از آن استفاده می‌کنیم
+    if hasattr(value, 'togregorian'):
+        jalali_date = value
+    else:
+        jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
+    
     return jalali_date.strftime(format_string)
 
 
