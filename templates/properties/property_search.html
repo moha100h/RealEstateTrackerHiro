@@ -402,7 +402,7 @@
                         <small>Debug: {{ debug_params }}</small>
                     </div>
                     {% endif %}
-                    <form method="get" action="{% url 'properties:property_search' %}"&gt;
+                    <form method="get" action="{% url 'properties:property_search' %}">
                         <div class="mb-3">
                             <label for="{{ filter.form.property_code.id_for_label }}" class="form-label">کد ملک</label>
                             {{ filter.form.property_code }}
