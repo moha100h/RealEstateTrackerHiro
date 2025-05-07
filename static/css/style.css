@@ -480,7 +480,7 @@ h2 {
 }
 
 .property-name {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--gray-900);
 }
@@ -490,12 +490,12 @@ h2 {
     align-items: center;
     gap: 0.3rem;
     color: var(--gray-600);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .property-image-container {
     position: relative;
-    height: 220px;
+    height: 160px;
 }
 
 .property-image {
@@ -557,7 +557,7 @@ h2 {
 .property-price {
     font-weight: 800;
     color: var(--primary-color);
-    font-size: 1.2rem;
+    font-size: 1rem;
     margin-top: 0.3rem;
 }
 
@@ -567,18 +567,18 @@ h2 {
 }
 
 .transaction-badge {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--gray-600);
     background-color: rgba(0,0,0,0.02);
-    padding: 0.2rem 0.6rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 50rem;
     display: inline-block;
     font-weight: 500;
 }
 
 .property-more {
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -603,8 +603,8 @@ h2 {
 
 .property-features {
     display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0;
+    gap: 0.3rem;
+    margin: 0.7rem 0;
 }
 
 .property-features .feature-item {
@@ -612,9 +612,9 @@ h2 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.7rem 0.5rem;
+    padding: 0.5rem 0.3rem;
     background-color: rgba(0,0,0,0.02);
-    border-radius: 0.7rem;
+    border-radius: 0.5rem;
     transition: all 0.2s ease;
 }
 
@@ -624,19 +624,19 @@ h2 {
 
 .feature-icon {
     color: var(--primary-color);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
 }
 
 .property-features .feature-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: var(--gray-500);
-    margin-top: 0.2rem;
+    margin-top: 0.1rem;
 }
 
 .property-features .feature-value {
     font-weight: 600;
     color: var(--gray-800);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 /* فوتر */
