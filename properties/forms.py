@@ -1,5 +1,5 @@
 from django import forms
-from .models import Property, PropertyType, TransactionType, PropertyStatus
+from .models import Property, PropertyType, TransactionType, PropertyStatus, DocumentType
 
 class PropertyForm(forms.ModelForm):
     """فرم ثبت و ویرایش ملک"""
@@ -8,7 +8,7 @@ class PropertyForm(forms.ModelForm):
         model = Property
         fields = [
             'title', 'address', 'area', 'price', 'year_built',
-            'property_type', 'transaction_type', 'status',
+            'property_type', 'transaction_type', 'status', 'document_type',
             'rooms', 'description', 'image'
         ]
         widgets = {
