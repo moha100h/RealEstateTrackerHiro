@@ -50,6 +50,40 @@ wheels = [
 ]
 
 [[package]]
+name = "django-jalali"
+version = "7.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "jdatetime" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/fc/c1f1c1eefdd4e258c817e272d29da398e83ec6b976fbb4dc1f00b18455c8/django_jalali-7.4.0.tar.gz", hash = "sha256:c1beb70625e5f34f79df488f25073e45049194a0d4193e0e0348369a425c4fb0", size = 199592 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/33/92/bfe5bf23e0593abe550b4af6d9ba51e083dd07b5ece8bd4be5cf4e7739c7/django_jalali-7.4.0-py3-none-any.whl", hash = "sha256:b7472b5bb54a3545607f6c5e03f2778bd555f79015a77e06670a3d9d4045e7e1", size = 210186 },
+]
+
+[[package]]
+name = "jalali-core"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2b/3c/21e32e3444c572174a5d774643eb2aa8ab60ef68b99a4c3585a0a11428b4/jalali_core-1.0.0.tar.gz", hash = "sha256:f4287c70c630323dcf0a3ab26df905ba4d451e230ac1f65b3bb2f77797894a2b", size = 2752 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f6/20/a4e942f9685df720a106da292e29a53212b27903749cc563b86b612b113e/jalali_core-1.0.0-py3-none-any.whl", hash = "sha256:84e6f5090eadfb35234f24fad084be831d00da3c0b238ee001e8a1fd49bf7924", size = 3616 },
+]
+
+[[package]]
+name = "jdatetime"
+version = "5.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jalali-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6e/9d/5ed59c36f3cbc68c01fab6442e6efb6d35a484ba4eec4f790264fce39f6c/jdatetime-5.2.0.tar.gz", hash = "sha256:c81d5898717b82b609a3ce2a73f8b8d3230b0c757e5c0de9d6b1acfdc224f551", size = 21663 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/16/39/0dd2676d08468692606645db5ea40091290dc20747ff59636c21c0567d3c/jdatetime-5.2.0-py3-none-any.whl", hash = "sha256:d4aa73543e4e6c0e6122b58743773168edee5efe5c5acf05d1dc8c90524ca71c", size = 12199 },
+]
+
+[[package]]
 name = "psycopg2-binary"
 version = "2.9.10"
 source = { registry = "https://pypi.org/simple" }
@@ -100,6 +134,8 @@ dependencies = [
     { name = "dj-database-url" },
     { name = "django" },
     { name = "django-filter" },
+    { name = "django-jalali" },
+    { name = "jdatetime" },
     { name = "psycopg2-binary" },
 ]
 
@@ -108,6 +144,8 @@ requires-dist = [
     { name = "dj-database-url", specifier = ">=2.3.0" },
     { name = "django", specifier = ">=5.2" },
     { name = "django-filter", specifier = ">=25.1" },
+    { name = "django-jalali", specifier = ">=7.4.0" },
+    { name = "jdatetime", specifier = ">=5.2.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
 ]
 

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     
     # Third party apps
     'django_filters',
+    'django_jalali',
     
     # Custom apps
     'properties.apps.PropertiesConfig',
