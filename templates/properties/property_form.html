@@ -96,16 +96,33 @@
                             {{ form.description }}
                         </div>
                         
-                        <div class="mb-4">
-                            <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
-                            {% if object and object.image %}
-                            <div class="mb-2">
-                                <img src="{{ object.image.url }}" alt="تصویر فعلی" class="img-thumbnail" style="max-height: 150px;">
-                                <p class="small text-muted">تصویر فعلی ملک</p>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                                {% if object and object.image %}
+                                <div class="mb-2">
+                                    <img src="{{ object.image.url }}" alt="تصویر فعلی" class="img-thumbnail" style="max-height: 150px;">
+                                    <p class="small text-muted">تصویر اصلی ملک</p>
+                                </div>
+                                {% endif %}
+                                {{ form.image }}
+                                <div class="form-text text-muted">در صورت عدم انتخاب، از تصویر پیش‌فرض استفاده می‌شود.</div>
                             </div>
-                            {% endif %}
-                            {{ form.image }}
-                            <div class="form-text text-muted">در صورت عدم انتخاب، از تصویر پیش‌فرض استفاده می‌شود.</div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.additional_images.id_for_label }}" class="form-label">{{ form.additional_images.label }}</label>
+                                {% if object and object.get_additional_images %}
+                                <div class="mb-2 d-flex flex-wrap gap-2">
+                                    {% for img in object.get_additional_images %}
+                                    <div class="position-relative">
+                                        <img src="{{ img.image.url }}" alt="تصویر {{ forloop.counter }}" class="img-thumbnail" style="max-height: 100px; max-width: 100px; object-fit: cover;">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                {{ form.additional_images }}
+                                <div class="form-text text-muted">{{ form.additional_images.help_text }}</div>
+                            </div>
                         </div>
                         
                         <div class="d-flex justify-content-between">

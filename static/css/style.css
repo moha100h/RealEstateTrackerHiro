@@ -323,6 +323,45 @@ h2 {
     box-shadow: 0 6px 15px rgba(63, 81, 181, 0.25);
 }
 
+/* استایل‌های گالری تصاویر */
+.property-gallery h5 {
+    color: var(--primary-dark);
+    font-weight: 600;
+    position: relative;
+    padding-right: 10px;
+}
+
+.property-gallery h5::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.property-gallery .img-thumbnail {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    border: 2px solid #f8f9fa;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.property-gallery .img-thumbnail:hover {
+    transform: scale(1.03);
+    border-color: var(--primary-light);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+}
+
+.property-main-image {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
 /* بج‌ها و لیبل‌ها */
 .badge {
     font-weight: 500;
