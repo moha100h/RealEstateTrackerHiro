@@ -264,7 +264,7 @@
             <div class="col-lg-5">
                 <form method="get" action="{% url 'properties:property_list' %}" class="quick-search">
                     <div class="input-group">
-                        <input type="text" name="property_code" class="form-control rounded-start-pill ps-4" placeholder="جستجو در عنوان، کد، آدرس یا توضیحات..." value="{{ request.GET.property_code|default:'' }}">
+                        <input type="text" name="property_code" class="form-control rounded-start-pill ps-4" placeholder="جستجو در عنوان، کد، آدرس یا توضیحات ملک..." value="{{ request.GET.property_code|default:'' }}" autocomplete="off">
                         <button type="submit" class="btn btn-primary rounded-end-pill px-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         </button>
@@ -339,7 +339,7 @@
                         <div class="d-flex justify-content-between align-items-center mt-1">
                             <div class="d-flex align-items-center gap-1">
                                 <div class="badge badge-sm bg-primary-light">{{ property.transaction_type.name }}</div>
-                                <div class="property-price">{{ property.price|floatformat:"0"|intcomma }}</div>
+                                <div class="property-price">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
                             </div>
                             <a href="{% url 'properties:property_detail' property.slug %}" class="property-more">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left-circle"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line></svg>

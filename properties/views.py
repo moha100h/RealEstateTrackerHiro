@@ -23,7 +23,7 @@ class PropertyListView(ListView):
         queryset = super().get_queryset()
         
         # جستجوی سریع در همه فیلدهای مهم
-        search_query = self.request.GET.get('property_code', None)
+        search_query = self.request.GET.get('property_code', None)  # هنوز نام فیلد property_code است اما در همه فیلدها جستجو می‌کند
         if search_query:
             queryset = queryset.filter(
                 Q(property_code__icontains=search_query) | 
