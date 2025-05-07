@@ -717,6 +717,7 @@ h2 {
     box-shadow: 0 8px 30px rgba(0,0,0,0.06);
     height: 100%;
     position: relative;
+    font-size: 0.9rem;
 }
 
 .property-card:hover {
