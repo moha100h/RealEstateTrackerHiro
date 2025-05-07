@@ -11,25 +11,30 @@ def to_jalali(value, format_string="%Y/%m/%d"):
     if value is None:
         return ""
     
-    if isinstance(value, str):
-        try:
-            value = datetime.strptime(value, '%Y-%m-%d')
-        except ValueError:
+    try:
+        # اگر تاریخ دریافتی به فرمت رشته باشد
+        if isinstance(value, str):
             try:
-                value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                value = datetime.strptime(value, '%Y-%m-%d')
             except ValueError:
-                return value
-    
-    if not isinstance(value, datetime) and not isinstance(value, timezone.datetime):
+                try:
+                    value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    return value
+        
+        # اگر شیء تاریخ باشد
+        if isinstance(value, datetime) or isinstance(value, timezone.datetime):
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
+            return jalali_date.strftime(format_string)
+        
+        # اگر jdatetime باشد، مستقیماً از آن استفاده می‌کنیم
+        if hasattr(value, 'year') and hasattr(value, 'month') and hasattr(value, 'day'):
+            return f"{value.year}/{value.month:02d}/{value.day:02d}"
+        
         return value
-    
-    # اگر نوع jdatetime باشد، مستقیماً از آن استفاده می‌کنیم
-    if hasattr(value, 'togregorian'):
-        jalali_date = value
-    else:
-        jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
-    
-    return jalali_date.strftime(format_string)
+    except Exception:
+        # در صورت هر گونه خطا، مقدار اصلی را برمی‌گردانیم
+        return str(value)
 
 
 @register.filter(name='to_jalali_full')
@@ -37,20 +42,6 @@ def to_jalali_full(value):
     """تبدیل تاریخ میلادی به شمسی با فرمت کامل"""
     if value is None:
         return ""
-    
-    if isinstance(value, str):
-        try:
-            value = datetime.strptime(value, '%Y-%m-%d')
-        except ValueError:
-            try:
-                value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
-            except ValueError:
-                return value
-    
-    if not isinstance(value, datetime) and not isinstance(value, timezone.datetime):
-        return value
-    
-    jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
     
     # نام ماه‌های شمسی
     jalali_months = {
@@ -68,11 +59,27 @@ def to_jalali_full(value):
         12: 'اسفند'
     }
     
-    day = jalali_date.day
-    month = jalali_months[jalali_date.month]
-    year = jalali_date.year
-    
-    return f"{day} {month} {year}"
+    try:
+        # تبدیل تاریخ میلادی به جلالی
+        if isinstance(value, str):
+            try:
+                value = datetime.strptime(value, '%Y-%m-%d')
+            except ValueError:
+                try:
+                    value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    return value
+        
+        if isinstance(value, datetime) or isinstance(value, timezone.datetime):
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
+            day = jalali_date.day
+            month = jalali_months[jalali_date.month]
+            year = jalali_date.year
+            return f"{day} {month} {year}"
+        
+        return value
+    except Exception:
+        return str(value)
 
 
 @register.filter(name='to_jalali_datetime')
@@ -81,8 +88,11 @@ def to_jalali_datetime(value):
     if value is None:
         return ""
     
-    if not isinstance(value, datetime) and not isinstance(value, timezone.datetime):
+    try:
+        if isinstance(value, datetime) or isinstance(value, timezone.datetime):
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
+            return f"{jalali_date.year}/{jalali_date.month:02d}/{jalali_date.day:02d}"
+        
         return value
-    
-    jalali_date = jdatetime.datetime.fromgregorian(datetime=value)
-    return jalali_date.strftime("%Y/%m/%d %H:%M:%S")
+    except Exception:
+        return str(value)
