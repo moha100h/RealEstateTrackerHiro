@@ -37,8 +37,22 @@
             justify-content: center;
         }
         
+        .filter-card {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            margin-top: 0;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
         .filter-card.collapsed {
-            transform: translateY(-200%);
+            transform: translateY(-100%);
         }
     }
 </style>
@@ -216,6 +230,17 @@
         const filterCard = document.getElementById('filterCard');
         
         if (filterToggleBtn && filterCard) {
+            // اضافه کردن padding بالای صفحه برای جبران ارتفاع فیلترها در حالت باز
+            function adjustContentPadding() {
+                const contentDiv = document.querySelector('.property-list-container');
+                if (contentDiv && window.innerWidth < 992 && !filterCard.classList.contains('collapsed')) {
+                    const filterHeight = filterCard.offsetHeight;
+                    contentDiv.style.paddingTop = (filterHeight + 20) + 'px';
+                } else if (contentDiv) {
+                    contentDiv.style.paddingTop = '0';
+                }
+            }
+            
             filterToggleBtn.addEventListener('click', function() {
                 filterCard.classList.toggle('collapsed');
                 const isCollapsed = filterCard.classList.contains('collapsed');
@@ -224,12 +249,29 @@
                 this.innerHTML = isCollapsed ? 
                     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>' : 
                     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                
+                // تنظیم پدینگ محتوا
+                setTimeout(adjustContentPadding, 50);
             });
             
-            // در نسخه موبایل به صورت پیش‌فرض مخفی شود
+            // در نسخه موبایل به صورت پیش‌فرض مخفی نشود
             if (window.innerWidth < 992) {
-                filterCard.classList.add('collapsed');
+                filterCard.classList.remove('collapsed');
+                setTimeout(adjustContentPadding, 100);
             }
+            
+            // تنظیم مجدد در تغییر اندازه صفحه
+            window.addEventListener('resize', function() {
+                if (window.innerWidth < 992) {
+                    adjustContentPadding();
+                } else {
+                    const contentDiv = document.querySelector('.property-list-container');
+                    if (contentDiv) {
+                        contentDiv.style.paddingTop = '0';
+                    }
+                    filterCard.classList.remove('collapsed');
+                }
+            });
         }
     });
 </script>
@@ -435,7 +477,7 @@
         </div>
         
         <div class="col-lg-9">
-            <div class="property-content">
+            <div class="property-content property-list-container">
                 {% if properties %}
                 <div class="row g-3">
                     {% for property in properties %}
