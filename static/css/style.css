@@ -709,12 +709,12 @@ h2 {
 
 /* استایل‌های مربوط به املاک */
 .property-card {
-    border-radius: 1.2rem;
+    border-radius: 0.8rem;
     overflow: hidden;
     background-color: white;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     border: none;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     height: 100%;
     position: relative;
     font-size: 0.9rem;
@@ -1434,50 +1434,75 @@ footer a:hover {
     
     /* بهینه‌سازی کارت‌های املاک برای موبایل */
     .property-card {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         margin-bottom: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: visible;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+        border-radius: 0.6rem;
     }
     
     .property-name {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        line-height: 1.3;
     }
     
     .property-image-container {
-        height: 120px;
+        height: 110px;
+        border-radius: 0.5rem 0.5rem 0 0;
     }
     
     .property-features {
-        flex-wrap: wrap;
-        gap: 0.2rem;
-        margin: 0.4rem 0;
+        flex-direction: column;
+        gap: 0.15rem;
+        margin: 0.25rem 0;
+        align-items: flex-start;
     }
     
     .property-features .feature-item {
-        padding: 0.2rem 0.2rem;
+        width: 100%;
+        padding: 0.1rem 0.15rem;
         font-size: 0.7rem;
+        background: none;
+        justify-content: flex-start;
     }
     
     .property-features .feature-value {
         font-size: 0.7rem;
     }
     
+    .property-address {
+        font-size: 0.7rem;
+    }
+    
     .property-badges .badge {
-        padding: 0.2rem 0.4rem;
-        font-size: 0.65rem;
+        padding: 0.15rem 0.3rem;
+        font-size: 0.6rem;
     }
     
     .status-badge {
-        font-size: 0.65rem;
-        padding: 0.2rem 0.5rem;
+        font-size: 0.6rem;
+        padding: 0.15rem 0.3rem;
     }
     
     .property-price {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
     
     .bg-primary-light {
-        font-size: 0.65rem;
-        padding: 0.1rem 0.4rem;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.3rem;
+    }
+    
+    .card-body {
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
     }
     
     /* بهینه‌سازی صفحه جزئیات ملک برای موبایل */
@@ -1510,17 +1535,9 @@ footer a:hover {
         font-size: 1rem;
     }
     
-    .card-body {
-        padding: 0.75rem;
-    }
-    
     .card-footer {
         padding: 0.75rem;
         font-size: 0.7rem;
-    }
-    
-    .property-card {
-        margin-bottom: 1rem;
     }
 }
 
