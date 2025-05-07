@@ -46,6 +46,170 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // متغیرهای مودال
+        let currentPropertyId = null;
+        const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+        const saveStatusBtn = document.getElementById('saveStatusBtn');
+        
+        // ذخیره تغییرات وضعیت
+        if (saveStatusBtn) {
+            saveStatusBtn.addEventListener('click', function() {
+                const selectedStatus = document.querySelector('input[name="statusOption"]:checked');
+                if (selectedStatus && currentPropertyId) {
+                    changePropertyStatus(currentPropertyId, selectedStatus.value);
+                    statusModal.hide();
+                } else {
+                    showAlert('warning', 'لطفاً یک وضعیت را انتخاب کنید.');
+                }
+            });
+        }
+        
+        // تابع نمایش مودال تغییر وضعیت
+        window.showStatusModal = function(propertyId, propertyTitle) {
+            currentPropertyId = propertyId;
+            
+            // نمایش عنوان ملک در مودال
+            document.getElementById('propertyTitle').textContent = propertyTitle;
+            
+            // بررسی وضعیت فعلی ملک
+            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+            const currentStatus = statusBadge.textContent.trim();
+            
+            // پاک کردن انتخاب‌های قبلی
+            document.querySelectorAll('input[name="statusOption"]').forEach(radio => {
+                radio.checked = false;
+                
+                // یافتن وضعیت فعلی
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                if (label && label.textContent.trim() === currentStatus) {
+                    radio.checked = true;
+                }
+            });
+            
+            // نمایش مودال
+            statusModal.show();
+        };
+        
+        // تابع ارسال درخواست تغییر وضعیت
+        function changePropertyStatus(propertyId, statusId) {
+            // تهیه داده‌های مورد نیاز برای ارسال
+            const formData = new FormData();
+            formData.append('status_id', statusId);
+            
+            // گرفتن توکن CSRF از cookie
+            const csrftoken = getCookie('csrftoken');
+            
+            // نمایش لودینگ
+            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+            const originalContent = statusBadge.innerHTML;
+            statusBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
+            
+            // ارسال درخواست
+            fetch(`/properties/change-status/${propertyId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // به‌روزرسانی وضعیت در UI - حتماً متن به‌روز شود
+                    statusBadge.innerHTML = data.status_name;  // استفاده از innerHTML به جای textContent
+                    console.log("Updated status to:", data.status_name);
+                    
+                    // تغییر کلاس
+                    let newClass = 'badge status-badge ';
+                    if (data.status_name === 'موجود') {
+                        newClass += 'bg-success';
+                    } else if (data.status_name === 'فروخته شده' || data.status_name === 'اجاره داده شده') {
+                        newClass += 'bg-danger';
+                    } else if (data.status_name === 'رزرو شده') {
+                        newClass += 'bg-primary';
+                    } else if (data.status_name === 'در حال ساخت') {
+                        newClass += 'bg-secondary';
+                    } else if (data.status_name === 'آماده تحویل') {
+                        newClass += 'bg-info';
+                    } else {
+                        newClass += 'bg-warning';
+                    }
+                    
+                    // اعمال کلاس جدید
+                    statusBadge.className = newClass;
+                    
+                    // نمایش پیام موفقیت‌آمیز
+                    showAlert('success', data.message);
+                } else {
+                    // بازگرداندن وضعیت قبلی
+                    statusBadge.innerHTML = originalContent;
+                    
+                    // نمایش پیام خطا
+                    showAlert('danger', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // بازگرداندن وضعیت قبلی
+                statusBadge.innerHTML = originalContent;
+                
+                // نمایش پیام خطا
+                showAlert('danger', 'خطایی در ارتباط با سرور رخ داد.');
+            });
+        }
+        
+        // تابع دریافت توکن CSRF از کوکی
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (const cookie of cookies) {
+                    const cookieTrim = cookie.trim();
+                    if (cookieTrim.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookieTrim.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // تابع نمایش پیام هشدار
+        function showAlert(type, message) {
+            // ایجاد یک هشدار بوت‌استرپی
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.setAttribute('role', 'alert');
+            
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // افزودن به DOM
+            const container = document.querySelector('.container .messages');
+            if (container) {
+                container.appendChild(alertDiv);
+            } else {
+                // اگر کانتینر پیام‌ها وجود نداشت، یکی ایجاد می‌کنیم
+                const messagesContainer = document.createElement('div');
+                messagesContainer.className = 'messages mt-3 mb-3';
+                messagesContainer.appendChild(alertDiv);
+                
+                const mainContainer = document.querySelector('.container');
+                mainContainer.insertBefore(messagesContainer, document.querySelector('.property-header').nextSibling);
+            }
+            
+            // پس از 5 ثانیه، پیام را مخفی می‌کنیم
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 500);
+            }, 5000);
+        }
+        
         // تغییر نمایش فیلترها در نسخه موبایل
         const filterToggleBtn = document.getElementById('filterToggleBtn');
         const filterCard = document.getElementById('filterCard');
@@ -71,6 +235,86 @@
 {% endblock %}
 
 {% block content %}
+
+<!-- مودال تغییر وضعیت ملک -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="statusModalLabel">تغییر وضعیت ملک</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <h6 id="propertyTitle" class="mb-4 text-muted fs-6">عنوان ملک</h6>
+                
+                <div class="row mb-4">
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status1" value="1">
+                            <label class="form-check-label text-success status-box-label" for="status1">
+                                موجود
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status2" value="2">
+                            <label class="form-check-label text-danger status-box-label" for="status2">
+                                فروخته شده
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status3" value="3">
+                            <label class="form-check-label text-danger status-box-label" for="status3">
+                                اجاره داده شده
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status4" value="4">
+                            <label class="form-check-label text-primary status-box-label" for="status4">
+                                رزرو شده
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status5" value="5">
+                            <label class="form-check-label text-secondary status-box-label" for="status5">
+                                در حال ساخت
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status6" value="6">
+                            <label class="form-check-label text-info status-box-label" for="status6">
+                                آماده تحویل
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="saveStatusBtn">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container">
     <div class="property-header mb-4">
         <div class="row align-items-center">
@@ -201,9 +445,17 @@
                                     <span class="badge bg-primary property-code">{{ property.property_code }}</span>
                                 </div>
                                 
-                                <span class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} status-badge">
+                                <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} status-badge">
                                     {{ property.status.name }}
                                 </span>
+                                
+                                {% if user.is_staff %}
+                                <div class="change-status-wrapper">
+                                    <button type="button" onclick="showStatusModal({{ property.id }}, '{{ property.title }}')" class="btn btn-sm position-absolute top-0 start-0 m-2 p-1 change-status-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                    </button>
+                                </div>
+                                {% endif %}
                                 
                                 <div class="property-overlay">
                                     <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-light rounded-pill px-3">
