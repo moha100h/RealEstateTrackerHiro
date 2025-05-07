@@ -768,6 +768,24 @@ h2 {
     z-index: 2;
 }
 
+.property-quick-info {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 2;
+}
+
+.quick-info-item {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.4rem;
+    font-weight: 500;
+}
+
 .property-badges .badge {
     padding: 0.3rem 0.6rem;
     font-size: 0.7rem;
@@ -1435,13 +1453,17 @@ footer a:hover {
     /* بهینه‌سازی کارت‌های املاک برای موبایل */
     .property-card {
         font-size: 0.75rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
         display: flex;
         flex-direction: column;
         height: 100%;
         overflow: visible;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.04);
-        border-radius: 0.6rem;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+        border-radius: 0.7rem;
+    }
+    
+    .property-card:hover {
+        transform: none;
     }
     
     .property-name {
@@ -1452,14 +1474,15 @@ footer a:hover {
     }
     
     .property-image-container {
-        height: 110px;
+        height: 140px;
         border-radius: 0.5rem 0.5rem 0 0;
     }
     
     .property-features {
-        flex-direction: column;
-        gap: 0.15rem;
-        margin: 0.25rem 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.25rem;
+        margin: 0.35rem 0;
         align-items: flex-start;
     }
     
@@ -1490,12 +1513,27 @@ footer a:hover {
     }
     
     .property-price {
-        font-size: 0.7rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--primary-color);
     }
     
     .bg-primary-light {
         font-size: 0.6rem;
-        padding: 0.1rem 0.3rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.4rem;
+    }
+    
+    .property-more-mobile {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(63, 81, 181, 0.1);
+        color: var(--primary-color);
+        transition: all 0.3s ease;
     }
     
     .card-body {

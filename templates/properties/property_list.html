@@ -279,7 +279,7 @@
         {% if properties %}
         <div class="row g-2">
             {% for property in properties %}
-            <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2-4">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2-4">
                 <div class="property-card">
                     <div class="position-relative property-image-container rounded-top overflow-hidden">
                         {% if property.image %}
@@ -295,6 +295,17 @@
                         <div class="property-badges">
                             <span class="badge bg-primary property-code">{{ property.property_code }}</span>
                         </div>
+                        
+                        {% if property.rooms > 0 or property.area > 0 %}
+                        <div class="property-quick-info d-md-none">
+                            {% if property.rooms > 0 %}
+                            <span class="quick-info-item">{{ property.rooms }} اتاق</span>
+                            {% endif %}
+                            {% if property.area > 0 %}
+                            <span class="quick-info-item">{{ property.area }} متر</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
 
                         <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} status-badge">
                             {{ property.status.name }}
@@ -338,12 +349,14 @@
                         </div>
                         
                         <div class="d-flex justify-content-between align-items-center mt-1">
-                            <div class="d-flex align-items-center gap-1">
-                                <div class="badge badge-sm bg-primary-light">{{ property.transaction_type.name }}</div>
+                            <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center gap-1 mb-1">
+                                    <div class="badge badge-sm bg-primary-light">{{ property.transaction_type.name }}</div>
+                                </div>
                                 <div class="property-price">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
                             </div>
-                            <a href="{% url 'properties:property_detail' property.slug %}" class="property-more d-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left-circle"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line></svg>
+                            <a href="{% url 'properties:property_detail' property.slug %}" class="property-more-mobile">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left-circle"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line></svg>
                             </a>
                         </div>
                     </div>
