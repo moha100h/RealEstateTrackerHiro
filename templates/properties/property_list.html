@@ -28,13 +28,31 @@
             statusModal.show();
         };
         
+        // تابع دریافت توکن CSRF از کوکی
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (const cookie of cookies) {
+                    const cookieTrim = cookie.trim();
+                    if (cookieTrim.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookieTrim.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
         // تغییر وضعیت ملک از طریق Ajax
         function changePropertyStatus(propertyId, statusId) {
+            const csrftoken = getCookie('csrftoken');
+            
             fetch(`/properties/api/change-status/${propertyId}/${statusId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    'X-CSRFToken': csrftoken
                 }
             })
             .then(response => {
