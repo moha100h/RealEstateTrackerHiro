@@ -1,5 +1,105 @@
 /* استایل‌های سفارشی و مینیمال سیستم هیرو املاک */
 
+/* تعریف متغیرهای CSS برای استفاده آسان‌تر */
+:root {
+    --primary-rgb: 63, 81, 181;
+    --primary-color: #3F51B5;
+    --primary-light: #7986CB;
+    --primary-dark: #303F9F;
+    --secondary-color: #4CAF50;
+    --secondary-light: #81C784;
+    --secondary-dark: #388E3C;
+    --success-color: #28a745;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --border-radius: 6px;
+    --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --box-shadow-medium: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --box-shadow-large: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    --transition-speed: 0.3s;
+}
+
+/* استایل‌های مختص دستگاه‌های مختلف */
+/* استایل برای تلفن‌های همراه (حداکثر عرض: 576px) */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .card {
+        margin-bottom: 1rem;
+    }
+    .table-responsive {
+        border-radius: var(--border-radius);
+        overflow-x: auto;
+    }
+    .mobile-fullwidth {
+        width: 100% !important;
+    }
+    .mobile-center {
+        text-align: center !important;
+    }
+    .mobile-hidden {
+        display: none !important;
+    }
+    h1, .h1 {
+        font-size: 1.75rem;
+    }
+    h2, .h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* استایل برای تبلت (حداقل عرض: 576px و حداکثر عرض: 992px) */
+@media (min-width: 576px) and (max-width: 992px) {
+    .tablet-center {
+        text-align: center !important;
+    }
+    .tablet-hidden {
+        display: none !important;
+    }
+}
+
+/* استایل برای دسکتاپ (حداقل عرض: 992px) */
+@media (min-width: 992px) {
+    .desktop-hidden {
+        display: none !important;
+    }
+}
+
+/* تنظیمات چاپ */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .print-only {
+        display: block !important;
+    }
+    body {
+        background-color: white !important;
+    }
+    .container {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+
 /* استایل‌های فرم‌های زیبا */
 .form-control {
     border-radius: 6px;

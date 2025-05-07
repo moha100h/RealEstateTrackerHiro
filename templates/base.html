@@ -3,10 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="{{ system_config.site_description|default:'سیستم مدیریت املاک هیرو - مدیریت حرفه‌ای املاک شما' }}">
+    <meta name="keywords" content="{{ system_config.site_keywords|default:'مدیریت املاک، خرید ملک، فروش ملک، اجاره ملک' }}">
+    <meta name="author" content="{{ system_config.company_name|default:'هیرو املاک' }}">
+    <meta name="theme-color" content="#3F51B5">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#3F51B5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Open Graph meta tags for social sharing -->
+    <meta property="og:title" content="{% if title %}{{ title }} | {% endif %}{{ system_config.website_title }}">
+    <meta property="og:description" content="{{ system_config.site_description|default:'سیستم مدیریت املاک هیرو - مدیریت حرفه‌ای املاک شما' }}">
+    {% if system_config.logo %}
+    <meta property="og:image" content="{{ system_config.logo.url }}">
+    {% endif %}
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:type" content="website">
+    
     <title>{% if title %}{{ title }} | {% endif %}{{ system_config.website_title }}</title>
     
-    <!-- بوتسترپ RTL -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <!-- Favicon -->
+    {% if system_config.favicon %}
+    <link rel="icon" type="image/png" href="{{ system_config.favicon.url }}">
+    <link rel="apple-touch-icon" href="{{ system_config.favicon.url }}">
+    {% endif %}
+    
+    <!-- بوتسترپ RTL با آخرین نسخه -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-nU14brUcp6StFntEOOEBvcJm4huWjB0OcIeQ3fltAfSmuZFrkAif0T+UtNGlKKQv" crossorigin="anonymous">
     
     <!-- فونت‌های فارسی -->
     {% if system_config.font_type == 'vazir' %}
@@ -14,6 +38,13 @@
     <style>
         body, .font-vazir {
             font-family: 'Vazir', 'Tahoma', sans-serif !important;
+        }
+    </style>
+    {% elif system_config.font_type == 'sahel' %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css">
+    <style>
+        body, .font-sahel {
+            font-family: 'Sahel', 'Tahoma', sans-serif !important;
         }
     </style>
     {% else %}
@@ -28,188 +59,546 @@
     <!-- فونت آیکون‌های Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     
+    <!-- Animate.css برای انیمیشن‌های CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
     <!-- استایل‌های سفارشی -->
     <link rel="stylesheet" href="/static/css/rtl.css">
     <link rel="stylesheet" href="/static/css/style.css">
     
+    <!-- Dynamic Color Theme Based on System Config -->
+    <style>
+        :root {
+            --primary-color: {{ system_config.primary_color|default:'#3F51B5' }};
+            --primary-rgb: {{ system_config.primary_color|default:'63, 81, 181'|cut:'#' }};
+        }
+        
+        /* اگر حالت تاریک فعال باشد */
+        {% if system_config.enable_dark_mode %}
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #f8f9fa;
+                --card-bg: #1e1e1e;
+                --border-color: #333;
+            }
+            
+            body {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+            }
+            
+            .card {
+                background-color: var(--card-bg);
+                border-color: var(--border-color);
+            }
+            
+            .navbar, .bg-white, footer {
+                background-color: var(--card-bg) !important;
+                border-color: var(--border-color) !important;
+            }
+            
+            .text-dark {
+                color: var(--text-color) !important;
+            }
+            
+            .text-muted {
+                color: #adb5bd !important;
+            }
+            
+            .table {
+                color: var(--text-color);
+            }
+            
+            .form-control, .form-select {
+                background-color: #333;
+                border-color: #444;
+                color: var(--text-color);
+            }
+            
+            .form-control:focus, .form-select:focus {
+                background-color: #3a3a3a;
+            }
+            
+            .dropdown-menu {
+                background-color: var(--card-bg);
+                border-color: var(--border-color);
+            }
+            
+            .dropdown-item {
+                color: var(--text-color);
+            }
+            
+            .dropdown-item:hover {
+                background-color: #2c2c2c;
+            }
+        }
+        {% endif %}
+    </style>
+    
+    <!-- اسکریپت تشخیص خودکار دستگاه -->
+    <script>
+        // تشخیص نوع دستگاه
+        function detectDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            
+            if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+                document.body.classList.add('mobile-device');
+                if (width >= 768) {
+                    document.body.classList.add('tablet-device');
+                } else {
+                    document.body.classList.add('smartphone-device');
+                }
+            } else {
+                document.body.classList.add('desktop-device');
+                if (width < 992) {
+                    document.body.classList.add('small-desktop');
+                }
+            }
+            
+            // تنظیم اندازه فونت بر اساس عرض صفحه
+            const baseFontSize = Math.min(16, Math.max(14, width / 80));
+            document.documentElement.style.fontSize = baseFontSize + 'px';
+        }
+        
+        // اجرای تابع هنگام بارگذاری صفحه و تغییر اندازه
+        window.addEventListener('DOMContentLoaded', detectDevice);
+        window.addEventListener('resize', detectDevice);
+    </script>
+    
+    {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
 </head>
+
 <body class="bg-light">
-    <!-- هدر -->
-    <header class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+    <!-- ناوبری موبایل (فقط در نمایش‌های کوچک) -->
+    <div class="d-lg-none mobile-navbar">
+        <div class="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm">
+            <button class="btn btn-sm btn-light d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i data-feather="menu" width="20" height="20"></i>
+            </button>
+            
+            <a class="navbar-brand d-flex align-items-center justify-content-center" href="{% url 'home' %}">
+                {% if system_config.logo %}
+                    <img src="{{ system_config.logo.url }}" alt="{{ system_config.website_title }}" height="36" class="me-2">
+                {% else %}
+                    <div class="brand-icon-bg rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: rgba(var(--primary-rgb), 0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home" style="color: var(--primary-color);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+                {% endif %}
+                <span style="color: var(--primary-color); font-weight: 700; font-size: 0.95rem;">{{ system_config.website_title }}</span>
+            </a>
+            
+            <div class="d-flex">
+                {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}" class="btn btn-sm btn-light rounded-circle">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" class="rounded-circle" width="28" height="28" style="object-fit: cover;">
+                    {% else %}
+                        <i data-feather="user" width="18" height="18"></i>
+                    {% endif %}
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-primary">ورود</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- منوی آفکنوس موبایل -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="mobileMenuLabel">{{ system_config.website_title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="mb-4">
+                <form class="w-100" action="{% url 'properties:property_search' %}" method="get">
+                    <div class="input-group">
+                        <input class="form-control" type="search" name="query" placeholder="جستجوی ملک" aria-label="Search">
+                        <button class="btn btn-primary" type="submit">
+                            <i data-feather="search" width="18" height="18"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="list-group list-group-flush">
+                <a href="{% url 'home' %}" class="list-group-item list-group-item-action {% if request.path == '/' %}active{% endif %}">
+                    <i data-feather="home" class="me-2" width="18" height="18"></i> خانه
+                </a>
+                <a href="{% url 'properties:property_list' %}" class="list-group-item list-group-item-action {% if '/properties/' in request.path and '/search/' not in request.path %}active{% endif %}">
+                    <i data-feather="layers" class="me-2" width="18" height="18"></i> املاک
+                </a>
+                <a href="{% url 'properties:property_search' %}" class="list-group-item list-group-item-action {% if '/properties/search/' in request.path %}active{% endif %}">
+                    <i data-feather="search" class="me-2" width="18" height="18"></i> جستجوی ملک
+                </a>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action {% if '/accounts/profile/' in request.path %}active{% endif %}">
+                        <i data-feather="user" class="me-2" width="18" height="18"></i> پروفایل کاربری
+                    </a>
+                    
+                    {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'dashboard:home' %}" class="list-group-item list-group-item-action {% if '/dashboard/' in request.path %}active{% endif %}">
+                        <i data-feather="pie-chart" class="me-2" width="18" height="18"></i> داشبورد
+                    </a>
+                    
+                    <a href="{% url 'accounts:user_list' %}" class="list-group-item list-group-item-action {% if '/accounts/users/' in request.path %}active{% endif %}">
+                        <i data-feather="users" class="me-2" width="18" height="18"></i> مدیریت کاربران
+                    </a>
+                    
+                    <a href="{% url 'config:system_config' %}" class="list-group-item list-group-item-action {% if '/config/settings/' in request.path %}active{% endif %}">
+                        <i data-feather="settings" class="me-2" width="18" height="18"></i> تنظیمات سیستم
+                    </a>
+                    
+                    <a href="{% url 'config:backup' %}" class="list-group-item list-group-item-action {% if '/config/backup/' in request.path %}active{% endif %}">
+                        <i data-feather="database" class="me-2" width="18" height="18"></i> پشتیبان‌گیری
+                    </a>
+                    
+                    <a href="/admin/" class="list-group-item list-group-item-action">
+                        <i data-feather="shield" class="me-2" width="18" height="18"></i> پنل مدیریت
+                    </a>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'accounts:logout' %}" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="list-group-item list-group-item-action text-danger">
+                            <i data-feather="log-out" class="me-2" width="18" height="18"></i> خروج
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="list-group-item list-group-item-action {% if '/accounts/login/' in request.path %}active{% endif %}">
+                        <i data-feather="log-in" class="me-2" width="18" height="18"></i> ورود
+                    </a>
+                {% endif %}
+            </div>
+            
+            {% if system_config.company_phone or system_config.company_email %}
+            <div class="mt-4 px-3">
+                <h6 class="mb-2">ارتباط با ما:</h6>
+                {% if system_config.company_phone %}
+                <p class="mb-1 small">
+                    <i data-feather="phone" class="me-1" width="14" height="14"></i>
+                    {{ system_config.company_phone }}
+                </p>
+                {% endif %}
+                {% if system_config.company_email %}
+                <p class="mb-1 small">
+                    <i data-feather="mail" class="me-1" width="14" height="14"></i>
+                    {{ system_config.company_email }}
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- هدر دسکتاپ -->
+    <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm d-none d-lg-flex sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
                 {% if system_config.logo %}
-                    <img src="{{ system_config.logo.url }}" alt="Logo" height="42" class="me-2">
+                    <img src="{{ system_config.logo.url }}" alt="{{ system_config.website_title }}" height="42" class="me-2">
                 {% else %}
-                    <div class="brand-icon-bg rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 42px; height: 42px; background-color: rgba(63, 81, 181, 0.1);">
+                    <div class="brand-icon-bg rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 42px; height: 42px; background-color: rgba(var(--primary-rgb), 0.1);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home" style="color: var(--primary-color);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     </div>
                 {% endif %}
                 <span style="color: var(--primary-color); font-weight: 700;">{{ system_config.website_title }}</span>
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
+            
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home me-1"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                            خانه
-                        </a>
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="{% url 'home' %}">خانه</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/properties/list/' in request.path %}active{% endif %}" href="{% url 'properties:property_list' %}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-grid me-1"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                            املاک
-                        </a>
+                        <a class="nav-link {% if '/properties/' in request.path and '/search/' not in request.path %}active{% endif %}" href="{% url 'properties:property_list' %}">املاک</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/properties/search/' in request.path %}active{% endif %}" href="{% url 'properties:property_search' %}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search me-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            جستجوی پیشرفته
-                        </a>
+                        <a class="nav-link {% if '/properties/search/' in request.path %}active{% endif %}" href="{% url 'properties:property_search' %}">جستجوی ملک</a>
                     </li>
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if '/dashboard/' in request.path %}active{% endif %}" href="{% url 'dashboard:home' %}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2 me-1"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                            داشبورد
-                        </a>
-                    </li>
-                    {% if user.is_staff %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings me-1"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                            مدیریت
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'properties:property_create' %}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                                    افزودن ملک جدید
-                                </a>
-                            </li>
-                            {% if user.is_superuser %}
-                            <li>
-                                <a class="dropdown-item" href="{% url 'accounts:user_list' %}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users me-1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                    مدیریت کاربران
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'config:system_config' %}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders me-1"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-                                    تنظیمات سیستم
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'config:backup' %}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-database me-1"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                                    پشتیبان‌گیری و بازیابی
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="/admin/">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield me-1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                                    پنل ادمین جانگو
-                                </a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                    {% endif %}
+                        {% if user.is_staff or user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/dashboard/' in request.path %}active{% endif %}" href="{% url 'dashboard:home' %}">داشبورد</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" class="rounded-circle me-1" style="width: 24px; height: 24px; object-fit: cover;">
+                                {% endif %}
+                                {{ user.get_full_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}">
+                                    <i data-feather="user" class="me-2" width="14" height="14"></i> پروفایل کاربری
+                                </a></li>
+                                
+                                {% if user.is_staff or user.is_superuser %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'accounts:user_list' %}">
+                                    <i data-feather="users" class="me-2" width="14" height="14"></i> مدیریت کاربران
+                                </a></li>
+                                <li><a class="dropdown-item py-2" href="/admin/">
+                                    <i data-feather="shield" class="me-2" width="14" height="14"></i> پنل مدیریت
+                                </a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'config:system_config' %}">
+                                    <i data-feather="settings" class="me-2" width="14" height="14"></i> تنظیمات سیستم
+                                </a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'config:backup' %}">
+                                    <i data-feather="database" class="me-2" width="14" height="14"></i> پشتیبان‌گیری
+                                </a></li>
+                                {% endif %}
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item py-2 text-danger">
+                                            <i data-feather="log-out" class="me-2" width="14" height="14"></i> خروج
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-2">
+                            <a class="btn btn-primary btn-sm rounded-pill px-3" href="{% url 'accounts:login' %}">
+                                <i data-feather="log-in" class="me-1" width="16" height="16"></i> ورود
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
-                <div class="d-flex">
-                    {% if user.is_authenticated %}
-                    <div class="dropdown">
-                        <button class="btn btn-outline-primary border-0 rounded-pill dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                            <div class="avatar-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(63, 81, 181, 0.1);">
-                                {% if user.profile.avatar %}
-                                <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name }}" class="rounded-circle" width="32" height="32">
-                                {% else %}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user" style="color: var(--primary-color);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                {% endif %}
-                            </div>
-                            <span>{{ user.get_full_name|default:user.username }}</span>
+                
+                <form class="d-flex ms-0 ms-lg-2" action="{% url 'properties:property_search' %}" method="get">
+                    <div class="input-group">
+                        <input class="form-control rounded-start-pill" type="search" name="query" placeholder="جستجوی ملک" aria-label="Search">
+                        <button class="btn btn-primary rounded-end-pill" type="submit">
+                            <i data-feather="search" width="16" height="16"></i>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'accounts:profile' %}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user me-1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                    پروفایل
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="post" action="{% url 'accounts:logout' %}" id="logout-form">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out me-1"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                                        خروج
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
                     </div>
-                    {% else %}
-                    <a href="{% url 'accounts:login' %}" class="btn btn-primary rounded-pill">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-in me-1"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                        ورود
-                    </a>
-                    {% endif %}
-                </div>
+                </form>
             </div>
         </div>
     </header>
-    
-    <!-- پیام‌های سیستم -->
-    <div class="container mt-3">
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-    
-    <!-- محتوای اصلی -->
+
+    <!-- محتوای اصلی با تشخیص اتوماتیک پدینگ مناسب برای موبایل -->
     <main class="py-4">
-        {% block content %}{% endblock %}
+        {% if messages %}
+            <div class="container animate__animated animate__fadeIn">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if message.tags == 'success' %}
+                                <i data-feather="check-circle" class="me-2 text-success" width="18" height="18"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i data-feather="alert-triangle" class="me-2 text-danger" width="18" height="18"></i>
+                            {% elif message.tags == 'warning' %}
+                                <i data-feather="alert-circle" class="me-2 text-warning" width="18" height="18"></i>
+                            {% elif message.tags == 'info' %}
+                                <i data-feather="info" class="me-2 text-info" width="18" height="18"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="animate__animated animate__fadeIn animate__faster">
+            {% block content %}{% endblock %}
+        </div>
     </main>
-    
-    <!-- فوتر -->
-    <footer class="bg-dark text-white py-4 mt-5">
+
+    <!-- فوتر واکنش‌گرا -->
+    <footer class="py-5 text-center text-md-start text-muted bg-white border-top mt-auto">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
-                    <h5>سیستم هوشمند مدیریت املاک هیرو</h5>
-                    <p>راهکاری حرفه‌ای برای مدیریت املاک و مستغلات</p>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="mb-3 text-dark d-flex align-items-center">
+                        {% if system_config.logo %}
+                            <img src="{{ system_config.logo.url }}" alt="{{ system_config.website_title }}" height="36" class="me-2">
+                        {% else %}
+                            <div class="brand-icon-bg rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: rgba(var(--primary-rgb), 0.1);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home" style="color: var(--primary-color);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            </div>
+                        {% endif %}
+                        {{ system_config.website_title }}
+                    </h5>
+                    <p class="text-muted">
+                        {{ system_config.company_name|default:'سیستم مدیریت املاک هیرو، راهکاری هوشمند برای مدیریت کسب و کار املاک شما' }}
+                    </p>
+                    {% if system_config.company_address %}
+                    <p class="mb-1 d-flex align-items-start">
+                        <i data-feather="map-pin" class="me-2 flex-shrink-0" style="margin-top: 3px;"></i>
+                        <span>{{ system_config.company_address }}</span>
+                    </p>
+                    {% endif %}
+                    {% if system_config.company_phone %}
+                    <p class="mb-1 d-flex align-items-center">
+                        <i data-feather="phone" class="me-2 flex-shrink-0"></i>
+                        <span>{{ system_config.company_phone }}</span>
+                    </p>
+                    {% endif %}
+                    {% if system_config.company_email %}
+                    <p class="mb-1 d-flex align-items-center">
+                        <i data-feather="mail" class="me-2 flex-shrink-0"></i>
+                        <span>{{ system_config.company_email }}</span>
+                    </p>
+                    {% endif %}
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p>تمامی حقوق محفوظ است &copy; ۱۴۰۲</p>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="mb-3 text-dark">دسترسی سریع</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><a href="{% url 'home' %}" class="text-muted text-decoration-none hover-primary">صفحه اصلی</a></li>
+                                <li class="mb-2"><a href="{% url 'properties:property_list' %}" class="text-muted text-decoration-none hover-primary">لیست املاک</a></li>
+                                <li class="mb-2"><a href="{% url 'properties:property_search' %}" class="text-muted text-decoration-none hover-primary">جستجوی ملک</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-6">
+                            <ul class="list-unstyled">
+                                {% if user.is_authenticated %}
+                                <li class="mb-2"><a href="{% url 'accounts:profile' %}" class="text-muted text-decoration-none hover-primary">پروفایل کاربری</a></li>
+                                {% if user.is_staff or user.is_superuser %}
+                                <li class="mb-2"><a href="{% url 'dashboard:home' %}" class="text-muted text-decoration-none hover-primary">داشبورد مدیریت</a></li>
+                                {% endif %}
+                                {% else %}
+                                <li class="mb-2"><a href="{% url 'accounts:login' %}" class="text-muted text-decoration-none hover-primary">ورود به سیستم</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-12 mb-4">
+                    <h5 class="mb-3 text-dark">شبکه‌های اجتماعی</h5>
+                    <div class="d-flex gap-2 mb-4">
+                        {% if system_config.instagram_url %}
+                        <a href="{{ system_config.instagram_url }}" class="btn btn-sm btn-outline-secondary rounded-circle shadow-sm" target="_blank" aria-label="Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-instagram" viewBox="0 0 16 16"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"></path></svg>
+                        </a>
+                        {% endif %}
+                        {% if system_config.telegram_url %}
+                        <a href="{{ system_config.telegram_url }}" class="btn btn-sm btn-outline-secondary rounded-circle shadow-sm" target="_blank" aria-label="Telegram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telegram" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01-.378.15-.577.298-.595.442-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294.26.006.549-.1.868-.32 2.179-1.471 3.304-2.214 3.374-2.23.05-.012.12-.026.166.016.047.041.042.12.037.141-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.284.194.568.387.936.629.093.06.183.125.27.187.331.236.63.448.997.414.214-.02.435-.22.547-.82.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315.337.337 0 0 0-.114-.217.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z"></path></svg>
+                        </a>
+                        {% endif %}
+                        {% if system_config.whatsapp_number %}
+                        <a href="https://wa.me/{{ system_config.whatsapp_number }}" class="btn btn-sm btn-outline-secondary rounded-circle shadow-sm" target="_blank" aria-label="WhatsApp">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"></path></svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card bg-light border-0 shadow-sm">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-3">دسترسی سریع</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'properties:property_list' %}" class="btn btn-sm btn-outline-primary">
+                                    <i data-feather="list" class="me-1" width="14" height="14"></i> مشاهده لیست املاک
+                                </a>
+                                <a href="{% url 'properties:property_search' %}" class="btn btn-sm btn-outline-primary">
+                                    <i data-feather="search" class="me-1" width="14" height="14"></i> جستجوی پیشرفته ملک
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="small text-muted mt-4 mb-0">
+                        &copy; {{ system_config.website_title }} {% now "Y" %}. تمامی حقوق محفوظ است.
+                    </p>
                 </div>
             </div>
         </div>
     </footer>
+
+    <!-- Button To Top -->
+    <div class="position-fixed bottom-0 end-0 mb-4 me-4 d-none" id="backToTop">
+        <button class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <i data-feather="chevron-up" width="20" height="20"></i>
+        </button>
+    </div>
+
+    <!-- جاوااسکریپت‌های بوتسترپ با آخرین نسخه -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     
-    <!-- اسکریپت‌های JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/main.js"></script>
-    
+    <!-- جاوااسکریپت‌های واکنش‌گرا -->
     <script>
-      // فعال‌سازی آیکون‌های Feather
-      feather.replace();
+        // فعال‌سازی آیکون‌های Feather
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            
+            // نمایش دکمه بازگشت به بالا با اسکرول
+            const backToTopBtn = document.getElementById('backToTop');
+            if (backToTopBtn) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 500) {
+                        backToTopBtn.classList.remove('d-none');
+                        backToTopBtn.classList.add('animate__animated', 'animate__fadeIn');
+                    } else {
+                        backToTopBtn.classList.add('d-none');
+                        backToTopBtn.classList.remove('animate__animated', 'animate__fadeIn');
+                    }
+                });
+            }
+            
+            // تعیین ارتفاع مناسب برای حالت موبایل
+            function adjustMobileMainPadding() {
+                const mobileNavbar = document.querySelector('.mobile-navbar');
+                const mainContent = document.querySelector('main');
+                
+                if (mobileNavbar && mainContent && window.innerWidth < 992) {
+                    const navbarHeight = mobileNavbar.offsetHeight;
+                    mainContent.style.paddingTop = (navbarHeight + 16) + 'px';
+                    mainContent.style.minHeight = `calc(100vh - ${navbarHeight}px)`;
+                } else if (mainContent) {
+                    mainContent.style.paddingTop = '';
+                    mainContent.style.minHeight = '';
+                }
+            }
+            
+            // اجرای تابع هنگام بارگذاری و تغییر سایز
+            adjustMobileMainPadding();
+            window.addEventListener('resize', adjustMobileMainPadding);
+            
+            // بهینه‌سازی تصاویر با Lazy Loading
+            const images = document.querySelectorAll('img:not([loading])');
+            images.forEach(img => {
+                img.setAttribute('loading', 'lazy');
+            });
+            
+            // تنظیم‌کننده اسکرول صفحه به صورت نرم
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    
+                    if (targetId !== '#') {
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+        });
     </script>
     
+    <!-- جاوااسکریپت سفارشی -->
+    <script src="/static/js/main.js"></script>
+    
+    <!-- اسکریپت‌های اضافه شده توسط بلاک‌ها -->
+    {% block scripts %}{% endblock %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>
