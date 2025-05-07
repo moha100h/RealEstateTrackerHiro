@@ -6,10 +6,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 from .models import UserProfile, create_default_groups
 from .forms import CustomAuthenticationForm, UserForm, UserProfileForm
+from .decorators import csrf_exempt_class
 
+@csrf_exempt_class
 class CustomLoginView(LoginView):
     """نمای سفارشی صفحه ورود"""
     form_class = CustomAuthenticationForm
@@ -19,6 +23,11 @@ class CustomLoginView(LoginView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'ورود به سیستم'
         return context
+        
+    def form_invalid(self, form):
+        """در صورت نامعتبر بودن فرم"""
+        # اضافه کردن نوع خطا به بافت (context) برای نمایش بهتر در قالب
+        return self.render_to_response(self.get_context_data(form=form, error_type='credentials'))
 
 @login_required
 def profile_view(request):

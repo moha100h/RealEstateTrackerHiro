@@ -58,6 +58,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# تنظیمات امنیتی
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+SECURE_BROWSER_XSS_FILTER = True
+SESSION_COOKIE_SECURE = False  # در محیط توسعه: False، در محیط تولید: True
+CSRF_COOKIE_SECURE = False  # در محیط توسعه: False، در محیط تولید: True
+
 ROOT_URLCONF = 'hiro_estate.urls'
 
 TEMPLATES = [
@@ -159,4 +165,13 @@ CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access the cookie
 CSRF_USE_SESSIONS = False  # Store CSRF token in cookie instead of session
 CSRF_COOKIE_SAMESITE = None  # Allow cross-site requests when needed
-CSRF_TRUSTED_ORIGINS = ['https://*.replit.app', 'http://localhost:5000', 'http://*.replit.dev']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.replit.app', 
+    'http://localhost:5000', 
+    'http://*.replit.dev',
+    'https://*.spock.replit.dev',
+    'https://*.id.repl.co',
+    'https://*.repl.co'
+]
+# For development only - Do not use in production
+CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
