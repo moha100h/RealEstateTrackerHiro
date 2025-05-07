@@ -405,6 +405,35 @@ h2 {
     border-bottom-right-radius: 0.8rem;
 }
 
+/* استایل‌های مربوط به کارت‌های ویژگی صفحه اصلی */
+.feature-card {
+    border-radius: 1.25rem !important;
+    overflow: hidden;
+    background-color: white;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.feature-card .btn-link {
+    text-decoration: none;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    margin-top: 0.5rem;
+}
+
+.feature-card .btn-link:hover {
+    background-color: rgba(0,0,0,0.03);
+    transform: translateX(-5px);
+}
+
 /* استایل‌های مربوط به املاک */
 .property-card {
     border-radius: 1rem;
