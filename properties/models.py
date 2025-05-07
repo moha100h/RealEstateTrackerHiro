@@ -46,6 +46,19 @@ class PropertyStatus(models.Model):
     def __str__(self):
         return self.name
 
+class DocumentType(models.Model):
+    """
+    نوع سند (تک برگ، شش دانگ، قولنامه ای، وکالتی و غیره)
+    """
+    name = models.CharField(max_length=100, verbose_name="نام")
+    
+    class Meta:
+        verbose_name = "نوع سند"
+        verbose_name_plural = "انواع سند"
+        
+    def __str__(self):
+        return self.name
+
 class Property(models.Model):
     """
     مدل اصلی املاک
@@ -59,6 +72,7 @@ class Property(models.Model):
     property_type = models.ForeignKey(PropertyType, on_delete=models.CASCADE, verbose_name="نوع ملک")
     transaction_type = models.ForeignKey(TransactionType, on_delete=models.CASCADE, verbose_name="نوع معامله")
     status = models.ForeignKey(PropertyStatus, on_delete=models.CASCADE, verbose_name="وضعیت")
+    document_type = models.ForeignKey(DocumentType, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="نوع سند")
     rooms = models.PositiveSmallIntegerField(verbose_name="تعداد اتاق")
     description = models.TextField(verbose_name="توضیحات")
     image = models.ImageField(upload_to='properties/', blank=True, null=True, verbose_name="تصویر اصلی")

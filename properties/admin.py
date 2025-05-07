@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Property, PropertyType, TransactionType, PropertyStatus
+from .models import Property, PropertyType, TransactionType, PropertyStatus, DocumentType
 
 @admin.register(PropertyType)
 class PropertyTypeAdmin(admin.ModelAdmin):
@@ -13,6 +13,11 @@ class TransactionTypeAdmin(admin.ModelAdmin):
 
 @admin.register(PropertyStatus)
 class PropertyStatusAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+    
+@admin.register(DocumentType)
+class DocumentTypeAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
@@ -30,7 +35,7 @@ class PropertyAdmin(admin.ModelAdmin):
             'fields': ('area', 'price', 'year_built', 'rooms')
         }),
         ('دسته بندی', {
-            'fields': ('property_type', 'transaction_type', 'status')
+            'fields': ('property_type', 'transaction_type', 'status', 'document_type')
         }),
         ('تصویر', {
             'fields': ('image',)
