@@ -1,0 +1,765 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load jalali_tags %}
+
+{% block extra_css %}
+<style>
+    /* استایل‌های عمومی */
+    .search-results-info {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-left: 4px solid var(--success-color);
+    }
+    
+    /* استایل‌های دسکتاپ */
+    @media (min-width: 992px) {
+        .filter-card {
+            position: sticky;
+            top: 70px;
+            z-index: 100;
+        }
+        
+        .mobile-filter-header,
+        .mobile-filter-footer,
+        .mobile-filter-toggle {
+            display: none;
+        }
+    }
+    
+    /* استایل‌های موبایل */
+    @media (max-width: 991px) {
+        .filter-card {
+            margin-bottom: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        
+        .mobile-filter-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            background: #0d6efd;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-filter-body {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 70px;
+            background: white;
+            overflow-y: auto;
+            z-index: 1020;
+            padding: 15px;
+            padding-bottom: 100px;
+        }
+        
+        .mobile-filter-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 10px 15px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            z-index: 1030;
+        }
+        
+        .mobile-filter-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 999;
+        }
+        
+        .mobile-filter-container.hidden .mobile-filter-header,
+        .mobile-filter-container.hidden .mobile-filter-body,
+        .mobile-filter-container.hidden .mobile-filter-footer {
+            display: none;
+        }
+        
+        .property-content {
+            padding-top: 10px;
+        }
+        
+        .property-item {
+            margin-bottom: 15px;
+        }
+        
+        .mobile-search-results-header {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // کد وضعیت ملک مودال
+        let currentPropertyId = null;
+        const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+        const saveStatusBtn = document.getElementById('saveStatusBtn');
+        
+        if (saveStatusBtn) {
+            saveStatusBtn.addEventListener('click', function() {
+                const selectedStatus = document.querySelector('input[name="statusOption"]:checked');
+                if (selectedStatus && currentPropertyId) {
+                    changePropertyStatus(currentPropertyId, selectedStatus.value);
+                    statusModal.hide();
+                } else {
+                    showAlert('warning', 'لطفاً یک وضعیت را انتخاب کنید.');
+                }
+            });
+        }
+        
+        // تابع نمایش مودال تغییر وضعیت
+        window.showStatusModal = function(propertyId, propertyTitle) {
+            currentPropertyId = propertyId;
+            
+            document.getElementById('propertyTitle').textContent = propertyTitle;
+            
+            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+            const currentStatus = statusBadge.textContent.trim();
+            
+            document.querySelectorAll('input[name="statusOption"]').forEach(radio => {
+                radio.checked = false;
+                
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                if (label && label.textContent.trim() === currentStatus) {
+                    radio.checked = true;
+                }
+            });
+            
+            statusModal.show();
+        };
+        
+        // تابع ارسال درخواست تغییر وضعیت
+        function changePropertyStatus(propertyId, statusId) {
+            const formData = new FormData();
+            formData.append('status_id', statusId);
+            
+            const csrftoken = getCookie('csrftoken');
+            
+            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
+            const originalContent = statusBadge.innerHTML;
+            statusBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
+            
+            fetch(`/properties/change-status/${propertyId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusBadge.innerHTML = data.status_name;
+                    
+                    let newClass = 'badge status-badge ';
+                    if (data.status_name === 'موجود') {
+                        newClass += 'bg-success';
+                    } else if (data.status_name === 'فروخته شده' || data.status_name === 'اجاره داده شده') {
+                        newClass += 'bg-danger';
+                    } else if (data.status_name === 'رزرو شده') {
+                        newClass += 'bg-primary';
+                    } else if (data.status_name === 'در حال ساخت') {
+                        newClass += 'bg-secondary';
+                    } else if (data.status_name === 'آماده تحویل') {
+                        newClass += 'bg-info';
+                    } else {
+                        newClass += 'bg-warning';
+                    }
+                    
+                    statusBadge.className = newClass;
+                    
+                    showAlert('success', data.message);
+                } else {
+                    statusBadge.innerHTML = originalContent;
+                    
+                    showAlert('danger', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                statusBadge.innerHTML = originalContent;
+                
+                showAlert('danger', 'خطایی در ارتباط با سرور رخ داد.');
+            });
+        }
+        
+        // تابع دریافت توکن CSRF از کوکی
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (const cookie of cookies) {
+                    const cookieTrim = cookie.trim();
+                    if (cookieTrim.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookieTrim.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // تابع نمایش هشدار
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.setAttribute('role', 'alert');
+            
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const container = document.querySelector('.container .messages');
+            if (container) {
+                container.appendChild(alertDiv);
+            } else {
+                const messagesContainer = document.createElement('div');
+                messagesContainer.className = 'messages mt-3 mb-3';
+                messagesContainer.appendChild(alertDiv);
+                
+                const mainContainer = document.querySelector('.container');
+                const contentHeader = document.querySelector('.mobile-search-results-header');
+                if (contentHeader) {
+                    mainContainer.insertBefore(messagesContainer, contentHeader);
+                } else {
+                    mainContainer.insertBefore(messagesContainer, mainContainer.firstChild);
+                }
+            }
+            
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 500);
+            }, 5000);
+        }
+        
+        // کد مختص موبایل برای نمایش/مخفی کردن فیلترها
+        const mobileFilterToggle = document.getElementById('mobileFilterToggle');
+        const mobileFilterContainer = document.getElementById('mobileFilterContainer');
+        const mobileCloseFilter = document.getElementById('mobileCloseFilter');
+        const mobileApplyFilter = document.getElementById('mobileApplyFilter');
+        
+        if (mobileFilterToggle && mobileFilterContainer) {
+            // در ابتدا فیلترها را مخفی کن
+            mobileFilterContainer.classList.add('hidden');
+            
+            // نمایش فیلترها با کلیک روی دکمه
+            mobileFilterToggle.addEventListener('click', function() {
+                mobileFilterContainer.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // جلوگیری از اسکرول صفحه
+            });
+            
+            // مخفی کردن فیلترها با کلیک روی دکمه بستن
+            if (mobileCloseFilter) {
+                mobileCloseFilter.addEventListener('click', function() {
+                    mobileFilterContainer.classList.add('hidden');
+                    document.body.style.overflow = 'auto'; // فعال کردن اسکرول صفحه
+                });
+            }
+            
+            // مخفی کردن فیلترها بعد از اعمال فیلترها
+            if (mobileApplyFilter) {
+                mobileApplyFilter.addEventListener('click', function() {
+                    document.getElementById('mobileFilterForm').submit();
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+
+<!-- مودال تغییر وضعیت ملک -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="statusModalLabel">تغییر وضعیت ملک</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <h6 id="propertyTitle" class="mb-4 text-muted fs-6">عنوان ملک</h6>
+                
+                <div class="row mb-4">
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status1" value="1">
+                            <label class="form-check-label text-success status-box-label" for="status1">
+                                موجود
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status2" value="2">
+                            <label class="form-check-label text-danger status-box-label" for="status2">
+                                فروخته شده
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status3" value="3">
+                            <label class="form-check-label text-danger status-box-label" for="status3">
+                                اجاره داده شده
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status4" value="4">
+                            <label class="form-check-label text-primary status-box-label" for="status4">
+                                رزرو شده
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status5" value="5">
+                            <label class="form-check-label text-secondary status-box-label" for="status5">
+                                در حال ساخت
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check status-radio-box">
+                            <input class="form-check-input" type="radio" name="statusOption" 
+                                   id="status6" value="6">
+                            <label class="form-check-label text-info status-box-label" for="status6">
+                                آماده تحویل
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="saveStatusBtn">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نمای موبایل -->
+<div class="d-lg-none">
+    <div class="container">
+        <div class="mobile-search-results-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">جستجوی پیشرفته املاک</h6>
+            {% if properties %}
+            <span class="badge bg-success">{{ properties|length }} ملک</span>
+            {% endif %}
+        </div>
+        
+        <!-- نتایج جستجو در موبایل -->
+        <div class="property-content">
+            {% if properties %}
+            <div class="row g-3">
+                {% for property in properties %}
+                <div class="col-12">
+                    <div class="card property-item">
+                        <div class="row g-0">
+                            <div class="col-4">
+                                <div class="position-relative h-100">
+                                    {% if property.image %}
+                                    <img src="{{ property.image.url }}" class="img-fluid rounded-start h-100 w-100 object-fit-cover" alt="{{ property.title }}" style="object-fit: cover;">
+                                    {% elif system_config.default_property_image %}
+                                    <img src="{{ system_config.default_property_image.url }}" class="img-fluid rounded-start h-100 w-100 object-fit-cover" alt="{{ property.title }}" style="object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-light text-center h-100 d-flex align-items-center justify-content-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home text-secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} status-badge position-absolute top-0 start-0 m-1">
+                                        {{ property.status.name }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-8">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="card-title mb-0">{{ property.title }}</h6>
+                                        <span class="badge bg-primary">{{ property.property_code }}</span>
+                                    </div>
+                                    <p class="card-text mb-1 small text-muted">{{ property.address|truncatechars:40 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="small">
+                                            <span class="me-2">{{ property.area }} متر</span>
+                                            <span>{{ property.transaction_type.name }}</span>
+                                        </div>
+                                        <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-outline-primary">مشاهده</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search mb-3 text-muted"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <h5>هیچ ملکی با این مشخصات یافت نشد</h5>
+                    <p class="text-muted mb-4">لطفاً معیارهای جستجوی خود را تغییر دهید.</p>
+                    <a href="{% url 'properties:property_search' %}" class="btn btn-outline-primary rounded-pill">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        پاک کردن فیلترها
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- دکمه نمایش فیلترها در موبایل -->
+    <button id="mobileFilterToggle" class="mobile-filter-toggle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+    </button>
+    
+    <!-- فیلترهای موبایل -->
+    <div id="mobileFilterContainer" class="mobile-filter-container">
+        <div class="mobile-filter-header">
+            <h5 class="mb-0">فیلترهای جستجو</h5>
+            <button id="mobileCloseFilter" class="btn-close btn-close-white" type="button" aria-label="Close"></button>
+        </div>
+        
+        <div class="mobile-filter-body">
+            {% if debug_params %}
+            <div class="alert alert-info mb-3" dir="ltr">
+                <small>Debug: {{ debug_params }}</small>
+            </div>
+            {% endif %}
+            
+            <form id="mobileFilterForm" method="get" action="{% url 'properties:property_search' %}">
+                <div class="mb-3">
+                    <label for="mobile_{{ filter.form.property_code.id_for_label }}" class="form-label">کد ملک</label>
+                    {{ filter.form.property_code }}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="mobile_{{ filter.form.address.id_for_label }}" class="form-label">آدرس</label>
+                    {{ filter.form.address }}
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label for="mobile_{{ filter.form.min_area.id_for_label }}" class="form-label">حداقل متراژ</label>
+                        {{ filter.form.min_area }}
+                    </div>
+                    <div class="col-6">
+                        <label for="mobile_{{ filter.form.max_area.id_for_label }}" class="form-label">حداکثر متراژ</label>
+                        {{ filter.form.max_area }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label for="mobile_{{ filter.form.min_price.id_for_label }}" class="form-label">حداقل قیمت</label>
+                        {{ filter.form.min_price }}
+                    </div>
+                    <div class="col-6">
+                        <label for="mobile_{{ filter.form.max_price.id_for_label }}" class="form-label">حداکثر قیمت</label>
+                        {{ filter.form.max_price }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label for="mobile_{{ filter.form.min_year.id_for_label }}" class="form-label">از سال</label>
+                        {{ filter.form.min_year }}
+                    </div>
+                    <div class="col-6">
+                        <label for="mobile_{{ filter.form.max_year.id_for_label }}" class="form-label">تا سال</label>
+                        {{ filter.form.max_year }}
+                    </div>
+                </div>
+                
+                <h6 class="mb-2">نوع معامله</h6>
+                <div class="mb-3 border p-3 rounded bg-light">
+                    {{ filter.form.transaction_type }}
+                </div>
+                
+                <h6 class="mb-2">وضعیت</h6>
+                <div class="mb-3 border p-3 rounded bg-light">
+                    {{ filter.form.status }}
+                </div>
+                
+                <h6 class="mb-2">نوع ملک</h6>
+                <div class="mb-3 border p-3 rounded bg-light">
+                    {{ filter.form.property_type }}
+                </div>
+            </form>
+        </div>
+        
+        <div class="mobile-filter-footer">
+            <div class="d-grid gap-2">
+                <button id="mobileApplyFilter" type="button" class="btn btn-primary rounded-pill">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search me-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    اعمال فیلترها
+                </button>
+                <a href="{% url 'properties:property_search' %}" class="btn btn-outline-secondary rounded-pill">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    پاک کردن فیلترها
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نمای دسکتاپ - برای حفظ کارایی دسکتاپ -->
+<div class="d-none d-lg-block">
+    <div class="container">
+        <div class="property-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-3 mb-lg-0">
+                    <div class="card border-0 bg-light py-2 px-3 mb-0" style="border-radius: 15px; display: inline-block;">
+                        <div class="d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search text-primary me-2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <div>
+                                <h6 class="mb-0 fw-bold">جستجوی پیشرفته املاک</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    {% if properties %}
+                    <div class="search-results-info">
+                        <div class="d-flex align-items-center rounded-pill">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle text-success"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <div class="d-inline-flex align-items-baseline">
+                                <span class="h4 mb-0 count ms-2 text-success">{{ properties|length }}</span>
+                                <span class="ms-1">ملک با مشخصات درخواستی یافت شد</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div id="filterCard" class="card shadow-sm filter-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0 d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter me-2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            فیلترهای جستجو
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if debug_params %}
+                        <div class="alert alert-info mb-3" dir="ltr">
+                            <small>Debug: {{ debug_params }}</small>
+                        </div>
+                        {% endif %}
+                        <form method="get" action="{% url 'properties:property_search' %}">
+                            <div class="mb-3">
+                                <label for="{{ filter.form.property_code.id_for_label }}" class="form-label">کد ملک</label>
+                                {{ filter.form.property_code }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ filter.form.address.id_for_label }}" class="form-label">آدرس</label>
+                                {{ filter.form.address }}
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label for="{{ filter.form.min_area.id_for_label }}" class="form-label">حداقل متراژ</label>
+                                    {{ filter.form.min_area }}
+                                </div>
+                                <div class="col-6">
+                                    <label for="{{ filter.form.max_area.id_for_label }}" class="form-label">حداکثر متراژ</label>
+                                    {{ filter.form.max_area }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label for="{{ filter.form.min_price.id_for_label }}" class="form-label">حداقل قیمت</label>
+                                    {{ filter.form.min_price }}
+                                </div>
+                                <div class="col-6">
+                                    <label for="{{ filter.form.max_price.id_for_label }}" class="form-label">حداکثر قیمت</label>
+                                    {{ filter.form.max_price }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label for="{{ filter.form.min_year.id_for_label }}" class="form-label">از سال</label>
+                                    {{ filter.form.min_year }}
+                                </div>
+                                <div class="col-6">
+                                    <label for="{{ filter.form.max_year.id_for_label }}" class="form-label">تا سال</label>
+                                    {{ filter.form.max_year }}
+                                </div>
+                            </div>
+                            
+                            <h6 class="mb-2">نوع معامله</h6>
+                            <div class="mb-3 border p-3 rounded bg-light">
+                                {{ filter.form.transaction_type }}
+                            </div>
+                            
+                            <h6 class="mb-2">وضعیت</h6>
+                            <div class="mb-3 border p-3 rounded bg-light">
+                                {{ filter.form.status }}
+                            </div>
+                            
+                            <h6 class="mb-2">نوع ملک</h6>
+                            <div class="mb-3 border p-3 rounded bg-light">
+                                {{ filter.form.property_type }}
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary rounded-pill">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search me-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    اعمال فیلترها
+                                </button>
+                                <a href="{% url 'properties:property_search' %}" class="btn btn-outline-secondary rounded-pill">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                    پاک کردن فیلترها
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="property-content property-list-container">
+                    {% if properties %}
+                    <div class="row g-3">
+                        {% for property in properties %}
+                        <div class="col-sm-6 col-md-4 col-xl-4">
+                            <div class="property-card">
+                                <div class="position-relative property-image-container rounded-top overflow-hidden">
+                                    {% if property.image %}
+                                    <img src="{{ property.image.url }}" class="property-image" alt="{{ property.title }}">
+                                    {% elif system_config.default_property_image %}
+                                    <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
+                                    {% else %}
+                                    <div class="bg-light text-center py-5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home text-secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="property-badges">
+                                        <span class="badge bg-primary property-code">{{ property.property_code }}</span>
+                                    </div>
+                                    
+                                    <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} status-badge">
+                                        {{ property.status.name }}
+                                    </span>
+                                    
+                                    {% if user.is_staff %}
+                                    <div class="change-status-wrapper">
+                                        <button type="button" onclick="showStatusModal({{ property.id }}, '{{ property.title }}')" class="btn btn-sm position-absolute top-0 start-0 m-2 p-1 change-status-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="property-overlay">
+                                        <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-light rounded-pill px-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            مشاهده جزئیات
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body p-2">
+                                    <h5 class="property-name mb-1">{{ property.title }}</h5>
+                                    <p class="property-address mb-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin me-1 text-muted"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                        <span class="text-muted small">{{ property.address|truncatechars:40 }}</span>
+                                    </p>
+                                    
+                                    <div class="property-features mb-1">
+                                        <div class="feature-item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-maximize feature-icon"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                                            <span class="feature-value">{{ property.area }} متر</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home feature-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                            <span class="feature-value">{{ property.rooms }} اتاق</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar feature-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                            <span class="feature-value">{{ property.year_built }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <div class="badge badge-sm bg-primary-light">{{ property.transaction_type.name }}</div>
+                                            <div class="property-price">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
+                                        </div>
+                                        <a href="{% url 'properties:property_detail' property.slug %}" class="property-more">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left-circle"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search mb-3 text-muted"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <h4>هیچ ملکی با این مشخصات یافت نشد</h4>
+                            <p class="text-muted mb-4">لطفاً معیارهای جستجوی خود را تغییر دهید یا از فیلترهای کمتری استفاده کنید.</p>
+                            <a href="{% url 'properties:property_search' %}" class="btn btn-outline-primary rounded-pill px-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                پاک کردن فیلترها
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

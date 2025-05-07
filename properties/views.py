@@ -110,7 +110,18 @@ def search_properties(request):
         'properties': filtered_properties,
         'debug_params': dict(request.GET.items())
     }
-    return render(request, 'properties/property_search.html', context)
+    
+    # بررسی نوع دستگاه از هدر User-Agent
+    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or 'ipad' in user_agent
+    
+    # انتخاب قالب مناسب بر اساس نوع دستگاه
+    if is_mobile:
+        # استفاده از قالب موبایل-فرندلی
+        return render(request, 'properties/property_search_mobile.html', context)
+    else:
+        # استفاده از قالب اصلی دسکتاپ
+        return render(request, 'properties/property_search.html', context)
 
 
 @login_required
