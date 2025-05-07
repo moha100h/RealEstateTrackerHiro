@@ -77,13 +77,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalContent = statusBadge.innerHTML;
         statusBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
         
-        // ارسال درخواست تغییر وضعیت
-        fetch(`/properties/api/change-status/${propertyId}/${statusId}/`, {
+        // ارسال درخواست تغییر وضعیت با متد صحیح
+        // ایجاد داده‌های فرم برای ارسال
+        const formData = new FormData();
+        formData.append('status_id', statusId);
+        
+        // ارسال درخواست به آدرس صحیح API
+        fetch(`/properties/change-status/${propertyId}/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': csrftoken
-            }
+            },
+            body: formData
         })
         .then(response => response.json())
         .then(data => {
