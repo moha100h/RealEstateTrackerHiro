@@ -530,25 +530,42 @@ h2 {
     box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-.status-dropdown {
-    align-self: flex-end;
+.status-badge-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    text-align: center;
+    z-index: 5;
 }
 
-.status-change-btn {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    opacity: 0.8;
+.status-badge-dropdown .badge {
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
     transition: all 0.2s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
 }
 
-.status-change-btn:hover {
-    opacity: 1;
-    transform: scale(1.1);
+.status-badge-dropdown .badge:hover {
+    transform: translateY(2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.status-badge {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    z-index: 2;
 }
 
 .status-dropdown-menu {
@@ -557,6 +574,7 @@ h2 {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     border: none;
     border-radius: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .status-dropdown-menu .dropdown-header {

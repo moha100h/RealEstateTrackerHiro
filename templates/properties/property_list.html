@@ -44,11 +44,18 @@
                     // به‌روزرسانی وضعیت در UI
                     const statusBadge = document.getElementById(`status-badge-${propertyId}`);
                     
-                    // تغییر متن
-                    statusBadge.textContent = data.status_name;
+                    // تغییر محتوای بج - نیاز به حفظ آیکون فلش در صورت وجود
+                    if (statusBadge.querySelector('svg')) {
+                        // اگر فلش داشت، محتوای متنی را تغییر می‌دهیم و آیکون را حفظ می‌کنیم
+                        const badgeText = statusBadge.childNodes[0];
+                        badgeText.nodeValue = ` ${data.status_name} `;
+                    } else {
+                        // اگر آیکون نداشت (برای کاربران عادی)، کل محتوا را تغییر می‌دهیم
+                        statusBadge.textContent = data.status_name;
+                    }
                     
-                    // حذف کلاس‌های قبلی و اضافه کردن کلاس جدید
-                    statusBadge.className = `badge ${data.status_class} property-status`;
+                    // تغییر کلاس (حفظ کلاس‌های ثابت)
+                    statusBadge.className = statusBadge.className.replace(/bg-\w+/, data.status_class);
                     
                     // نمایش پیام موفقیت‌آمیز
                     showAlert('success', data.message);
@@ -120,7 +127,11 @@
                 messagesContainer.appendChild(alertDiv);
                 
                 const mainContainer = document.querySelector('.container');
-                mainContainer.insertBefore(messagesContainer, mainContainer.firstChild);
+                if (mainContainer.firstChild) {
+                    mainContainer.insertBefore(messagesContainer, mainContainer.firstChild);
+                } else {
+                    mainContainer.appendChild(messagesContainer);
+                }
             }
             
             // پس از 5 ثانیه، پیام را مخفی می‌کنیم
@@ -186,30 +197,33 @@
                         
                         <div class="property-badges">
                             <span class="badge bg-primary property-code">{{ property.property_code }}</span>
-                            <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status">
-                                {{ property.status.name }}
-                            </span>
-                            {% if user.is_staff %}
-                            <div class="dropdown status-dropdown">
-                                <button class="btn btn-sm btn-light rounded-circle status-change-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end status-dropdown-menu">
-                                    <li><h6 class="dropdown-header">تغییر وضعیت ملک</h6></li>
-                                    {% for status in property_statuses %}
-                                    <li>
-                                        <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
-                                           href="#" 
-                                           data-property-id="{{ property.id }}" 
-                                           data-status-id="{{ status.id }}">
-                                            {{ status.name }}
-                                        </a>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
                         </div>
+
+                        {% if user.is_staff %}
+                        <div class="dropdown status-badge-dropdown">
+                            <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ property.status.name }}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down ms-1"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </span>
+                            <ul class="dropdown-menu dropdown-menu-end status-dropdown-menu">
+                                <li><h6 class="dropdown-header">تغییر وضعیت ملک</h6></li>
+                                {% for status in property_statuses %}
+                                <li>
+                                    <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
+                                       href="#" 
+                                       data-property-id="{{ property.id }}" 
+                                       data-status-id="{{ status.id }}">
+                                        {{ status.name }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% else %}
+                        <span id="status-badge-{{ property.id }}" class="badge status-badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status">
+                            {{ property.status.name }}
+                        </span>
+                        {% endif %}
                         <div class="property-overlay">
                             <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-light rounded-pill px-3">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
