@@ -495,7 +495,7 @@ h2 {
 
 .property-image-container {
     position: relative;
-    height: 160px;
+    height: 140px;
 }
 
 .property-image {
@@ -555,24 +555,19 @@ h2 {
 }
 
 .property-price {
-    font-weight: 800;
+    font-weight: 700;
     color: var(--primary-color);
-    font-size: 1rem;
-    margin-top: 0.3rem;
+    font-size: 0.85rem;
 }
 
-.property-transaction {
-    display: flex;
-    flex-direction: column;
-}
-
-.transaction-badge {
+.bg-primary-light {
+    background-color: rgba(63, 81, 181, 0.1);
+    color: var(--primary-color);
     font-size: 0.7rem;
-    color: var(--gray-600);
-    background-color: rgba(0,0,0,0.02);
-    padding: 0.2rem 0.5rem;
-    border-radius: 50rem;
-    display: inline-block;
+    padding: 0.15rem 0.5rem;
+}
+
+.badge-sm {
     font-weight: 500;
 }
 
@@ -610,11 +605,11 @@ h2 {
 .property-features .feature-item {
     flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 0.5rem 0.3rem;
+    gap: 0.2rem;
+    padding: 0.3rem 0.3rem;
     background-color: rgba(0,0,0,0.02);
-    border-radius: 0.5rem;
+    border-radius: 0.4rem;
     transition: all 0.2s ease;
 }
 
@@ -624,19 +619,12 @@ h2 {
 
 .feature-icon {
     color: var(--primary-color);
-    margin-bottom: 0.2rem;
-}
-
-.property-features .feature-label {
-    font-size: 0.65rem;
-    color: var(--gray-500);
-    margin-top: 0.1rem;
 }
 
 .property-features .feature-value {
     font-weight: 600;
     color: var(--gray-800);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 /* فوتر */
@@ -891,6 +879,12 @@ footer a:hover {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
+}
+
+/* کلاس برای نمایش 5 کارت در هر ردیف */
+.col-xl-2-4 {
+    flex: 0 0 auto;
+    width: 20%;
 }
 
 /* استایل‌های موبایل */
