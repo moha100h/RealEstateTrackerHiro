@@ -264,7 +264,7 @@
             <div class="col-lg-5">
                 <form method="get" action="{% url 'properties:property_list' %}" class="quick-search">
                     <div class="input-group">
-                        <input type="text" name="property_code" class="form-control rounded-start-pill ps-4" placeholder="جستجو در عنوان، کد، آدرس یا توضیحات ملک..." value="{{ request.GET.property_code|default:'' }}" autocomplete="off">
+                        <input type="text" name="search_query" class="form-control rounded-start-pill ps-4" placeholder="جستجو در عنوان، کد، آدرس یا توضیحات ملک..." value="{{ request.GET.search_query|default:'' }}" autocomplete="off">
                         <button type="submit" class="btn btn-primary rounded-end-pill px-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         </button>
