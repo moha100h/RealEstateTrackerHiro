@@ -265,19 +265,30 @@
         
         // کد مختص موبایل برای نمایش/مخفی کردن فیلترها
         const mobileFilterToggle = document.getElementById('mobileFilterToggle');
+        const mobileFilterToggle2 = document.getElementById('mobileFilterToggle2');
         const mobileFilterContainer = document.getElementById('mobileFilterContainer');
         const mobileCloseFilter = document.getElementById('mobileCloseFilter');
         const mobileApplyFilter = document.getElementById('mobileApplyFilter');
         
-        if (mobileFilterToggle && mobileFilterContainer) {
+        if (mobileFilterContainer) {
             // در ابتدا فیلترها را مخفی کن
             mobileFilterContainer.classList.add('hidden');
             
-            // نمایش فیلترها با کلیک روی دکمه
-            mobileFilterToggle.addEventListener('click', function() {
+            // تابع مشترک برای نمایش فیلترها
+            function showFilters() {
                 mobileFilterContainer.classList.remove('hidden');
                 document.body.style.overflow = 'hidden'; // جلوگیری از اسکرول صفحه
-            });
+            }
+            
+            // نمایش فیلترها با کلیک روی دکمه شناور
+            if (mobileFilterToggle) {
+                mobileFilterToggle.addEventListener('click', showFilters);
+            }
+            
+            // نمایش فیلترها با کلیک روی دکمه بالای لیست
+            if (mobileFilterToggle2) {
+                mobileFilterToggle2.addEventListener('click', showFilters);
+            }
             
             // مخفی کردن فیلترها با کلیک روی دکمه بستن
             if (mobileCloseFilter) {
@@ -387,6 +398,14 @@
             {% if properties %}
             <span class="badge bg-success">{{ properties|length }} ملک</span>
             {% endif %}
+        </div>
+        
+        <!-- دکمه جستجو در بالای لیست -->
+        <div class="mb-3">
+            <button id="mobileFilterToggle2" class="btn btn-primary w-100 d-flex justify-content-center align-items-center py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter me-2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                فیلترهای جستجو
+            </button>
         </div>
         
         <!-- نتایج جستجو در موبایل -->
