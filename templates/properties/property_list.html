@@ -21,158 +21,84 @@
             }
         });
         
-        // تابع نمایش مودال تغییر وضعیت
+        // نمایش مودال تغییر وضعیت
         window.showStatusModal = function(propertyId, propertyTitle) {
             currentPropertyId = propertyId;
-            
-            // نمایش عنوان ملک در مودال
             document.getElementById('propertyTitle').textContent = propertyTitle;
-            
-            // بررسی وضعیت فعلی ملک
-            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
-            const currentStatus = statusBadge.textContent.trim();
-            
-            // پاک کردن انتخاب‌های قبلی
-            document.querySelectorAll('input[name="statusOption"]').forEach(radio => {
-                radio.checked = false;
-                
-                // یافتن وضعیت فعلی
-                const label = document.querySelector(`label[for="${radio.id}"]`);
-                if (label && label.textContent.trim() === currentStatus) {
-                    radio.checked = true;
-                }
-            });
-            
-            // نمایش مودال
             statusModal.show();
         };
         
-        // تابع ارسال درخواست تغییر وضعیت
+        // تغییر وضعیت ملک از طریق Ajax
         function changePropertyStatus(propertyId, statusId) {
-            // تهیه داده‌های مورد نیاز برای ارسال
-            const formData = new FormData();
-            formData.append('status_id', statusId);
-            
-            // گرفتن توکن CSRF از cookie
-            const csrftoken = getCookie('csrftoken');
-            
-            // نمایش لودینگ
-            const statusBadge = document.getElementById(`status-badge-${propertyId}`);
-            const originalContent = statusBadge.innerHTML;
-            statusBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
-            
-            // ارسال درخواست
-            fetch(`/properties/change-status/${propertyId}/`, {
+            fetch(`/properties/api/change-status/${propertyId}/${statusId}/`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                body: formData
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('مشکلی در ارتباط با سرور رخ داد.');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // به‌روزرسانی وضعیت در UI - حتماً متن به‌روز شود
-                    statusBadge.innerHTML = data.status_name;  // استفاده از innerHTML به جای textContent
-                    console.log("Updated status to:", data.status_name);
+                    // تغییر رنگ و متن نشانگر وضعیت
+                    const statusBadge = document.getElementById(`status-badge-${propertyId}`);
                     
-                    // تغییر کلاس
-                    let newClass = 'badge status-badge ';
-                    if (data.status_name === 'موجود') {
-                        newClass += 'bg-success';
-                    } else if (data.status_name === 'فروخته شده' || data.status_name === 'اجاره داده شده') {
-                        newClass += 'bg-danger';
-                    } else if (data.status_name === 'رزرو شده') {
-                        newClass += 'bg-primary';
-                    } else if (data.status_name === 'در حال ساخت') {
-                        newClass += 'bg-secondary';
-                    } else if (data.status_name === 'آماده تحویل') {
-                        newClass += 'bg-info';
+                    // پاک کردن کلاس‌های قبلی
+                    statusBadge.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+                    
+                    // اضافه کردن کلاس جدید
+                    if (data.status === 'موجود') {
+                        statusBadge.classList.add('bg-success');
+                    } else if (data.status === 'فروخته شده' || data.status === 'اجاره داده شده') {
+                        statusBadge.classList.add('bg-danger');
                     } else {
-                        newClass += 'bg-warning';
+                        statusBadge.classList.add('bg-warning');
                     }
                     
-                    // اعمال کلاس جدید
-                    statusBadge.className = newClass;
+                    // تغییر متن نشانگر
+                    statusBadge.textContent = data.status;
                     
-                    // نمایش پیام موفقیت‌آمیز
-                    showAlert('success', data.message);
+                    showAlert('success', 'وضعیت ملک با موفقیت تغییر کرد.');
                 } else {
-                    // بازگرداندن وضعیت قبلی
-                    statusBadge.innerHTML = originalContent;
-                    
-                    // نمایش پیام خطا
-                    showAlert('danger', data.message);
+                    showAlert('danger', data.message || 'خطایی در تغییر وضعیت رخ داد.');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                
-                // بازگرداندن وضعیت قبلی
-                statusBadge.innerHTML = originalContent;
-                
-                // نمایش پیام خطا
                 showAlert('danger', 'خطایی در ارتباط با سرور رخ داد.');
             });
         }
         
-        // تابع دریافت توکن CSRF از کوکی
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (const cookie of cookies) {
-                    const cookieTrim = cookie.trim();
-                    if (cookieTrim.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookieTrim.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        
-        // تابع نمایش پیام هشدار
+        // نمایش پیام‌های هشدار در بالای صفحه
         function showAlert(type, message) {
-            // ایجاد یک هشدار بوت‌استرپی
             const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.setAttribute('role', 'alert');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show my-3`;
             
             alertDiv.innerHTML = `
                 ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             
-            // افزودن به DOM
-            const container = document.querySelector('.container .messages');
-            if (container) {
-                container.appendChild(alertDiv);
-            } else {
-                // اگر کانتینر پیام‌ها وجود نداشت، یکی ایجاد می‌کنیم
-                const messagesContainer = document.createElement('div');
-                messagesContainer.className = 'messages mt-3 mb-3';
-                messagesContainer.appendChild(alertDiv);
-                
-                const mainContainer = document.querySelector('.container');
-                const propertyHeader = document.querySelector('.property-header');
-                mainContainer.insertBefore(messagesContainer, propertyHeader.nextSibling);
-            }
+            const container = document.querySelector('.property-content');
+            container.insertBefore(alertDiv, container.firstChild);
             
-            // پس از 5 ثانیه، پیام را مخفی می‌کنیم
             setTimeout(() => {
                 alertDiv.classList.remove('show');
-                setTimeout(() => {
-                    alertDiv.remove();
-                }, 500);
-            }, 5000);
+                setTimeout(() => alertDiv.remove(), 500);
+            }, 3000);
         }
     });
 </script>
 {% endblock %}
 
-{% block content %}
+{% block title %}لیست املاک | سیستم مدیریت املاک هیرو{% endblock %}
 
+{% block content %}
 <!-- مودال تغییر وضعیت ملک -->
 <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -184,102 +110,76 @@
             <div class="modal-body pt-0">
                 <h6 id="propertyTitle" class="mb-4 text-muted fs-6">عنوان ملک</h6>
                 
-                <div class="row mb-4">
-                    <div class="col-4">
-                        <div class="form-check status-radio-box">
-                            <input class="form-check-input" type="radio" name="statusOption" 
-                                   id="status1" value="1">
-                            <label class="form-check-label text-success status-box-label" for="status1">
-                                موجود
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="form-check status-radio-box">
-                            <input class="form-check-input" type="radio" name="statusOption" 
-                                   id="status2" value="2">
-                            <label class="form-check-label text-danger status-box-label" for="status2">
-                                فروخته شده
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="form-check status-radio-box">
-                            <input class="form-check-input" type="radio" name="statusOption" 
-                                   id="status3" value="3">
-                            <label class="form-check-label text-danger status-box-label" for="status3">
-                                اجاره داده شده
-                            </label>
-                        </div>
-                    </div>
-                </div>
+                {% csrf_token %}
                 
                 <div class="row">
-                    <div class="col-4">
-                        <div class="form-check status-radio-box">
-                            <input class="form-check-input" type="radio" name="statusOption" 
-                                   id="status4" value="4">
-                            <label class="form-check-label text-primary status-box-label" for="status4">
-                                رزرو شده
-                            </label>
-                        </div>
+                    <div class="col-6 col-md-4 status-radio-box">
+                        <input type="radio" name="statusOption" id="status1" value="1">
+                        <label for="status1" class="status-box-label text-success">موجود</label>
                     </div>
-                    <div class="col-4">
-                        <div class="form-check status-radio-box">
-                            <input class="form-check-input" type="radio" name="statusOption" 
-                                   id="status5" value="5">
-                            <label class="form-check-label text-secondary status-box-label" for="status5">
-                                در حال ساخت
-                            </label>
-                        </div>
+                    
+                    <div class="col-6 col-md-4 status-radio-box">
+                        <input type="radio" name="statusOption" id="status2" value="2">
+                        <label for="status2" class="status-box-label text-danger">فروخته شده</label>
                     </div>
-                    <div class="col-4">
-                        <div class="form-check status-radio-box">
-                            <input class="form-check-input" type="radio" name="statusOption" 
-                                   id="status6" value="6">
-                            <label class="form-check-label text-info status-box-label" for="status6">
-                                آماده تحویل
-                            </label>
-                        </div>
+                    
+                    <div class="col-6 col-md-4 status-radio-box">
+                        <input type="radio" name="statusOption" id="status3" value="3">
+                        <label for="status3" class="status-box-label text-danger">اجاره داده شده</label>
+                    </div>
+                    
+                    <div class="col-6 col-md-4 status-radio-box">
+                        <input type="radio" name="statusOption" id="status4" value="4">
+                        <label for="status4" class="status-box-label text-warning">رزرو شده</label>
+                    </div>
+                    
+                    <div class="col-6 col-md-4 status-radio-box">
+                        <input type="radio" name="statusOption" id="status5" value="5">
+                        <label for="status5" class="status-box-label text-warning">در حال ساخت</label>
+                    </div>
+                    
+                    <div class="col-6 col-md-4 status-radio-box">
+                        <input type="radio" name="statusOption" id="status6" value="6">
+                        <label for="status6" class="status-box-label text-primary">آماده تحویل</label>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">انصراف</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" id="saveStatusBtn">ذخیره تغییرات</button>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" id="saveStatusBtn" class="btn btn-primary">ذخیره تغییرات</button>
             </div>
         </div>
     </div>
 </div>
-<div class="container">
-    <div class="property-header mb-4">
-        <div class="row align-items-center justify-content-between">
-            <div class="col-lg-6 mb-3 mb-lg-0">
-                {% if user.is_staff %}
-                <a href="{% url 'properties:property_create' %}" class="btn btn-primary rounded-pill d-inline-flex align-items-center px-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                    افزودن ملک جدید
+
+<div class="container py-5">
+    <div class="property-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+            <h1 class="mb-3 mb-md-0">لیست املاک</h1>
+            {% if user.is_staff %}
+            <a href="{% url 'properties:property_create' %}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                افزودن ملک جدید
+            </a>
+            {% endif %}
+        </div>
+        
+        <div class="advanced-search">
+            <div class="d-flex justify-content-end">
+                <a href="{% url 'properties:property_search' %}" class="btn btn-outline-primary rounded-pill mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter me-1"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    جستجوی پیشرفته
                 </a>
-                {% endif %}
-            </div>
-            <div class="col-lg-5">
-                <form method="get" action="{% url 'properties:property_list' %}" class="quick-search">
-                    <div class="input-group">
-                        <input type="text" name="search_query" class="form-control rounded-start-pill ps-4" placeholder="جستجو در عنوان، کد، آدرس یا توضیحات ملک..." value="{{ request.GET.search_query|default:'' }}" autocomplete="off">
-                        <button type="submit" class="btn btn-primary rounded-end-pill px-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
     
     <div class="property-content">
         {% if properties %}
-        <div class="row g-2">
+        <!-- نمایش برای دسکتاپ و تبلت -->
+        <div class="row g-2 d-none d-sm-flex">
             {% for property in properties %}
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2-4">
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2-4">
                 <div class="property-card">
                     <div class="position-relative property-image-container rounded-top overflow-hidden">
                         {% if property.image %}
@@ -295,17 +195,6 @@
                         <div class="property-badges">
                             <span class="badge bg-primary property-code">{{ property.property_code }}</span>
                         </div>
-                        
-                        {% if property.rooms > 0 or property.area > 0 %}
-                        <div class="property-quick-info d-md-none">
-                            {% if property.rooms > 0 %}
-                            <span class="quick-info-item">{{ property.rooms }} اتاق</span>
-                            {% endif %}
-                            {% if property.area > 0 %}
-                            <span class="quick-info-item">{{ property.area }} متر</span>
-                            {% endif %}
-                        </div>
-                        {% endif %}
 
                         <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} status-badge">
                             {{ property.status.name }}
@@ -359,6 +248,69 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left-circle"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line></svg>
                             </a>
                         </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- نمایش برای موبایل -->
+        <div class="d-sm-none">
+            {% for property in properties %}
+            <div class="property-card-mobile">
+                <div class="property-image-container">
+                    {% if property.image %}
+                    <img src="{{ property.image.url }}" class="property-image" alt="{{ property.title }}">
+                    {% elif system_config.default_property_image %}
+                    <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
+                    {% else %}
+                    <div class="bg-light text-center py-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home text-secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+                    {% endif %}
+                    
+                    <span class="badge bg-primary property-code position-absolute top-0 end-0 m-2">{{ property.property_code }}</span>
+                    
+                    <span class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} position-absolute top-0 start-0 m-2">
+                        {{ property.status.name }}
+                    </span>
+                    
+                    {% if property.rooms > 0 or property.area > 0 %}
+                    <div class="property-quick-info">
+                        {% if property.area > 0 %}
+                        <span class="quick-info-item">{{ property.area }} متر</span>
+                        {% endif %}
+                        {% if property.rooms > 0 %}
+                        <span class="quick-info-item">{{ property.rooms }} اتاق</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="property-content">
+                    <h5 class="property-title">{{ property.title }}</h5>
+                    <div class="property-address">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <span>{{ property.address|truncatechars:40 }}</span>
+                    </div>
+                    
+                    <div class="property-features">
+                        {% if property.year_built %}
+                        <div class="feature-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar me-1"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            <span>{{ property.year_built }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="transaction-badge">{{ property.transaction_type.name }}</span>
+                            <div class="property-price">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
+                        </div>
+                        <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-primary rounded-circle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        </a>
                     </div>
                 </div>
             </div>
