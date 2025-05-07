@@ -6,14 +6,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.core.cache import cache
+from django.conf import settings
+import time
 
 from .models import UserProfile, create_default_groups
 from .forms import CustomAuthenticationForm, UserForm, UserProfileForm
-from .decorators import csrf_exempt_class
 
-@csrf_exempt_class
 class CustomLoginView(LoginView):
     """نمای سفارشی صفحه ورود"""
     form_class = CustomAuthenticationForm
@@ -23,9 +23,61 @@ class CustomLoginView(LoginView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'ورود به سیستم'
         return context
+    
+    def form_valid(self, form):
+        """در صورت معتبر بودن فرم، رکورد تلاش‌های ناموفق را پاک می‌کنیم"""
+        username = form.cleaned_data.get('username')
+        cache_key = f"account_lockout:{username}"
+        cache.delete(cache_key)  # پاک کردن رکورد تلاش‌های ناموفق
+        return super().form_valid(form)
         
     def form_invalid(self, form):
         """در صورت نامعتبر بودن فرم"""
+        username = form.data.get('username')
+        
+        if username:
+            # بررسی و ثبت تلاش‌های ناموفق
+            cache_key = f"account_lockout:{username}"
+            lockout_data = cache.get(cache_key, {'attempts': 0})
+            
+            # اگر حساب قبلاً قفل شده، بررسی می‌کنیم آیا زمان قفل تمام شده
+            if 'locked_until' in lockout_data and lockout_data['locked_until'] > time.time():
+                # هنوز قفل است
+                remaining_time = int((lockout_data['locked_until'] - time.time()) / 60)
+                messages.error(
+                    self.request, 
+                    f'حساب کاربری شما به دلیل تلاش‌های ناموفق قفل شده است. لطفاً {remaining_time} دقیقه دیگر تلاش کنید.'
+                )
+            else:
+                # اگر قفل نیست یا زمان قفل تمام شده، تلاش ناموفق را ثبت می‌کنیم
+                max_attempts = getattr(settings, 'ACCOUNT_LOCKOUT_ATTEMPTS', 5)
+                lockout_time = getattr(settings, 'ACCOUNT_LOCKOUT_TIME', 30 * 60)
+                
+                if 'locked_until' in lockout_data and lockout_data['locked_until'] <= time.time():
+                    # زمان قفل تمام شده، شمارنده را ریست می‌کنیم
+                    lockout_data = {'attempts': 1}
+                else:
+                    # افزایش شمارنده تلاش‌های ناموفق
+                    lockout_data['attempts'] = lockout_data.get('attempts', 0) + 1
+                
+                # اگر به حد مجاز رسیده، حساب را قفل می‌کنیم
+                if lockout_data['attempts'] >= max_attempts:
+                    lockout_data['locked_until'] = time.time() + lockout_time
+                    messages.error(
+                        self.request, 
+                        f'حساب کاربری شما به دلیل {max_attempts} تلاش ناموفق به مدت {lockout_time//60} دقیقه قفل شد.'
+                    )
+                else:
+                    # نمایش تعداد تلاش‌های باقی‌مانده
+                    remaining_attempts = max_attempts - lockout_data['attempts']
+                    messages.warning(
+                        self.request,
+                        f'نام کاربری یا رمز عبور اشتباه است. {remaining_attempts} تلاش دیگر قبل از قفل شدن حساب باقی مانده است.'
+                    )
+                
+                # ذخیره اطلاعات قفل حساب در کش
+                cache.set(cache_key, lockout_data, 24*60*60)  # 24 ساعت نگهداری می‌شود
+        
         # اضافه کردن نوع خطا به بافت (context) برای نمایش بهتر در قالب
         return self.render_to_response(self.get_context_data(form=form, error_type='credentials'))
 

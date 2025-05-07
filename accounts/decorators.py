@@ -1,14 +1,32 @@
 """
-توابع دکوراتور برای استفاده در views
+توابع دکوراتور امن برای استفاده در views
 """
 
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import user_passes_test
 
-def csrf_exempt_class(view_class):
+def staff_required(view_func=None):
     """
-    دکوراتور برای غیرفعال کردن CSRF در یک CBV (Class-Based View)
-    برای محیط توسعه. در محیط تولید استفاده نشود.
+    دکوراتور برای محدود کردن دسترسی به مدیران سیستم
     """
-    view_class.dispatch = method_decorator(csrf_exempt)(view_class.dispatch)
-    return view_class
+    actual_decorator = user_passes_test(
+        lambda u: u.is_authenticated and (u.is_staff or u.is_superuser),
+        login_url='accounts:login',
+        redirect_field_name='next'
+    )
+    if view_func:
+        return actual_decorator(view_func)
+    return actual_decorator
+
+def superuser_required(view_func=None):
+    """
+    دکوراتور برای محدود کردن دسترسی فقط به مدیران ارشد (سوپرادمین)
+    """
+    actual_decorator = user_passes_test(
+        lambda u: u.is_authenticated and u.is_superuser,
+        login_url='accounts:login',
+        redirect_field_name='next'
+    )
+    if view_func:
+        return actual_decorator(view_func)
+    return actual_decorator

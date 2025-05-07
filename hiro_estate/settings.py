@@ -57,7 +57,21 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # محافظت در برابر حملات HTTP
+    'django.middleware.http.ConditionalGetMiddleware',
+    # میدل‌ویرهای سفارشی امنیتی
+    'accounts.middleware.RateLimitMiddleware',
+    'accounts.middleware.AccountLockoutMiddleware',
 ]
+
+# حداکثر تعداد درخواست‌های مجاز 
+# معمولا از سیستم‌های حرفه‌ای محدودیت نرخ مانند nginx استفاده می‌کنیم
+# ولی این تنظیمات برای محافظت اولیه مناسب است
+RATE_LIMIT_MIDDLEWARE = {
+    'WINDOW_SIZE': 60 * 15,  # در هر 15 دقیقه
+    'MAX_REQUESTS': 300,     # حداکثر 300 درخواست مجاز
+    'EXEMPT_PATHS': ['/static/', '/media/'],
+}
 
 # تنظیمات امنیتی
 X_FRAME_OPTIONS = 'SAMEORIGIN'
@@ -127,20 +141,35 @@ else:
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
+# سیاست‌های امنیتی رمز عبور
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'OPTIONS': {
+            'user_attributes': ('username', 'email', 'first_name', 'last_name'),
+            'max_similarity': 0.7,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 10,  # طول حداقل رمز عبور (قوی)
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'OPTIONS': {
+            'password_list_path': None,  # استفاده از لیست پیش‌فرض رمزهای رایج
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# تنظیمات قفل کردن حساب کاربری بعد از تلاش‌های ناموفق
+ACCOUNT_LOCKOUT_ATTEMPTS = 5  # تعداد تلاش‌های ناموفق قبل از قفل شدن
+ACCOUNT_LOCKOUT_TIME = 30 * 60  # مدت زمان قفل شدن (30 دقیقه)
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -192,3 +221,24 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 # برای مدیریت بهتر خطاهای CSRF
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
+# Content Security Policy settings
+# این هدر به مرورگر می‌گوید که منابع مجاز برای بارگذاری از کجا هستند
+# برای محافظت در برابر حملات XSS
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", 'cdn.jsdelivr.net')
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com')
+CSP_FONT_SRC = ("'self'", 'fonts.gstatic.com')
+CSP_IMG_SRC = ("'self'", 'data:')
+CSP_CONNECT_SRC = ("'self'",)
+
+# تنظیمات محافظت در برابر حملات XSS
+X_XSS_PROTECTION = "1; mode=block"
+
+# محدودیت نوع فایل‌های آپلودی مجاز
+ALLOWED_UPLOAD_EXTENSIONS = [
+    '.jpg', '.jpeg', '.png', '.gif', '.webp',  # تصاویر
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx',  # اسناد
+    '.zip', '.rar',  # فایل‌های فشرده
+]
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 مگابایت

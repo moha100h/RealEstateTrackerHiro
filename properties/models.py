@@ -3,9 +3,56 @@
 """
 from django.db import models
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
+from django.conf import settings
 import uuid
+import os
+import imghdr
+import mimetypes
 from django.utils import timezone
 from django_jalali.db import models as jmodels
+
+def validate_file_extension(value):
+    """
+    تابع تأیید پسوند فایل آپلود شده برای جلوگیری از آپلود فایل‌های مخرب
+    """
+    ext = os.path.splitext(value.name)[1]
+    valid_extensions = getattr(settings, 'ALLOWED_UPLOAD_EXTENSIONS', ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.zip', '.rar'])
+    if ext.lower() not in valid_extensions:
+        allowed_extensions_str = '، '.join(valid_extensions)
+        raise ValidationError(f'پسوند فایل غیرمجاز است. پسوندهای مجاز: {allowed_extensions_str}')
+
+def validate_file_size(value):
+    """
+    تابع تأیید حجم فایل آپلود شده برای جلوگیری از حملات DoS
+    """
+    max_size = getattr(settings, 'MAX_UPLOAD_SIZE', 5 * 1024 * 1024)  # 5 مگابایت پیش‌فرض
+    if value.size > max_size:
+        raise ValidationError(f'حجم فایل بیشتر از حد مجاز ({max_size/1024/1024:.1f} مگابایت) است.')
+
+def validate_image_file(value):
+    """
+    تأیید این که فایل آپلود شده واقعاً یک تصویر معتبر است
+    """
+    # برای تصاویر، از imghdr استفاده می‌کنیم که در کتابخانه استاندارد پایتون وجود دارد
+    file_content = value.read()
+    value.seek(0)  # بازگشت به ابتدای فایل
+    
+    image_format = imghdr.what(None, file_content)
+    if image_format not in ['jpeg', 'jpg', 'png', 'gif', 'webp']:
+        raise ValidationError('فایل آپلود شده یک تصویر معتبر نیست.')
+
+def secure_upload_validator(value):
+    """
+    اعمال ولیدیتورهای امنیتی بر روی فایل آپلود شده
+    """
+    validate_file_extension(value)
+    validate_file_size(value)
+    
+    # اگر فایل تصویر است، بررسی محتوای آن
+    ext = os.path.splitext(value.name)[1].lower()
+    if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+        validate_image_file(value)
 
 class PropertyType(models.Model):
     """
@@ -75,7 +122,13 @@ class Property(models.Model):
     document_type = models.ForeignKey(DocumentType, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="نوع سند")
     rooms = models.PositiveSmallIntegerField(verbose_name="تعداد اتاق")
     description = models.TextField(verbose_name="توضیحات")
-    image = models.ImageField(upload_to='properties/', blank=True, null=True, verbose_name="تصویر اصلی")
+    image = models.ImageField(
+        upload_to='properties/', 
+        blank=True, 
+        null=True, 
+        verbose_name="تصویر اصلی",
+        validators=[secure_upload_validator]
+    )
     created_at = jmodels.jDateTimeField(auto_now_add=True, verbose_name="تاریخ ثبت")
     updated_at = jmodels.jDateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
     slug = models.SlugField(unique=True, blank=True, verbose_name="اسلاگ")
@@ -109,7 +162,11 @@ class PropertyImage(models.Model):
     مدل تصاویر اضافی ملک برای گالری تصاویر
     """
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images', verbose_name="ملک")
-    image = models.ImageField(upload_to='property_images/', verbose_name="تصویر")
+    image = models.ImageField(
+        upload_to='property_images/', 
+        verbose_name="تصویر",
+        validators=[secure_upload_validator]
+    )
     title = models.CharField(max_length=100, blank=True, null=True, verbose_name="عنوان تصویر")
     is_default = models.BooleanField(default=False, verbose_name="تصویر پیش‌فرض")
     created_at = jmodels.jDateTimeField(auto_now_add=True, verbose_name="تاریخ ثبت")
