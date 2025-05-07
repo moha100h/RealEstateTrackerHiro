@@ -1,0 +1,154 @@
+Project Title: Hiro Real Estate Smart System
+
+Design and deliver a professional, scalable, and production-ready real estate management system using Python 3.x and the Django framework. The system must be fully functional with a connected database, front-end, and back-end, and must run seamlessly on Replit without requiring modifications. It should also be fully prepared for deployment on any hosting service or cloud platform.
+
+🔧 Tech Stack & Structure
+Language: Python 3.x
+
+Framework: Django (latest stable release)
+
+Database: SQLite (easily switchable to PostgreSQL for production)
+
+Front-end: HTML5, CSS3, JavaScript
+
+Styling: Persian Bootstrap 5 or Tailwind CSS
+
+Typography: Vazir or IranSans font
+
+Structure: Modular, clean, maintainable, and scalable
+
+🚀 Core Features
+1. Authentication & User Roles
+Default superadmin account:
+
+Username: admin
+
+Password: admin
+
+Role-based admin panel with different access levels
+
+Restricted access to admin pages (authenticated users only)
+
+Custom RTL-compliant Persian login form
+
+2. Property Management
+Add and manage real estate listings with the following fields:
+
+Unique auto-generated property code
+
+Title
+
+Full address
+
+Area (square meters)
+
+Price
+
+Year of construction
+
+Property type (residential, commercial, etc.)
+
+Transaction type (sale, rent, mortgage)
+
+Status (available, sold, rented, reserved, etc.)
+
+Number of rooms
+
+Detailed description
+
+Main property image (fallback to a default image if not provided)
+
+Admin property table with full view, edit, delete, and status change features
+
+3. Advanced Search & Filtering
+Filter by:
+
+Property code
+
+Partial address
+
+Area (min–max)
+
+Price (min–max)
+
+Multiple transaction types
+
+Multiple statuses
+
+Year built
+
+4. Backup & Restore System
+Export full database backup (JSON or SQL)
+
+Import and restore backup files with confirmation
+
+Only accessible by the main admin
+
+5. Modern RTL Persian UI
+Fully RTL, Persian layout
+
+Clean, minimal, and modern design inspired by government dashboards
+
+Use of Vazir or IranSans font across the entire UI
+
+Admin dashboard includes:
+
+Summary of property statuses
+
+Count of listings per status
+
+Average prices
+
+6. System Configuration Panel
+Available to the main admin only
+
+Features:
+
+Change website title
+
+Upload custom logo
+
+Set/change default property image
+
+Select font (Vazir or IranSans)
+
+📦 Deployment-Ready Package
+Fully styled, responsive front-end
+
+Fully implemented back-end models and views
+
+Connected, ready-to-use database
+
+Includes essential deployment files:
+
+requirements.txt
+
+manage.py
+
+Procfile
+
+Configured settings.py
+
+Persian README.md with complete instructions for:
+
+Installation
+
+Running locally or on Replit
+
+Logging in
+
+Using the system
+
+✅ Final Delivery Requirements
+Project must run without errors on Replit
+
+Fully deployable on Heroku, Render, or any VPS
+
+All code must include Persian comments and be well-structured and clean
+
+No incomplete steps or undocumented dependencies
+
+Use CDN or local files for all fonts, images, or external assets
+
+🛠️ Please deliver a complete, tested, and high-quality project—ready for real-world use without any further modification.
+
