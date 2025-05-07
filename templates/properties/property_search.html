@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">جستجوی پیشرفته املاک</h1>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">فیلترهای جستجو</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'properties:property_search' %}">
+                        <div class="mb-3">
+                            <label for="{{ filter.form.property_code.id_for_label }}" class="form-label">کد ملک</label>
+                            {{ filter.form.property_code }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ filter.form.address.id_for_label }}" class="form-label">آدرس</label>
+                            {{ filter.form.address }}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="{{ filter.form.min_area.id_for_label }}" class="form-label">حداقل متراژ</label>
+                                {{ filter.form.min_area }}
+                            </div>
+                            <div class="col-6">
+                                <label for="{{ filter.form.max_area.id_for_label }}" class="form-label">حداکثر متراژ</label>
+                                {{ filter.form.max_area }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="{{ filter.form.min_price.id_for_label }}" class="form-label">حداقل قیمت</label>
+                                {{ filter.form.min_price }}
+                            </div>
+                            <div class="col-6">
+                                <label for="{{ filter.form.max_price.id_for_label }}" class="form-label">حداکثر قیمت</label>
+                                {{ filter.form.max_price }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="{{ filter.form.min_year.id_for_label }}" class="form-label">از سال</label>
+                                {{ filter.form.min_year }}
+                            </div>
+                            <div class="col-6">
+                                <label for="{{ filter.form.max_year.id_for_label }}" class="form-label">تا سال</label>
+                                {{ filter.form.max_year }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mb-2">نوع معامله</h6>
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            {{ filter.form.transaction_type }}
+                        </div>
+                        
+                        <h6 class="mb-2">وضعیت</h6>
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            {{ filter.form.status }}
+                        </div>
+                        
+                        <h6 class="mb-2">نوع ملک</h6>
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            {{ filter.form.property_type }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search me-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                جستجو
+                            </button>
+                            <a href="{% url 'properties:property_search' %}" class="btn btn-outline-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                پاک کردن فیلترها
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            {% if properties %}
+            <div class="alert alert-info mb-4">
+                <div class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>تعداد <strong>{{ properties|length }}</strong> ملک با فیلترهای مورد نظر شما یافت شد.</span>
+                </div>
+            </div>
+            
+            <div class="row">
+                {% for property in properties %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if property.image %}
+                        <img src="{{ property.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 180px; object-fit: cover;">
+                        {% elif system_config.default_property_image %}
+                        <img src="{{ system_config.default_property_image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 180px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light text-center py-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home text-secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary">{{ property.property_code }}</span>
+                                <span class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ property.status.name }}
+                                </span>
+                            </div>
+                            
+                            <h5 class="card-title mb-1">{{ property.title }}</h5>
+                            <p class="card-text text-muted small mb-2">{{ property.address|truncatechars:60 }}</p>
+                            
+                            <div class="mb-3">
+                                <div class="row g-0 text-center">
+                                    <div class="col-4">
+                                        <div class="p-2 border-end">
+                                            <div class="small text-muted">متراژ</div>
+                                            <div><strong>{{ property.area }}</strong> متر</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 border-end">
+                                            <div class="small text-muted">اتاق</div>
+                                            <div><strong>{{ property.rooms }}</strong></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2">
+                                            <div class="small text-muted">سال</div>
+                                            <div><strong>{{ property.year_built }}</strong></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="small text-muted">{{ property.transaction_type.name }}</div>
+                                    <div class="h5 mb-0">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
+                                </div>
+                                <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-outline-primary">
+                                    جزئیات
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search mb-3 text-muted"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <h4>هیچ ملکی با این مشخصات یافت نشد</h4>
+                    <p class="text-muted mb-4">لطفاً معیارهای جستجوی خود را تغییر دهید یا از فیلترهای کمتری استفاده کنید.</p>
+                    <a href="{% url 'properties:property_search' %}" class="btn btn-outline-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        پاک کردن فیلترها
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

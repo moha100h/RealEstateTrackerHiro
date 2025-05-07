@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">خانه</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'accounts:user_list' %}">مدیریت کاربران</a></li>
+                <li class="breadcrumb-item active">{% if object %}ویرایش کاربر{% else %}افزودن کاربر جدید{% endif %}</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{% if object %}ویرایش کاربر {{ object.username }}{% else %}افزودن کاربر جدید{% endif %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">خطاهای فرم را برطرف کنید:</h5>
+                            {{ form.errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <h5 class="mb-3">اطلاعات کاربری</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }} <span class="text-danger">*</span></label>
+                                {{ form.username }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">رمز عبور</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }} {% if not object %}<span class="text-danger">*</span>{% endif %}</label>
+                                {{ form.password }}
+                                {% if object %}
+                                <div class="form-text text-muted">در صورتی که نمی‌خواهید رمز عبور تغییر کند، این فیلد را خالی بگذارید.</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.confirm_password.id_for_label }}" class="form-label">{{ form.confirm_password.label }} {% if not object %}<span class="text-danger">*</span>{% endif %}</label>
+                                {{ form.confirm_password }}
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">دسترسی‌ها</h5>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                            </div>
+                            <div class="form-text text-muted">کاربران غیرفعال نمی‌توانند وارد سیستم شوند.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">{{ form.groups.label }}</label>
+                            <div class="border p-3 rounded">
+                                {{ form.groups }}
+                            </div>
+                            <div class="form-text text-muted">دسترسی‌های کاربر بر اساس گروه‌های انتخاب شده تعیین می‌شود.</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x me-1"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                انصراف
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                ذخیره
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

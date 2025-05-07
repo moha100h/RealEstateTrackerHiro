@@ -1,0 +1,166 @@
+/* تنظیمات RTL */
+body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* تنظیمات RTL برای کلاس‌های بوتسترپ */
+.dropdown-menu {
+    text-align: right;
+}
+
+.list-group {
+    padding-right: 0;
+}
+
+.list-group-item {
+    text-align: right;
+}
+
+.form-check {
+    padding-right: 1.5em;
+    padding-left: 0;
+}
+
+.form-check .form-check-input {
+    float: right;
+    margin-right: -1.5em;
+    margin-left: 0;
+}
+
+.nav {
+    padding-right: 0;
+}
+
+.navbar-nav {
+    padding-right: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item {
+    padding-right: 0.5rem;
+    padding-left: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    float: right;
+    padding-left: 0.5rem;
+    padding-right: 0;
+}
+
+.modal-header .btn-close {
+    margin: -0.5rem auto -0.5rem -0.5rem;
+}
+
+/* فلش های درویر در جداول */
+.table thead th.asc:after {
+    content: " ▴";
+}
+
+.table thead th.desc:after {
+    content: " ▾";
+}
+
+/* تنظیمات فاصله آیکون‌ها در RTL */
+.me-1, .me-2, .me-3, .me-4, .me-5 {
+    margin-left: 0 !important;
+}
+
+.ms-1, .ms-2, .ms-3, .ms-4, .ms-5 {
+    margin-right: 0 !important;
+}
+
+.me-1 {
+    margin-left: 0.25rem !important;
+}
+.me-2 {
+    margin-left: 0.5rem !important;
+}
+.me-3 {
+    margin-left: 1rem !important;
+}
+.me-4 {
+    margin-left: 1.5rem !important;
+}
+.me-5 {
+    margin-left: 3rem !important;
+}
+
+.ms-1 {
+    margin-right: 0.25rem !important;
+}
+.ms-2 {
+    margin-right: 0.5rem !important;
+}
+.ms-3 {
+    margin-right: 1rem !important;
+}
+.ms-4 {
+    margin-right: 1.5rem !important;
+}
+.ms-5 {
+    margin-right: 3rem !important;
+}
+
+/* تنظیمات RTL برای checkbox و radio */
+.form-check-input {
+    margin-right: -1.5em;
+    margin-left: 0;
+}
+
+/* تنظیمات RTL المان‌های فلوت */
+.float-start {
+    float: right !important;
+}
+
+.float-end {
+    float: left !important;
+}
+
+/* تنظیمات RTL برای آیکون‌های feather */
+.feather {
+    vertical-align: text-bottom;
+}
+
+/* تنظیمات RTL برای فرم‌ها */
+.input-group > .form-control:not(:first-child), 
+.input-group > .form-select:not(:first-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}
+
+.input-group > .form-control:not(:last-child), 
+.input-group > .form-select:not(:last-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.input-group-text:first-child {
+    border-left: 0;
+    border-right: 1px solid #ced4da;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.input-group-text:last-child {
+    border-right: 0;
+    border-left: 1px solid #ced4da;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+    margin-right: -1px;
+    margin-left: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}

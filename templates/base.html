@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if title %}{{ title }} | {% endif %}{{ system_config.website_title }}</title>
+    
+    <!-- بوتسترپ RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    
+    <!-- فونت‌های فارسی -->
+    {% if system_config.font_type == 'vazir' %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+    <style>
+        body, .font-vazir {
+            font-family: 'Vazir', 'Tahoma', sans-serif !important;
+        }
+    </style>
+    {% else %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/iran-sans-web@master/dist/font-face.css">
+    <style>
+        body, .font-iransans {
+            font-family: 'Iran Sans Web', 'Tahoma', sans-serif !important;
+        }
+    </style>
+    {% endif %}
+    
+    <!-- فونت آیکون‌های Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    
+    <!-- استایل‌های سفارشی -->
+    <link rel="stylesheet" href="/static/css/rtl.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light">
+    <!-- هدر -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                {% if system_config.logo %}
+                    <img src="{{ system_config.logo.url }}" alt="Logo" height="40" class="me-2">
+                {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home me-2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                {% endif %}
+                <span>{{ system_config.website_title }}</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">خانه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'properties:property_list' %}">املاک</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'properties:property_search' %}">جستجوی پیشرفته</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:home' %}">داشبورد</a>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            مدیریت
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'properties:property_create' %}">افزودن ملک جدید</a></li>
+                            {% if user.is_superuser %}
+                            <li><a class="dropdown-item" href="{% url 'accounts:user_list' %}">مدیریت کاربران</a></li>
+                            <li><a class="dropdown-item" href="{% url 'config:system_config' %}">تنظیمات سیستم</a></li>
+                            <li><a class="dropdown-item" href="{% url 'config:backup' %}">پشتیبان‌گیری و بازیابی</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin/">پنل ادمین جانگو</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                </ul>
+                <div class="d-flex">
+                    {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                            <span class="me-1">{{ user.get_full_name|default:user.username }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">پروفایل</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">خروج</a></li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light">
+                        ورود
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-in"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- پیام‌های سیستم -->
+    <div class="container mt-3">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- محتوای اصلی -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- فوتر -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>سیستم هوشمند مدیریت املاک هیرو</h5>
+                    <p>راهکاری حرفه‌ای برای مدیریت املاک و مستغلات</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>تمامی حقوق محفوظ است &copy; ۱۴۰۲</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- اسکریپت‌های JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    
+    <script>
+      // فعال‌سازی آیکون‌های Feather
+      feather.replace();
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

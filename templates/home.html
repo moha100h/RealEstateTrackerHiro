@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="px-4 py-5 my-5 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home mb-4 text-primary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <h1 class="display-5 fw-bold">سیستم هوشمند مدیریت املاک هیرو</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">راهکاری جامع، کارآمد و هوشمند برای مدیریت املاک و مستغلات با امکانات پیشرفته جستجو و گزارش‌گیری</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="{% url 'properties:property_list' %}" class="btn btn-primary btn-lg px-4 gap-3">مشاهده املاک</a>
+                <a href="{% url 'properties:property_search' %}" class="btn btn-outline-secondary btn-lg px-4">جستجوی پیشرفته</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home mb-3 text-primary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <h3 class="card-title">مدیریت املاک</h3>
+                    <p class="card-text">ثبت و مدیریت انواع املاک با جزئیات کامل و کد اختصاصی</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search mb-3 text-primary"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <h3 class="card-title">جستجوی پیشرفته</h3>
+                    <p class="card-text">امکان جستجو بر اساس انواع فیلترها و معیارهای مختلف</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2 mb-3 text-primary"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <h3 class="card-title">گزارش‌های آماری</h3>
+                    <p class="card-text">داشبورد مدیریتی با نمودارها و گزارش‌های کاربردی</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

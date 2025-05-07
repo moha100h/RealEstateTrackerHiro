@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  <g transform="translate(400, 300)">
+    <path d="M-200 -150 L0 -250 L200 -150 V150 H-200 Z" fill="#e9ecef" stroke="#dee2e6" stroke-width="10"/>
+    <rect x="-60" y="50" width="120" height="100" fill="#ffffff" stroke="#dee2e6" stroke-width="5"/>
+    <rect x="-40" y="70" width="30" height="30" fill="#dee2e6"/>
+    <rect x="10" y="70" width="30" height="30" fill="#dee2e6"/>
+    <rect x="-40" y="110" width="80" height="40" fill="#dee2e6"/>
+    <path d="M-100 -50 H100 V50 H-100 Z" fill="#ffffff" stroke="#dee2e6" stroke-width="5"/>
+    <rect x="-80" y="-30" width="50" height="30" fill="#dee2e6"/>
+    <rect x="30" y="-30" width="50" height="30" fill="#dee2e6"/>
+    <path d="M-150 -150 V-200 H-120 V-150" fill="#e9ecef" stroke="#dee2e6" stroke-width="5"/>
+    <path d="M150 40 A20 20 0 0 1 130 60 H-130 A20 20 0 0 1 -150 40" fill="none" stroke="#dee2e6" stroke-width="5"/>
+  </g>
+  <text x="400" y="480" font-family="Arial, sans-serif" font-size="20" text-anchor="middle" fill="#6c757d">تصویر ملک موجود نیست</text>
+</svg>

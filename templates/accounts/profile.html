@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user me-2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            پروفایل کاربری
+        </h1>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 120px; height: 120px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user text-secondary"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    {% endif %}
+                    
+                    <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted mb-2">@{{ user.username }}</p>
+                    
+                    {% if user.profile.position %}
+                    <div class="badge bg-primary mb-3">{{ user.profile.position }}</div>
+                    {% endif %}
+                    
+                    <div class="list-group text-start">
+                        <div class="list-group-item d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail text-primary me-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            {{ user.email|default:"ایمیل ثبت نشده" }}
+                        </div>
+                        <div class="list-group-item d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone text-primary me-2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            {{ user.profile.phone|default:"شماره تلفن ثبت نشده" }}
+                        </div>
+                        <div class="list-group-item d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield text-primary me-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            {% if user.is_superuser %}
+                            مدیر ارشد سیستم
+                            {% elif user.profile.is_super_admin %}
+                            مدیر اصلی
+                            {% elif user.profile.is_property_manager %}
+                            مدیر املاک
+                            {% elif user.profile.is_sales_agent %}
+                            کارشناس فروش
+                            {% else %}
+                            کاربر عادی
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <span class="text-muted small">تاریخ عضویت: {{ user.date_joined|date:"Y/m/d" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">ویرایش اطلاعات کاربری</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if user_form.errors or profile_form.errors %}
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">خطاهای فرم را برطرف کنید:</h5>
+                            {{ user_form.errors }}
+                            {{ profile_form.errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <h5 class="mb-3">اطلاعات شخصی</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ user_form.first_name.id_for_label }}" class="form-label">{{ user_form.first_name.label }}</label>
+                                {{ user_form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ user_form.last_name.id_for_label }}" class="form-label">{{ user_form.last_name.label }}</label>
+                                {{ user_form.last_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ user_form.email.id_for_label }}" class="form-label">{{ user_form.email.label }}</label>
+                                {{ user_form.email }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.phone.id_for_label }}" class="form-label">{{ profile_form.phone.label }}</label>
+                                {{ profile_form.phone }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.position.id_for_label }}" class="form-label">{{ profile_form.position.label }}</label>
+                                {{ profile_form.position }}
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">تصویر پروفایل</h5>
+                        <div class="mb-4">
+                            <label for="{{ profile_form.avatar.id_for_label }}" class="form-label">{{ profile_form.avatar.label }}</label>
+                            {% if user.profile.avatar %}
+                            <div class="mb-2">
+                                <img src="{{ user.profile.avatar.url }}" alt="تصویر پروفایل فعلی" class="img-thumbnail" style="max-height: 100px;">
+                                <p class="small text-muted">تصویر پروفایل فعلی</p>
+                            </div>
+                            {% endif %}
+                            {{ profile_form.avatar }}
+                            <div class="form-text text-muted">فرمت‌های مجاز: jpg، png، jpeg. حداکثر سایز: 2 مگابایت</div>
+                        </div>
+                        
+                        <h5 class="mb-3">تغییر رمز عبور</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ user_form.password.id_for_label }}" class="form-label">{{ user_form.password.label }}</label>
+                                {{ user_form.password }}
+                                <div class="form-text text-muted">اگر نمی‌خواهید رمز عبور را تغییر دهید، این فیلد را خالی بگذارید.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ user_form.confirm_password.id_for_label }}" class="form-label">{{ user_form.confirm_password.label }}</label>
+                                {{ user_form.confirm_password }}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                ذخیره تغییرات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

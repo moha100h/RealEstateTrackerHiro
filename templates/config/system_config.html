@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings me-2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            تنظیمات سیستم
+        </h1>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">پیکربندی سیستم مدیریت املاک</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">خطاهای فرم را برطرف کنید:</h5>
+                            {{ form.errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.website_title.id_for_label }}" class="form-label">{{ form.website_title.label }}</label>
+                            {{ form.website_title }}
+                            <div class="form-text text-muted">این عنوان در بالای صفحات و در تب مرورگر نمایش داده می‌شود.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.font_type.id_for_label }}" class="form-label">{{ form.font_type.label }}</label>
+                            {{ form.font_type }}
+                            <div class="form-text text-muted">نوع فونت فارسی مورد استفاده در کل سیستم</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.logo.id_for_label }}" class="form-label">{{ form.logo.label }}</label>
+                            {% if form.instance.logo %}
+                            <div class="mb-2">
+                                <img src="{{ form.instance.logo.url }}" alt="لوگوی فعلی" class="img-thumbnail" style="max-height: 100px; max-width: 200px;">
+                                <p class="small text-muted">لوگوی فعلی سایت</p>
+                            </div>
+                            {% endif %}
+                            {{ form.logo }}
+                            <div class="form-text text-muted">برای بهترین نتیجه، تصویری با ابعاد ۲۰۰×۶۰ پیکسل و فرمت PNG با پس‌زمینه شفاف انتخاب کنید.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.default_property_image.id_for_label }}" class="form-label">{{ form.default_property_image.label }}</label>
+                            {% if form.instance.default_property_image %}
+                            <div class="mb-2">
+                                <img src="{{ form.instance.default_property_image.url }}" alt="تصویر پیش‌فرض ملک" class="img-thumbnail" style="max-height: 150px;">
+                                <p class="small text-muted">تصویر پیش‌فرض ملک</p>
+                            </div>
+                            {% endif %}
+                            {{ form.default_property_image }}
+                            <div class="form-text text-muted">این تصویر برای املاکی که تصویر ندارند استفاده می‌شود. ابعاد پیشنهادی ۸۰۰×۶۰۰ پیکسل.</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                ذخیره تنظیمات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

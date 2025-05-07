@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2 me-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            داشبورد مدیریت
+        </h1>
+        <div>
+            <a href="{% url 'properties:property_create' %}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                افزودن ملک جدید
+            </a>
+        </div>
+    </div>
+    
+    <!-- کارت‌های آماری -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm stat-card">
+                <div class="card-body text-center">
+                    <div class="display-4 text-primary mb-2">{{ total_properties }}</div>
+                    <h5 class="card-title">کل املاک</h5>
+                    <p class="card-text text-muted">تعداد کل املاک ثبت شده در سیستم</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm stat-card">
+                <div class="card-body text-center">
+                    <div class="display-4 text-success mb-2">{{ available_properties }}</div>
+                    <h5 class="card-title">املاک موجود</h5>
+                    <p class="card-text text-muted">تعداد املاک قابل معامله</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm stat-card">
+                <div class="card-body text-center">
+                    <div class="display-4 text-danger mb-2">{{ sold_properties }}</div>
+                    <h5 class="card-title">املاک فروخته/اجاره شده</h5>
+                    <p class="card-text text-muted">تعداد معاملات انجام شده</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- آمار بر اساس وضعیت -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pie-chart me-1"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                        آمار بر اساس وضعیت
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>وضعیت</th>
+                                    <th class="text-center">تعداد</th>
+                                    <th class="text-center">درصد</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in property_status_stats %}
+                                <tr>
+                                    <td>
+                                        <span class="badge {% if stat.status__name == 'موجود' %}bg-success{% elif stat.status__name == 'فروخته شده' or stat.status__name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} me-2">
+                                            {{ stat.status__name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ stat.count }}</td>
+                                    <td class="text-center">
+                                        {% if total_properties %}
+                                        {{ stat.count|floatformat:0|default:"0" }}%
+                                        <div class="progress mt-1" style="height: 4px;">
+                                            <div class="progress-bar {% if stat.status__name == 'موجود' %}bg-success{% elif stat.status__name == 'فروخته شده' or stat.status__name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %}" style="width: {{ stat.count|floatformat:0|default:"0" }}%"></div>
+                                        </div>
+                                        {% else %}
+                                        0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">هیچ داده‌ای موجود نیست</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- آمار بر اساس نوع معامله -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart me-1"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+                        آمار بر اساس نوع معامله
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>نوع معامله</th>
+                                    <th class="text-center">تعداد</th>
+                                    <th class="text-center">درصد</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in transaction_type_stats %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-info me-2">
+                                            {{ stat.transaction_type__name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ stat.count }}</td>
+                                    <td class="text-center">
+                                        {% if total_properties %}
+                                        {{ stat.count|floatformat:0|default:"0" }}%
+                                        <div class="progress mt-1" style="height: 4px;">
+                                            <div class="progress-bar bg-info" style="width: {{ stat.count|floatformat:0|default:"0" }}%"></div>
+                                        </div>
+                                        {% else %}
+                                        0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">هیچ داده‌ای موجود نیست</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- میانگین قیمت بر اساس نوع ملک -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign me-1"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        میانگین قیمت بر اساس نوع ملک
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>نوع ملک</th>
+                                    <th class="text-center">میانگین قیمت (تومان)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for avg in avg_price_by_type %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary me-2">
+                                            {{ avg.property_type__name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ avg.avg_price|floatformat:"0"|intcomma }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">هیچ داده‌ای موجود نیست</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- املاک اخیر -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock me-1"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        املاک اخیراً اضافه شده
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for property in recent_properties %}
+                        <a href="{% url 'properties:property_detail' property.slug %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">{{ property.property_code }}</span>
+                                        <h6 class="mb-0">{{ property.title }}</h6>
+                                    </div>
+                                    <small class="text-muted">{{ property.address|truncatechars:40 }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div>{{ property.price|floatformat:"0"|intcomma }} تومان</div>
+                                    <small class="text-muted">{{ property.created_at|date:"Y/m/d" }}</small>
+                                </div>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted py-4">
+                            هیچ ملکی ثبت نشده است
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'properties:property_list' %}" class="btn btn-sm btn-outline-primary">
+                        مشاهده همه املاک
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
