@@ -52,9 +52,29 @@
                         
                         <div class="property-badges">
                             <span class="badge bg-primary property-code">{{ property.property_code }}</span>
-                            <span class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status">
+                            <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status">
                                 {{ property.status.name }}
                             </span>
+                            {% if user.is_staff %}
+                            <div class="dropdown status-dropdown">
+                                <button class="btn btn-sm btn-light rounded-circle status-change-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end status-dropdown-menu">
+                                    <li><h6 class="dropdown-header">تغییر وضعیت ملک</h6></li>
+                                    {% for status in property_statuses %}
+                                    <li>
+                                        <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
+                                           href="#" 
+                                           data-property-id="{{ property.id }}" 
+                                           data-status-id="{{ status.id }}">
+                                            {{ status.name }}
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="property-overlay">
                             <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-light rounded-pill px-3">

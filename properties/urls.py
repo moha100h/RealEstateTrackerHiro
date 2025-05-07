@@ -10,4 +10,5 @@ urlpatterns = [
     path('detail/<slug:slug>/', views.PropertyDetailView.as_view(), name='property_detail'),
     path('update/<slug:slug>/', views.PropertyUpdateView.as_view(), name='property_update'),
     path('delete/<slug:slug>/', views.PropertyDeleteView.as_view(), name='property_delete'),
+    path('change-status/<int:pk>/', views.change_property_status, name='property_change_status'),
 ]

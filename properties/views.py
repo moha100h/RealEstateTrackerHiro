@@ -4,6 +4,9 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 from .models import Property, PropertyType, TransactionType, PropertyStatus
 from .forms import PropertyForm
@@ -24,6 +27,7 @@ class PropertyListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['filter'] = self.filterset
+        context['property_statuses'] = PropertyStatus.objects.all()
         return context
 
 class PropertyDetailView(DetailView):
@@ -88,3 +92,51 @@ def search_properties(request):
         'properties': property_filter.qs
     }
     return render(request, 'properties/property_search.html', context)
+
+
+@login_required
+@require_POST
+def change_property_status(request, pk):
+    """تغییر وضعیت ملک"""
+    # بررسی دسترسی کاربر
+    if not request.user.is_staff:
+        return JsonResponse({
+            'success': False,
+            'message': 'شما دسترسی لازم برای این عملیات را ندارید.'
+        }, status=403)
+    
+    # دریافت آیدی وضعیت جدید
+    try:
+        status_id = int(request.POST.get('status_id'))
+        new_status = PropertyStatus.objects.get(id=status_id)
+    except (ValueError, PropertyStatus.DoesNotExist):
+        return JsonResponse({
+            'success': False,
+            'message': 'وضعیت مورد نظر یافت نشد.'
+        }, status=400)
+    
+    # پیدا کردن و به‌روزرسانی ملک
+    try:
+        property = Property.objects.get(pk=pk)
+        old_status = property.status.name
+        property.status = new_status
+        property.save()
+        
+        # تهیه کلاس CSS برای نمایش وضعیت
+        status_class = 'bg-success'
+        if new_status.name == 'فروخته شده' or new_status.name == 'اجاره داده شده':
+            status_class = 'bg-danger'
+        elif new_status.name == 'رزرو شده':
+            status_class = 'bg-warning'
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'وضعیت ملک از «{old_status}» به «{new_status.name}» تغییر یافت.',
+            'status_name': new_status.name,
+            'status_class': status_class
+        })
+    except Property.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'ملک مورد نظر یافت نشد.'
+        }, status=404)
