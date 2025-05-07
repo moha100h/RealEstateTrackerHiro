@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.text import slugify
 import uuid
 from django.utils import timezone
+from django_jalali.db import models as jmodels
 
 class PropertyType(models.Model):
     """
@@ -61,8 +62,8 @@ class Property(models.Model):
     rooms = models.PositiveSmallIntegerField(verbose_name="تعداد اتاق")
     description = models.TextField(verbose_name="توضیحات")
     image = models.ImageField(upload_to='properties/', blank=True, null=True, verbose_name="تصویر اصلی")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ثبت")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
+    created_at = jmodels.jDateTimeField(auto_now_add=True, verbose_name="تاریخ ثبت")
+    updated_at = jmodels.jDateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
     slug = models.SlugField(unique=True, blank=True, verbose_name="اسلاگ")
     
     class Meta:
