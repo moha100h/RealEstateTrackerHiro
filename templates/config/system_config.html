@@ -1,77 +1,634 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<style>
+    .settings-tabs .nav-link {
+        color: var(--gray-700);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .settings-tabs .nav-link:hover {
+        background-color: var(--gray-100);
+    }
+    
+    .settings-tabs .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .settings-card {
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    
+    .settings-card .card-header {
+        padding: 1.25rem 1.5rem;
+        background-color: #f8f9fc;
+        border-bottom: 1px dashed rgba(0,0,0,0.05);
+    }
+    
+    .settings-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .settings-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+    
+    .settings-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .settings-section-header {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .settings-section-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 1.15rem;
+        margin-bottom: 0;
+    }
+    
+    .form-check-label {
+        cursor: pointer;
+    }
+    
+    .color-option {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        margin-left: 5px;
+        transition: transform 0.2s ease;
+    }
+    
+    .color-option.selected {
+        transform: scale(1.2);
+        border-color: white;
+        box-shadow: 0 0 0 2px var(--primary-color);
+    }
+    
+    .color-option:hover {
+        transform: scale(1.1);
+    }
+    
+    .color-blue { background-color: #3F51B5; }
+    .color-green { background-color: #4CAF50; }
+    .color-red { background-color: #F44336; }
+    .color-purple { background-color: #673AB7; }
+    .color-orange { background-color: #FF9800; }
+    .color-teal { background-color: #009688; }
+    
+    .preview-box {
+        border: 1px solid var(--gray-200);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        background-color: #f8f9fa;
+    }
+    
+    .preview-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: var(--gray-700);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+    
+    .image-preview {
+        display: inline-block;
+        padding: 3px;
+        border: 1px solid var(--gray-200);
+        border-radius: 4px;
+        background-color: white;
+        margin-right: 10px;
+        position: relative;
+    }
+    
+    .image-preview img {
+        max-height: 100px;
+        max-width: 200px;
+        border-radius: 2px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings me-2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            تنظیمات سیستم
-        </h1>
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">خانه</a></li>
+                <li class="breadcrumb-item active">تنظیمات سیستم</li>
+            </ol>
+        </nav>
     </div>
     
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">پیکربندی سیستم مدیریت املاک</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        {% if form.errors %}
-                        <div class="alert alert-danger">
-                            <h5 class="alert-heading">خطاهای فرم را برطرف کنید:</h5>
-                            {{ form.errors }}
-                        </div>
-                        {% endif %}
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.website_title.id_for_label }}" class="form-label">{{ form.website_title.label }}</label>
-                            {{ form.website_title }}
-                            <div class="form-text text-muted">این عنوان در بالای صفحات و در تب مرورگر نمایش داده می‌شود.</div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.font_type.id_for_label }}" class="form-label">{{ form.font_type.label }}</label>
-                            {{ form.font_type }}
-                            <div class="form-text text-muted">نوع فونت فارسی مورد استفاده در کل سیستم</div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.logo.id_for_label }}" class="form-label">{{ form.logo.label }}</label>
-                            {% if form.instance.logo %}
-                            <div class="mb-2">
-                                <img src="{{ form.instance.logo.url }}" alt="لوگوی فعلی" class="img-thumbnail" style="max-height: 100px; max-width: 200px;">
-                                <p class="small text-muted">لوگوی فعلی سایت</p>
-                            </div>
-                            {% endif %}
-                            {{ form.logo }}
-                            <div class="form-text text-muted">برای بهترین نتیجه، تصویری با ابعاد ۲۰۰×۶۰ پیکسل و فرمت PNG با پس‌زمینه شفاف انتخاب کنید.</div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.default_property_image.id_for_label }}" class="form-label">{{ form.default_property_image.label }}</label>
-                            {% if form.instance.default_property_image %}
-                            <div class="mb-2">
-                                <img src="{{ form.instance.default_property_image.url }}" alt="تصویر پیش‌فرض ملک" class="img-thumbnail" style="max-height: 150px;">
-                                <p class="small text-muted">تصویر پیش‌فرض ملک</p>
-                            </div>
-                            {% endif %}
-                            {{ form.default_property_image }}
-                            <div class="form-text text-muted">این تصویر برای املاکی که تصویر ندارند استفاده می‌شود. ابعاد پیشنهادی ۸۰۰×۶۰۰ پیکسل.</div>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                                ذخیره تنظیمات
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <div class="d-flex align-items-center mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings text-primary me-3"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <div>
+            <h1 class="mb-0">تنظیمات سیستم</h1>
+            <p class="text-muted mb-0">تنظیمات و پیکربندی کامل سیستم مدیریت املاک</p>
+        </div>
+    </div>
+    
+    {% if form.errors %}
+    <div class="alert alert-danger d-flex" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-circle flex-shrink-0 me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <div>
+            <h5 class="alert-heading mb-1">خطاهای زیر را برطرف کنید:</h5>
+            <ul class="mb-0 ps-3">
+                {% for field, errors in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} d-flex" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle flex-shrink-0 me-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <div>{{ message }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="settings-tabs">
+                <nav class="nav flex-column" id="settingsTabs" role="tablist">
+                    <a class="nav-link active" id="general-tab" data-bs-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        تنظیمات عمومی
+                    </a>
+                    <a class="nav-link" id="appearance-tab" data-bs-toggle="tab" href="#appearance" role="tab" aria-controls="appearance" aria-selected="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        ظاهر سیستم
+                    </a>
+                    <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        اطلاعات تماس
+                    </a>
+                    <a class="nav-link" id="social-tab" data-bs-toggle="tab" href="#social" role="tab" aria-controls="social" aria-selected="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        شبکه‌های اجتماعی
+                    </a>
+                    <a class="nav-link" id="seo-tab" data-bs-toggle="tab" href="#seo" role="tab" aria-controls="seo" aria-selected="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        SEO
+                    </a>
+                    <a class="nav-link" id="property-tab" data-bs-toggle="tab" href="#property" role="tab" aria-controls="property" aria-selected="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-box"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        تنظیمات ملک
+                    </a>
+                    <a class="nav-link" id="advanced-tab" data-bs-toggle="tab" href="#advanced" role="tab" aria-controls="advanced" aria-selected="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        تنظیمات پیشرفته
+                    </a>
+                </nav>
             </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <form method="post" enctype="multipart/form-data" class="settings-form">
+                {% csrf_token %}
+                
+                <div class="tab-content" id="settingsTabsContent">
+                    <!-- تنظیمات عمومی -->
+                    <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home me-2 text-primary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    تنظیمات عمومی
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">اطلاعات پایه سیستم</h5>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <label for="{{ form.website_title.id_for_label }}" class="form-label">{{ form.website_title.label }}</label>
+                                                {{ form.website_title }}
+                                                <div class="form-text text-muted">این عنوان در بالای صفحات و در تب مرورگر نمایش داده می‌شود.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">تصاویر و آیکون‌ها</h5>
+                                    </div>
+                                    
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.favicon.id_for_label }}" class="form-label">{{ form.favicon.label }}</label>
+                                                {% if form.instance.favicon %}
+                                                <div class="d-flex mb-2 align-items-center">
+                                                    <div class="image-preview">
+                                                        <img src="{{ form.instance.favicon.url }}" alt="آیکون سایت" class="img-fluid">
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {{ form.favicon }}
+                                                <div class="form-text text-muted">آیکونی که در تب مرورگر نمایش داده می‌شود (ترجیحاً با فرمت .ico یا .png)</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.logo.id_for_label }}" class="form-label">{{ form.logo.label }}</label>
+                                                {% if form.instance.logo %}
+                                                <div class="d-flex mb-2 align-items-center">
+                                                    <div class="image-preview">
+                                                        <img src="{{ form.instance.logo.url }}" alt="لوگوی فعلی" class="img-fluid">
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {{ form.logo }}
+                                                <div class="form-text text-muted">لوگوی سایت که در هدر نمایش داده می‌شود. ابعاد پیشنهادی ۲۰۰×۶۰ پیکسل با پس‌زمینه شفاف.</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="{{ form.default_property_image.id_for_label }}" class="form-label">{{ form.default_property_image.label }}</label>
+                                                {% if form.instance.default_property_image %}
+                                                <div class="d-flex mb-2 align-items-center">
+                                                    <div class="image-preview">
+                                                        <img src="{{ form.instance.default_property_image.url }}" alt="تصویر پیش‌فرض ملک" class="img-fluid">
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {{ form.default_property_image }}
+                                                <div class="form-text text-muted">این تصویر برای املاکی که تصویر ندارند استفاده می‌شود. ابعاد پیشنهادی ۸۰۰×۶۰۰ پیکسل.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ظاهر سیستم -->
+                    <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye me-2 text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    ظاهر سیستم
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">رنگ‌ها و قالب</h5>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-4">
+                                                <label class="form-label d-block">رنگ اصلی سیستم</label>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    {{ form.primary_color }}
+                                                </div>
+                                                <div class="form-text text-muted">این رنگ برای دکمه‌ها، عناوین و سایر عناصر اصلی استفاده می‌شود.</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-4">
+                                                <label for="{{ form.font_type.id_for_label }}" class="form-label">{{ form.font_type.label }}</label>
+                                                {{ form.font_type }}
+                                                <div class="form-text text-muted">نوع فونت فارسی مورد استفاده در کل سیستم</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            {{ form.enable_dark_mode }}
+                                            <label class="form-check-label" for="{{ form.enable_dark_mode.id_for_label }}">
+                                                {{ form.enable_dark_mode.label }}
+                                            </label>
+                                        </div>
+                                        <div class="form-text text-muted mb-3">با فعال‌سازی این گزینه، حالت تاریک برای کاربران فعال می‌شود.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- اطلاعات تماس -->
+                    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone me-2 text-primary"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                    اطلاعات تماس
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">اطلاعات تماس دفتر املاک</h5>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.company_name.id_for_label }}" class="form-label">{{ form.company_name.label }}</label>
+                                                {{ form.company_name }}
+                                                <div class="form-text text-muted">نام شرکت یا آژانس املاک</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.company_phone.id_for_label }}" class="form-label">{{ form.company_phone.label }}</label>
+                                                {{ form.company_phone }}
+                                                <div class="form-text text-muted">شماره تماس اصلی دفتر املاک</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.company_email.id_for_label }}" class="form-label">{{ form.company_email.label }}</label>
+                                                {{ form.company_email }}
+                                                <div class="form-text text-muted">ایمیل رسمی برای تماس با مشتریان</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="{{ form.company_address.id_for_label }}" class="form-label">{{ form.company_address.label }}</label>
+                                                {{ form.company_address }}
+                                                <div class="form-text text-muted">آدرس کامل دفتر املاک</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- شبکه‌های اجتماعی -->
+                    <div class="tab-pane fade" id="social" role="tabpanel" aria-labelledby="social-tab">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe me-2 text-primary"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                    شبکه‌های اجتماعی
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">لینک‌های شبکه‌های اجتماعی</h5>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.instagram_url.id_for_label }}" class="form-label">
+                                                    <i class="fa fa-instagram me-1"></i> {{ form.instagram_url.label }}
+                                                </label>
+                                                {{ form.instagram_url }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.telegram_url.id_for_label }}" class="form-label">
+                                                    <i class="fa fa-telegram me-1"></i> {{ form.telegram_url.label }}
+                                                </label>
+                                                {{ form.telegram_url }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.whatsapp_number.id_for_label }}" class="form-label">
+                                                    <i class="fa fa-whatsapp me-1"></i> {{ form.whatsapp_number.label }}
+                                                </label>
+                                                {{ form.whatsapp_number }}
+                                                <div class="form-text text-muted">به فرمت بین‌المللی وارد کنید، مثال: 989123456789+</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SEO -->
+                    <div class="tab-pane fade" id="seo" role="tabpanel" aria-labelledby="seo-tab">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search me-2 text-primary"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    تنظیمات SEO
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">بهینه‌سازی برای موتورهای جستجو</h5>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="{{ form.site_description.id_for_label }}" class="form-label">{{ form.site_description.label }}</label>
+                                                {{ form.site_description }}
+                                                <div class="form-text text-muted">توضیحات مختصر سایت که در نتایج جستجو نمایش داده می‌شود (حداکثر ۱۶۰ کاراکتر)</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="{{ form.site_keywords.id_for_label }}" class="form-label">{{ form.site_keywords.label }}</label>
+                                                {{ form.site_keywords }}
+                                                <div class="form-text text-muted">کلمات کلیدی مرتبط با سایت که با کاما از هم جدا شده‌اند</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تنظیمات ملک -->
+                    <div class="tab-pane fade" id="property" role="tabpanel" aria-labelledby="property-tab">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home me-2 text-primary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    تنظیمات ملک
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">نمایش و پیکربندی املاک</h5>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.price_unit.id_for_label }}" class="form-label">{{ form.price_unit.label }}</label>
+                                                {{ form.price_unit }}
+                                                <div class="form-text text-muted">واحد پولی که برای نمایش قیمت املاک استفاده می‌شود</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ form.property_per_page.id_for_label }}" class="form-label">{{ form.property_per_page.label }}</label>
+                                                {{ form.property_per_page }}
+                                                <div class="form-text text-muted">تعداد املاک نمایش داده شده در هر صفحه</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <div class="form-check form-switch">
+                                                    {{ form.show_property_views }}
+                                                    <label class="form-check-label" for="{{ form.show_property_views.id_for_label }}">
+                                                        {{ form.show_property_views.label }}
+                                                    </label>
+                                                </div>
+                                                <div class="form-text text-muted">نمایش تعداد بازدیدهای هر ملک به کاربران</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <div class="form-check form-switch">
+                                                    {{ form.enable_property_comments }}
+                                                    <label class="form-check-label" for="{{ form.enable_property_comments.id_for_label }}">
+                                                        {{ form.enable_property_comments.label }}
+                                                    </label>
+                                                </div>
+                                                <div class="form-text text-muted">امکان ثبت نظر برای املاک توسط کاربران</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تنظیمات پیشرفته -->
+                    <div class="tab-pane fade" id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders me-2 text-primary"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                                    تنظیمات پیشرفته
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="settings-section">
+                                    <div class="settings-section-header">
+                                        <h5 class="settings-section-title">پیکربندی‌های پیشرفته سیستم</h5>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-4">
+                                                <div class="form-check form-switch">
+                                                    {{ form.enable_sms_notifications }}
+                                                    <label class="form-check-label" for="{{ form.enable_sms_notifications.id_for_label }}">
+                                                        {{ form.enable_sms_notifications.label }}
+                                                    </label>
+                                                </div>
+                                                <div class="form-text text-muted">ارسال پیامک به مشتریان و مشاوران در رویدادهای مختلف</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6 mb-4">
+                                            <div class="form-check form-switch">
+                                                {{ form.maintenance_mode }}
+                                                <label class="form-check-label" for="{{ form.maintenance_mode.id_for_label }}">
+                                                    {{ form.maintenance_mode.label }}
+                                                </label>
+                                            </div>
+                                            <div class="form-text text-muted mb-2">هنگام فعال بودن این حالت، سایت برای کاربران عادی قابل دسترس نخواهد بود.</div>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="{{ form.maintenance_message.id_for_label }}" class="form-label">{{ form.maintenance_message.label }}</label>
+                                                {{ form.maintenance_message }}
+                                                <div class="form-text text-muted">پیامی که در حالت تعمیر و نگهداری به کاربران نمایش داده می‌شود</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 d-flex justify-content-between">
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary px-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right me-1"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        بازگشت به داشبورد
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        ذخیره تنظیمات
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // فعال کردن تب‌ها با بوتسترپ
+    var triggerTabList = [].slice.call(document.querySelectorAll('#settingsTabs a'))
+    triggerTabList.forEach(function(triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl)
+        triggerEl.addEventListener('click', function(event) {
+            event.preventDefault()
+            tabTrigger.show()
+        })
+    });
+});
+</script>
 {% endblock %}
