@@ -1,4 +1,4 @@
-/* استایل‌های سفارشی سیستم هیرو املاک */
+/* استایل‌های سفارشی و مینیمال سیستم هیرو املاک */
 
 /* استایل‌های عمومی */
 body {
@@ -6,51 +6,118 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    color: #333;
+    letter-spacing: 0.3px;
 }
 
 main {
     flex: 1;
 }
 
-/* رنگ‌های اصلی برند */
+/* رنگ‌های اصلی برند - پالت رنگی مدرن و مینیمال */
 :root {
-    --primary-color: #0d6efd;
-    --secondary-color: #6c757d;
-    --success-color: #198754;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #0dcaf0;
-    --light-color: #f8f9fa;
-    --dark-color: #212529;
+    --primary-color: #3f51b5;         /* آبی متمایل به بنفش */
+    --primary-light: #757de8;         /* آبی روشن‌تر */
+    --primary-dark: #002984;          /* آبی تیره‌تر */
+    --secondary-color: #546e7a;       /* آبی-خاکستری */
+    --success-color: #4caf50;         /* سبز */
+    --danger-color: #f44336;          /* قرمز */
+    --warning-color: #ff9800;         /* نارنجی */
+    --info-color: #00bcd4;            /* آبی فیروزه‌ای */
+    --light-color: #f8f9fa;           /* خاکستری روشن */
+    --dark-color: #263238;            /* خاکستری تیره */
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
 }
 
 /* تیتر و سربرگ‌ها */
 h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    color: var(--dark-color);
+}
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
 }
 
 /* کارت‌ها */
 .card {
     overflow: hidden;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+    border-radius: 0.8rem;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background-color: #ffffff;
+    margin-bottom: 1.5rem;
 }
 
 .card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    transform: translateY(-3px);
 }
 
 .card-header {
     font-weight: 600;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    background-color: #ffffff;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-footer {
+    background-color: rgba(0,0,0,0.01);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding: 1rem 1.5rem;
 }
 
 /* دکمه‌ها */
 .btn {
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
     font-weight: 500;
-    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    text-transform: none;
+    box-shadow: none !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,0.2);
+    transform: scale(0);
+    border-radius: 50%;
+    transform-origin: center;
+    transition: transform 0.5s;
+}
+
+.btn:active:after {
+    transform: scale(2);
+    transition: 0s;
 }
 
 .btn-primary {
@@ -59,132 +126,560 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary:hover {
-    background-color: #0b5ed7;
-    border-color: #0a58ca;
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
 }
 
 /* جدول‌ها */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
 .table th {
     font-weight: 600;
-    background-color: #f9fafb;
+    background-color: rgba(0,0,0,0.02);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 1rem;
+    color: var(--gray-700);
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    vertical-align: middle;
+}
+
+.table-hover tbody tr {
+    transition: all 0.2s ease;
 }
 
 .table-hover tbody tr:hover {
-    background-color: rgba(13, 110, 253, 0.05);
+    background-color: rgba(63, 81, 181, 0.03);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,0.01);
 }
 
 /* فرم‌ها */
 .form-control, .form-select {
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    border-color: #ced4da;
+    border-radius: 0.5rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--gray-300);
+    font-size: 1rem;
+    transition: all 0.25s ease;
+    background-color: #fff;
+    color: var(--gray-800);
+    height: auto;
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.12);
+    outline: 0;
+}
+
+.form-control::placeholder {
+    color: var(--gray-500);
+    opacity: 0.7;
 }
 
 .form-label {
     font-weight: 500;
     margin-bottom: 0.5rem;
+    color: var(--gray-700);
+    font-size: 0.95rem;
+}
+
+.form-text {
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
 }
 
 /* بج‌ها و لیبل‌ها */
 .badge {
     font-weight: 500;
-    padding: 0.35em 0.65em;
-    border-radius: 0.25rem;
+    padding: 0.4em 0.8em;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    text-transform: capitalize;
+}
+
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--info-color) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--warning-color) !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--danger-color) !important;
 }
 
 /* پیجینیشن */
 .pagination {
     margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+    gap: 0.3rem;
 }
 
 .pagination .page-link {
-    padding: 0.5rem 0.75rem;
-    color: var(--primary-color);
+    padding: 0.6rem 1rem;
+    color: var(--gray-700);
     background-color: #fff;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    line-height: 1;
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.pagination .page-link:hover {
+    background-color: var(--gray-100);
+    color: var(--primary-color);
+    border-color: var(--gray-300);
+    z-index: 1;
 }
 
 .pagination .page-item.active .page-link {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 0.125rem 0.25rem rgba(63, 81, 181, 0.2);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: var(--gray-400);
+    background-color: var(--gray-100);
+    border-color: var(--gray-200);
 }
 
 /* هشدارها و پیام‌ها */
 .alert {
-    border-radius: 0.375rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.alert:before {
+    font-family: "Feather";
+    font-size: 1.25rem;
+}
+
+.alert-primary {
+    background-color: rgba(63, 81, 181, 0.08);
+    color: var(--primary-dark);
+}
+
+.alert-primary:before {
+    content: "\e8eb";
+    color: var(--primary-color);
+}
+
+.alert-success {
+    background-color: rgba(76, 175, 80, 0.08);
+    color: #2e7d32;
+}
+
+.alert-success:before {
+    content: "\e86c";
+    color: var(--success-color);
+}
+
+.alert-warning {
+    background-color: rgba(255, 152, 0, 0.08);
+    color: #ef6c00;
+}
+
+.alert-warning:before {
+    content: "\e87c";
+    color: var(--warning-color);
+}
+
+.alert-danger {
+    background-color: rgba(244, 67, 54, 0.08);
+    color: #c62828;
+}
+
+.alert-danger:before {
+    content: "\e892";
+    color: var(--danger-color);
+}
+
+.alert-info {
+    background-color: rgba(0, 188, 212, 0.08);
+    color: #00838f;
+}
+
+.alert-info:before {
+    content: "\e88e";
+    color: var(--info-color);
 }
 
 /* انیمیشن‌های کوچک */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.pulse {
+    animation: pulse 1.5s infinite;
 }
 
 /* استایل‌های مربوط به نوار جستجو */
 .search-form .input-group {
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border-radius: 0.5rem;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+    border-radius: 0.8rem;
     overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.search-form .input-group:focus-within {
+    box-shadow: 0 5px 20px rgba(63, 81, 181, 0.15);
+}
+
+.search-form .form-control {
+    border: none;
+    padding: 1rem 1.25rem;
+    font-size: 1.05rem;
+}
+
+.search-form .btn {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    border-top-right-radius: 0.8rem;
+    border-bottom-right-radius: 0.8rem;
 }
 
 /* استایل‌های مربوط به املاک */
 .property-card {
-    transition: transform 0.3s ease;
+    border-radius: 1rem;
+    overflow: hidden;
+    background-color: white;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    height: 100%;
 }
 
 .property-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.property-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    transition: all 0.5s ease;
+}
+
+.property-card:hover .card-img-top {
+    transform: scale(1.05);
 }
 
 .property-price {
     font-weight: 700;
     color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+.property-features {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.property-features .feature-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: rgba(0,0,0,0.02);
+    border-radius: 0.5rem;
+    min-width: 80px;
+}
+
+.property-features .feature-label {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+
+.property-features .feature-value {
+    font-weight: 600;
+    color: var(--gray-800);
 }
 
 /* فوتر */
 footer {
     margin-top: auto;
-    padding: 2rem 0;
+    padding: 3rem 0;
+    background-color: var(--dark-color);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+footer h5 {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+footer h5:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+    height: 2px;
+    background-color: var(--primary-light);
+}
+
+footer p {
+    line-height: 1.8;
+    opacity: 0.8;
+}
+
+footer a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+footer a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links li a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-links li a:before {
+    content: '\2192';
+    font-weight: 300;
+    transition: transform 0.2s ease;
+}
+
+.footer-links li a:hover:before {
+    transform: translateX(5px);
 }
 
 /* تنظیمات مربوط به فاصله‌ها */
 .section-padding {
-    padding: 4rem 0;
+    padding: 5rem 0;
+}
+
+.my-5 {
+    margin-top: 3rem !important;
+    margin-bottom: 3rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem !important;
 }
 
 /* استایل‌های چک‌باکس و رادیو */
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.1rem;
+    border: 1px solid var(--gray-300);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
 .form-check-input:checked {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.15);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.15);
+    border-color: var(--primary-color);
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding-right: 0.5rem;
 }
 
 /* استایل‌های صفحه لاگین */
 .login-card {
     max-width: 400px;
-    margin: 0 auto;
+    margin: 2rem auto;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.login-card .card-header {
+    text-align: center;
+    padding: 2rem 1.5rem 1rem;
+    background-color: white;
+    border: none;
+}
+
+.login-card .card-body {
+    padding: 2rem;
+}
+
+.login-card .login-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    background-color: rgba(63, 81, 181, 0.1);
+    border-radius: 50%;
+}
+
+.login-card .login-icon svg {
+    width: 40px;
+    height: 40px;
+    color: var(--primary-color);
 }
 
 /* استایل‌های داشبورد */
 .dashboard-stat-card {
-    border-right: 4px solid var(--primary-color);
-    min-height: 100px;
-    transition: all 0.3s ease;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    background-color: white;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-stat-card:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    background-color: var(--primary-color);
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.dashboard-stat-card.success-card:after {
+    background-color: var(--success-color);
+}
+
+.dashboard-stat-card.danger-card:after {
+    background-color: var(--danger-color);
+}
+
+.dashboard-stat-card.info-card:after {
+    background-color: var(--info-color);
 }
 
 .dashboard-stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.dashboard-stat-card .card-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.dashboard-stat-card .card-title {
+    color: var(--gray-600);
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+.dashboard-stat-card .card-icon {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    font-size: 2rem;
+    opacity: 0.1;
 }
 
 /* استایل‌های مربوط به بخش نمایش تصاویر */

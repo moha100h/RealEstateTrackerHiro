@@ -7,6 +7,65 @@ body {
 /* تنظیمات RTL برای کلاس‌های بوتسترپ */
 .dropdown-menu {
     text-align: right;
+    left: auto;
+    right: 0;
+    transform-origin: top right;
+}
+
+.dropdown-menu-end {
+    left: 0;
+    right: auto;
+    transform-origin: top left;
+}
+
+.dropdown-toggle::after {
+    margin-right: 0.3em;
+    margin-left: 0;
+}
+
+/* منوی کشویی مدرن */
+.dropdown-menu {
+    padding: 0.5rem;
+    min-width: 14rem;
+    border: none;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+    border-radius: 0.65rem;
+    animation: fadeDropdown 0.2s ease-in-out;
+}
+
+@keyframes fadeDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    border-radius: 0.5rem;
+    padding: 0.65rem 1rem;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(0,0,0,0.03);
+    transform: translateX(-2px);
+}
+
+.dropdown-item:active, .dropdown-item:focus {
+    background-color: rgba(63, 81, 181, 0.08);
+    color: var(--primary-color);
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    opacity: 0.1;
 }
 
 .list-group {
@@ -28,6 +87,62 @@ body {
     margin-left: 0;
 }
 
+/* نوار ناوبری مدرن */
+.navbar {
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.navbar-brand img {
+    transition: all 0.3s ease;
+}
+
+.navbar-brand:hover img {
+    transform: scale(1.05);
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+.navbar-nav .nav-link {
+    padding: 0.6rem 1rem;
+    position: relative;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.navbar-nav .nav-link:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0.8rem;
+    left: 0.8rem;
+    height: 2px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover:before,
+.navbar-nav .nav-link.active:before {
+    transform: scaleX(1);
+}
+
 .nav {
     padding-right: 0;
 }
@@ -45,6 +160,7 @@ body {
     float: right;
     padding-left: 0.5rem;
     padding-right: 0;
+    content: "/";
 }
 
 .modal-header .btn-close {
