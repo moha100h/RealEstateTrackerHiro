@@ -153,3 +153,10 @@ LOGOUT_REDIRECT_URL = 'home'
 
 # Custom user model
 # AUTH_USER_MODEL = 'accounts.User'
+
+# CSRF configuration
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access the cookie
+CSRF_USE_SESSIONS = False  # Store CSRF token in cookie instead of session
+CSRF_COOKIE_SAMESITE = None  # Allow cross-site requests when needed
+CSRF_TRUSTED_ORIGINS = ['https://*.replit.app', 'http://localhost:5000', 'http://*.replit.dev']

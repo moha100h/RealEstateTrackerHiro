@@ -135,6 +135,8 @@
 </style>
 {% endblock %}
 
+{% block title %}تنظیمات سیستم | سیستم مدیریت املاک هیرو{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="mb-4">
@@ -280,18 +282,18 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="col-md-12">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label for="{{ form.default_property_image.id_for_label }}" class="form-label">{{ form.default_property_image.label }}</label>
                                                 {% if form.instance.default_property_image %}
                                                 <div class="d-flex mb-2 align-items-center">
                                                     <div class="image-preview">
-                                                        <img src="{{ form.instance.default_property_image.url }}" alt="تصویر پیش‌فرض ملک" class="img-fluid">
+                                                        <img src="{{ form.instance.default_property_image.url }}" alt="تصویر پیش‌فرض املاک" class="img-fluid">
                                                     </div>
                                                 </div>
                                                 {% endif %}
                                                 {{ form.default_property_image }}
-                                                <div class="form-text text-muted">این تصویر برای املاکی که تصویر ندارند استفاده می‌شود. ابعاد پیشنهادی ۸۰۰×۶۰۰ پیکسل.</div>
+                                                <div class="form-text text-muted">تصویر پیش‌فرض برای املاکی که تصویر ندارند. ابعاد پیشنهادی ۶۰۰×۴۰۰ پیکسل.</div>
                                             </div>
                                         </div>
                                     </div>
@@ -310,39 +312,31 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">رنگ‌ها و قالب</h5>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-4">
-                                                <label class="form-label d-block">رنگ اصلی سیستم</label>
-                                                <div class="d-flex flex-wrap gap-2">
-                                                    {{ form.primary_color }}
-                                                </div>
-                                                <div class="form-text text-muted">این رنگ برای دکمه‌ها، عناوین و سایر عناصر اصلی استفاده می‌شود.</div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-4">
-                                                <label for="{{ form.font_type.id_for_label }}" class="form-label">{{ form.font_type.label }}</label>
-                                                {{ form.font_type }}
-                                                <div class="form-text text-muted">نوع فونت فارسی مورد استفاده در کل سیستم</div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-4">
+                                            <label class="form-label">{{ form.primary_color.label }}</label>
+                                            <div>
+                                                {{ form.primary_color }}
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="mb-3">
-                                        <div class="form-check form-switch">
+                                    <div class="col-md-6">
+                                        <div class="mb-4">
+                                            <label for="{{ form.font_type.id_for_label }}" class="form-label">{{ form.font_type.label }}</label>
+                                            {{ form.font_type }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-4 form-check form-switch">
                                             {{ form.enable_dark_mode }}
                                             <label class="form-check-label" for="{{ form.enable_dark_mode.id_for_label }}">
                                                 {{ form.enable_dark_mode.label }}
                                             </label>
+                                            <div class="form-text text-muted">فعال‌سازی حالت تاریک برای سیستم</div>
                                         </div>
-                                        <div class="form-text text-muted mb-3">با فعال‌سازی این گزینه، حالت تاریک برای کاربران فعال می‌شود.</div>
                                     </div>
                                 </div>
                             </div>
@@ -359,42 +353,29 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">اطلاعات تماس دفتر املاک</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.company_name.id_for_label }}" class="form-label">{{ form.company_name.label }}</label>
+                                            {{ form.company_name }}
+                                        </div>
                                     </div>
-                                    
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.company_name.id_for_label }}" class="form-label">{{ form.company_name.label }}</label>
-                                                {{ form.company_name }}
-                                                <div class="form-text text-muted">نام شرکت یا آژانس املاک</div>
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.company_phone.id_for_label }}" class="form-label">{{ form.company_phone.label }}</label>
+                                            {{ form.company_phone }}
                                         </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.company_phone.id_for_label }}" class="form-label">{{ form.company_phone.label }}</label>
-                                                {{ form.company_phone }}
-                                                <div class="form-text text-muted">شماره تماس اصلی دفتر املاک</div>
-                                            </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.company_email.id_for_label }}" class="form-label">{{ form.company_email.label }}</label>
+                                            {{ form.company_email }}
                                         </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.company_email.id_for_label }}" class="form-label">{{ form.company_email.label }}</label>
-                                                {{ form.company_email }}
-                                                <div class="form-text text-muted">ایمیل رسمی برای تماس با مشتریان</div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-12">
-                                            <div class="mb-3">
-                                                <label for="{{ form.company_address.id_for_label }}" class="form-label">{{ form.company_address.label }}</label>
-                                                {{ form.company_address }}
-                                                <div class="form-text text-muted">آدرس کامل دفتر املاک</div>
-                                            </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="{{ form.company_address.id_for_label }}" class="form-label">{{ form.company_address.label }}</label>
+                                            {{ form.company_address }}
                                         </div>
                                     </div>
                                 </div>
@@ -412,38 +393,26 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">لینک‌های شبکه‌های اجتماعی</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.instagram_url.id_for_label }}" class="form-label">{{ form.instagram_url.label }}</label>
+                                            {{ form.instagram_url }}
+                                            <div class="form-text text-muted">مثال: https://instagram.com/username</div>
+                                        </div>
                                     </div>
-                                    
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.instagram_url.id_for_label }}" class="form-label">
-                                                    <i class="fa fa-instagram me-1"></i> {{ form.instagram_url.label }}
-                                                </label>
-                                                {{ form.instagram_url }}
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.telegram_url.id_for_label }}" class="form-label">{{ form.telegram_url.label }}</label>
+                                            {{ form.telegram_url }}
+                                            <div class="form-text text-muted">مثال: https://t.me/username</div>
                                         </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.telegram_url.id_for_label }}" class="form-label">
-                                                    <i class="fa fa-telegram me-1"></i> {{ form.telegram_url.label }}
-                                                </label>
-                                                {{ form.telegram_url }}
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.whatsapp_number.id_for_label }}" class="form-label">
-                                                    <i class="fa fa-whatsapp me-1"></i> {{ form.whatsapp_number.label }}
-                                                </label>
-                                                {{ form.whatsapp_number }}
-                                                <div class="form-text text-muted">به فرمت بین‌المللی وارد کنید، مثال: 989123456789+</div>
-                                            </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.whatsapp_number.id_for_label }}" class="form-label">{{ form.whatsapp_number.label }}</label>
+                                            {{ form.whatsapp_number }}
+                                            <div class="form-text text-muted">با کد کشور وارد کنید. مثال: +98912...</div>
                                         </div>
                                     </div>
                                 </div>
@@ -461,26 +430,19 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">بهینه‌سازی برای موتورهای جستجو</h5>
-                                    </div>
-                                    
-                                    <div class="row g-3">
-                                        <div class="col-md-12">
-                                            <div class="mb-3">
-                                                <label for="{{ form.site_description.id_for_label }}" class="form-label">{{ form.site_description.label }}</label>
-                                                {{ form.site_description }}
-                                                <div class="form-text text-muted">توضیحات مختصر سایت که در نتایج جستجو نمایش داده می‌شود (حداکثر ۱۶۰ کاراکتر)</div>
-                                            </div>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="{{ form.site_description.id_for_label }}" class="form-label">{{ form.site_description.label }}</label>
+                                            {{ form.site_description }}
+                                            <div class="form-text text-muted">توضیحات متا برای موتورهای جستجو. ایده‌آل بین ۵۰ تا ۱۶۰ کاراکتر است.</div>
                                         </div>
-                                        
-                                        <div class="col-md-12">
-                                            <div class="mb-3">
-                                                <label for="{{ form.site_keywords.id_for_label }}" class="form-label">{{ form.site_keywords.label }}</label>
-                                                {{ form.site_keywords }}
-                                                <div class="form-text text-muted">کلمات کلیدی مرتبط با سایت که با کاما از هم جدا شده‌اند</div>
-                                            </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="{{ form.site_keywords.id_for_label }}" class="form-label">{{ form.site_keywords.label }}</label>
+                                            {{ form.site_keywords }}
+                                            <div class="form-text text-muted">کلمات کلیدی را با کاما (،) از هم جدا کنید.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -493,55 +455,39 @@
                         <div class="card settings-card">
                             <div class="card-header">
                                 <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home me-2 text-primary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-box me-2 text-primary"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                                     تنظیمات ملک
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">نمایش و پیکربندی املاک</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.price_unit.id_for_label }}" class="form-label">{{ form.price_unit.label }}</label>
+                                            {{ form.price_unit }}
+                                        </div>
                                     </div>
-                                    
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.price_unit.id_for_label }}" class="form-label">{{ form.price_unit.label }}</label>
-                                                {{ form.price_unit }}
-                                                <div class="form-text text-muted">واحد پولی که برای نمایش قیمت املاک استفاده می‌شود</div>
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.property_per_page.id_for_label }}" class="form-label">{{ form.property_per_page.label }}</label>
+                                            {{ form.property_per_page }}
+                                            <div class="form-text text-muted">تعداد املاک نمایش داده شده در هر صفحه</div>
                                         </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.property_per_page.id_for_label }}" class="form-label">{{ form.property_per_page.label }}</label>
-                                                {{ form.property_per_page }}
-                                                <div class="form-text text-muted">تعداد املاک نمایش داده شده در هر صفحه</div>
-                                            </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-4 form-check form-switch">
+                                            {{ form.show_property_views }}
+                                            <label class="form-check-label" for="{{ form.show_property_views.id_for_label }}">
+                                                {{ form.show_property_views.label }}
+                                            </label>
                                         </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <div class="form-check form-switch">
-                                                    {{ form.show_property_views }}
-                                                    <label class="form-check-label" for="{{ form.show_property_views.id_for_label }}">
-                                                        {{ form.show_property_views.label }}
-                                                    </label>
-                                                </div>
-                                                <div class="form-text text-muted">نمایش تعداد بازدیدهای هر ملک به کاربران</div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <div class="form-check form-switch">
-                                                    {{ form.enable_property_comments }}
-                                                    <label class="form-check-label" for="{{ form.enable_property_comments.id_for_label }}">
-                                                        {{ form.enable_property_comments.label }}
-                                                    </label>
-                                                </div>
-                                                <div class="form-text text-muted">امکان ثبت نظر برای املاک توسط کاربران</div>
-                                            </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-4 form-check form-switch">
+                                            {{ form.enable_property_comments }}
+                                            <label class="form-check-label" for="{{ form.enable_property_comments.id_for_label }}">
+                                                {{ form.enable_property_comments.label }}
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -559,40 +505,37 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">پیکربندی‌های پیشرفته سیستم</h5>
+                                <div class="alert alert-warning">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle me-2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                    تغییر این تنظیمات ممکن است بر روی عملکرد سیستم تأثیر بگذارد. با احتیاط تغییر دهید.
+                                </div>
+                                
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <div class="mb-4 form-check form-switch">
+                                            {{ form.enable_sms_notifications }}
+                                            <label class="form-check-label" for="{{ form.enable_sms_notifications.id_for_label }}">
+                                                {{ form.enable_sms_notifications.label }}
+                                            </label>
+                                            <div class="form-text text-muted">ارسال پیامک اطلاع‌رسانی برای تغییرات مهم</div>
+                                        </div>
                                     </div>
                                     
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="mb-4">
-                                                <div class="form-check form-switch">
-                                                    {{ form.enable_sms_notifications }}
-                                                    <label class="form-check-label" for="{{ form.enable_sms_notifications.id_for_label }}">
-                                                        {{ form.enable_sms_notifications.label }}
-                                                    </label>
-                                                </div>
-                                                <div class="form-text text-muted">ارسال پیامک به مشتریان و مشاوران در رویدادهای مختلف</div>
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-4 form-check form-switch">
+                                            {{ form.maintenance_mode }}
+                                            <label class="form-check-label" for="{{ form.maintenance_mode.id_for_label }}">
+                                                {{ form.maintenance_mode.label }}
+                                            </label>
+                                            <div class="form-text text-muted">وقتی فعال باشد، سایت برای بازدیدکنندگان غیرمدیر در دسترس نخواهد بود</div>
                                         </div>
-                                        
-                                        <div class="col-md-6 mb-4">
-                                            <div class="form-check form-switch">
-                                                {{ form.maintenance_mode }}
-                                                <label class="form-check-label" for="{{ form.maintenance_mode.id_for_label }}">
-                                                    {{ form.maintenance_mode.label }}
-                                                </label>
-                                            </div>
-                                            <div class="form-text text-muted mb-2">هنگام فعال بودن این حالت، سایت برای کاربران عادی قابل دسترس نخواهد بود.</div>
-                                        </div>
-                                        
-                                        <div class="col-md-12">
-                                            <div class="mb-3">
-                                                <label for="{{ form.maintenance_message.id_for_label }}" class="form-label">{{ form.maintenance_message.label }}</label>
-                                                {{ form.maintenance_message }}
-                                                <div class="form-text text-muted">پیامی که در حالت تعمیر و نگهداری به کاربران نمایش داده می‌شود</div>
-                                            </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="{{ form.maintenance_message.id_for_label }}" class="form-label">{{ form.maintenance_message.label }}</label>
+                                            {{ form.maintenance_message }}
+                                            <div class="form-text text-muted">این پیام زمانی که سایت در حالت تعمیر و نگهداری است نمایش داده می‌شود</div>
                                         </div>
                                     </div>
                                 </div>
@@ -601,12 +544,12 @@
                     </div>
                 </div>
                 
-                <div class="mt-4 d-flex justify-content-between">
-                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary px-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right me-1"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                        بازگشت به داشبورد
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary me-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x me-1"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        انصراف
                     </a>
-                    <button type="submit" class="btn btn-primary px-4">
+                    <button type="submit" class="btn btn-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                         ذخیره تنظیمات
                     </button>
@@ -615,20 +558,69 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // فعال کردن تب‌ها با بوتسترپ
-    var triggerTabList = [].slice.call(document.querySelectorAll('#settingsTabs a'))
-    triggerTabList.forEach(function(triggerEl) {
-        var tabTrigger = new bootstrap.Tab(triggerEl)
-        triggerEl.addEventListener('click', function(event) {
-            event.preventDefault()
-            tabTrigger.show()
-        })
+    document.addEventListener('DOMContentLoaded', function() {
+        // فعال‌سازی تب‌ها
+        const triggerTabList = document.querySelectorAll('#settingsTabs a')
+        triggerTabList.forEach(triggerEl => {
+            const tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', event => {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        });
+        
+        // انتخاب رنگ اصلی
+        const colorSelect = document.getElementById('id_primary_color');
+        if (colorSelect) {
+            // ایجاد نشانگرهای رنگی
+            const colorOptions = [
+                {value: 'blue', color: '#3F51B5', name: 'آبی'},
+                {value: 'green', color: '#4CAF50', name: 'سبز'},
+                {value: 'red', color: '#F44336', name: 'قرمز'},
+                {value: 'purple', color: '#673AB7', name: 'بنفش'},
+                {value: 'orange', color: '#FF9800', name: 'نارنجی'},
+                {value: 'teal', color: '#009688', name: 'فیروزه‌ای'},
+            ];
+            
+            // مخفی کردن سلکت اصلی
+            colorSelect.style.display = 'none';
+            
+            // ایجاد کانتینر برای نشانگرهای رنگی
+            const colorContainer = document.createElement('div');
+            colorContainer.className = 'd-flex gap-2 align-items-center';
+            colorSelect.parentNode.insertBefore(colorContainer, colorSelect.nextSibling);
+            
+            // ایجاد نشانگرهای رنگی
+            colorOptions.forEach(option => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = `color-option color-${option.value}`;
+                colorDiv.title = option.name;
+                colorDiv.style.backgroundColor = option.color;
+                
+                // اضافه کردن کلاس 'selected' به رنگ انتخاب شده
+                if (colorSelect.value === option.value) {
+                    colorDiv.classList.add('selected');
+                }
+                
+                // رویداد کلیک برای انتخاب رنگ
+                colorDiv.addEventListener('click', function() {
+                    // حذف کلاس 'selected' از همه گزینه‌ها
+                    document.querySelectorAll('.color-option').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    
+                    // افزودن کلاس 'selected' به گزینه انتخاب شده
+                    this.classList.add('selected');
+                    
+                    // بروزرسانی مقدار سلکت
+                    colorSelect.value = option.value;
+                });
+                
+                colorContainer.appendChild(colorDiv);
+            });
+        }
     });
-});
 </script>
 {% endblock %}
