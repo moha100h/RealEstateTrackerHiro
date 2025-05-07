@@ -21,6 +21,13 @@
             });
         });
         
+        // مدیریت موقعیت منوی کشویی با Popper.js (Bootstrap 5)
+        document.querySelectorAll('.dropdown-menu').forEach(dropdownMenu => {
+            dropdownMenu.addEventListener('click', function(e) {
+                e.stopPropagation(); // جلوگیری از بسته شدن منو با کلیک روی خود منو
+            });
+        });
+        
         // تابع ارسال درخواست تغییر وضعیت
         function changePropertyStatus(propertyId, statusId) {
             // تهیه داده‌های مورد نیاز برای ارسال
@@ -59,6 +66,10 @@
                     
                     // نمایش پیام موفقیت‌آمیز
                     showAlert('success', data.message);
+                    
+                    // بستن منو
+                    const dropdown = new bootstrap.Dropdown(statusBadge);
+                    dropdown.hide();
                     
                     // به‌روزرسانی منوی وضعیت
                     updateStatusMenu(propertyId, statusId);
@@ -194,23 +205,21 @@
 
                         {% if user.is_staff %}
                         <div class="dropdown status-badge-dropdown">
-                            <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button type="button" id="status-badge-{{ property.id }}" class="badge border-0 {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                 {{ property.status.name }}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down ms-1"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </span>
-                            <ul class="dropdown-menu dropdown-menu-end status-dropdown-menu">
-                                <li><h6 class="dropdown-header">تغییر وضعیت ملک</h6></li>
+                            </button>
+                            <div class="dropdown-menu status-dropdown-menu" data-property-id="{{ property.id }}">
+                                <h6 class="dropdown-header">تغییر وضعیت ملک</h6>
                                 {% for status in property_statuses %}
-                                <li>
-                                    <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
-                                       href="#" 
-                                       data-property-id="{{ property.id }}" 
-                                       data-status-id="{{ status.id }}">
-                                        {{ status.name }}
-                                    </a>
-                                </li>
+                                <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
+                                   href="#" 
+                                   data-property-id="{{ property.id }}" 
+                                   data-status-id="{{ status.id }}">
+                                    {{ status.name }}
+                                </a>
                                 {% endfor %}
-                            </ul>
+                            </div>
                         </div>
                         {% else %}
                         <span id="status-badge-{{ property.id }}" class="badge status-badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} property-status">
