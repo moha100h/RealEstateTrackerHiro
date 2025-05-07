@@ -1432,8 +1432,91 @@ footer a:hover {
         font-size: 1.8rem;
     }
     
+    /* بهینه‌سازی کارت‌های املاک برای موبایل */
+    .property-card {
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .property-name {
+        font-size: 0.95rem;
+    }
+    
+    .property-image-container {
+        height: 120px;
+    }
+    
+    .property-features {
+        flex-wrap: wrap;
+        gap: 0.2rem;
+        margin: 0.4rem 0;
+    }
+    
+    .property-features .feature-item {
+        padding: 0.2rem 0.2rem;
+        font-size: 0.7rem;
+    }
+    
+    .property-features .feature-value {
+        font-size: 0.7rem;
+    }
+    
+    .property-badges .badge {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.65rem;
+    }
+    
+    .status-badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
+    }
+    
+    .property-price {
+        font-size: 0.75rem;
+    }
+    
+    .bg-primary-light {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.4rem;
+    }
+    
+    /* بهینه‌سازی صفحه جزئیات ملک برای موبایل */
+    .property-main-image img {
+        height: 250px !important;
+    }
+    
+    .breadcrumb {
+        font-size: 0.8rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h4 {
+        font-size: 1.1rem;
+    }
+    
+    .property-gallery img {
+        height: 80px !important;
+    }
+    
+    /* بهینه‌سازی کارت‌های اطلاعات ملک در صفحه جزئیات */
+    .p-3 {
+        padding: 0.75rem !important;
+    }
+    
+    .h5 {
+        font-size: 1rem;
+    }
+    
     .card-body {
-        padding: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .card-footer {
+        padding: 0.75rem;
+        font-size: 0.7rem;
     }
     
     .property-card {
