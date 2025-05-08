@@ -5,6 +5,7 @@ from django.core.management import call_command
 from django.conf import settings
 from django.http import HttpResponse, FileResponse
 from django.utils import timezone
+from django.db import models
 from django.db.models import Q
 import os
 import json
