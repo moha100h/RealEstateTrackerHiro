@@ -639,8 +639,9 @@ class AccountLockoutMiddleware:
     
     def _secure_hash(self, value):
         """هش امن برای ذخیره اطلاعات حساس"""
-        salt = self.encryption_key[:16]
-        return hashlib.sha256((salt + value).encode()).hexdigest()
+        # استفاده از یک salt ساده اما ثابت برای جلوگیری از خطا
+        salt = "hiro_estate_security"
+        return hashlib.sha256((salt + str(value)).encode()).hexdigest()
 
 
 class ContentSecurityPolicyMiddleware:

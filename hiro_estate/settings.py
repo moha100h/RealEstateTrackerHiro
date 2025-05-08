@@ -253,6 +253,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # تنظیمات قفل کردن حساب کاربری بعد از تلاش‌های ناموفق
 ACCOUNT_LOCKOUT_ATTEMPTS = 5  # تعداد تلاش‌های ناموفق قبل از قفل شدن
 ACCOUNT_LOCKOUT_TIME = 30 * 60  # مدت زمان قفل شدن (30 دقیقه)
+SESSION_IDLE_TIMEOUT = 1800  # مدت زمان مجاز غیرفعال بودن کاربر (30 دقیقه)
+ROTATE_SESSION_ON_LOGIN = True  # چرخش شناسه نشست بعد از لاگین
+SESSION_VALIDATE_IP = True  # اعتبارسنجی IP در طول نشست
+SESSION_VALIDATE_USER_AGENT = True  # اعتبارسنجی User-Agent در طول نشست
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
