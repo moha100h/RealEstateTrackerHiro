@@ -42,14 +42,49 @@ def system_config_view(request):
         form = SystemConfigForm(request.POST, request.FILES, instance=config)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تنظیمات سیستم با موفقیت بروزرسانی شد.')
+            messages.success(request, 'تنظیمات سیستم با موفقیت به‌روزرسانی شد.')
             return redirect('config:system_config')
     else:
         form = SystemConfigForm(instance=config)
     
+    # اطلاعات آماری برای نمایش
+    total_properties = Property.objects.count()
+    total_users = User.objects.count()
+    
     context = {
         'form': form,
-        'title': 'تنظیمات سیستم'
+        'title': 'تنظیمات سیستم',
+        'config': config,
+        'total_properties': total_properties,
+        'total_users': total_users,
+        
+        # اطلاعات اضافی برای قالب
+        'color_options': SystemConfig.PRIMARY_COLORS,
+        'layout_options': SystemConfig.LAYOUT_STYLES,
+        'navbar_options': SystemConfig.NAVBAR_STYLES,
+        
+        # بخش‌های فعال و غیرفعال
+        'has_social_accounts': any([
+            config.instagram_url, 
+            config.telegram_url, 
+            config.whatsapp_number,
+            config.linkedin_url,
+            config.twitter_url,
+            config.facebook_url,
+            config.aparat_url,
+            config.youtube_url,
+        ]),
+        'has_contact_info': any([
+            config.company_name,
+            config.company_address,
+            config.company_phone,
+            config.company_email,
+        ]),
+        'has_seo_settings': any([
+            config.site_description,
+            config.site_keywords,
+            config.google_analytics_id,
+        ]),
     }
     return render(request, 'config/system_config.html', context)
 
