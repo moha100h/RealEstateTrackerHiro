@@ -8,8 +8,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     // متغیرهای مودال
     let currentPropertyId = null;
-    const statusModal = document.getElementById('changeStatusModal');
-    const saveStatusBtn = document.getElementById('save-status-btn');
+    // متناسب با ID مودال در فایل HTML
+    const statusModal = document.getElementById('changeStatusModal') || document.getElementById('statusModal');
+    // متناسب با ID دکمه ذخیره در فایل HTML
+    const saveStatusBtn = document.getElementById('save-status-btn') || document.getElementById('saveStatusBtn');
     
     // مطمئن شویم مودال و دکمه ذخیره وجود دارند
     if (!statusModal || !saveStatusBtn) {
@@ -37,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPropertyId = propertyId;
         
         // نمایش عنوان ملک در مودال
-        const titleElement = document.getElementById('property-title-display');
+        const titleElement = document.getElementById('property-title-display') || document.getElementById('propertyTitle');
         if (titleElement) {
             titleElement.textContent = propertyTitle;
         }
@@ -74,8 +76,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // نمایش وضعیت بارگذاری روی نشانگر وضعیت
         const statusBadge = document.getElementById(`status-badge-${propertyId}`);
-        const originalContent = statusBadge.innerHTML;
-        statusBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
+        const mobileBadge = document.getElementById(`status-badge-mobile-${propertyId}`);
+        
+        // ذخیره محتوای اصلی برای بازگرداندن در صورت خطا
+        const originalContent = statusBadge ? statusBadge.innerHTML : '';
+        const originalMobileContent = mobileBadge ? mobileBadge.innerHTML : '';
+        
+        // نمایش اسپینر بارگذاری
+        if (statusBadge) {
+            statusBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
+        }
+        if (mobileBadge) {
+            mobileBadge.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
+        }
         
         // ارسال درخواست تغییر وضعیت با متد صحیح
         // ارسال درخواست به آدرس صحیح API
@@ -89,17 +102,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // تغییر متن نشانگر وضعیت
-                statusBadge.innerHTML = data.status_name;
-                
-                // تغییر کلاس نشانگر بر اساس وضعیت جدید
-                let newClass = 'badge status-badge ';
+                // تعیین کلاس مناسب بر اساس وضعیت جدید
+                let newClass = 'badge ';
                 if (data.status_name === 'موجود') {
                     newClass += 'bg-success';
                 } else if (data.status_name === 'فروخته شده' || data.status_name === 'اجاره داده شده') {
                     newClass += 'bg-danger';
                 } else if (data.status_name === 'رزرو شده') {
-                    newClass += 'bg-warning';
+                    newClass += 'bg-primary';
                 } else if (data.status_name === 'در حال ساخت') {
                     newClass += 'bg-secondary';
                 } else if (data.status_name === 'آماده تحویل') {
@@ -108,14 +118,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     newClass += 'bg-warning';
                 }
                 
-                // اعمال کلاس جدید
-                statusBadge.className = newClass;
+                // بروزرسانی وضعیت در هر دو حالت دسکتاپ و موبایل
+                if (statusBadge) {
+                    statusBadge.innerHTML = data.status_name;
+                    statusBadge.className = newClass + ' status-badge fw-medium';
+                }
+                
+                if (mobileBadge) {
+                    mobileBadge.innerHTML = data.status_name;
+                    mobileBadge.className = newClass + ' position-absolute top-0 start-0 m-2';
+                }
                 
                 // نمایش پیام موفقیت‌آمیز
                 showAlert('success', 'وضعیت ملک با موفقیت تغییر کرد.');
             } else {
                 // بازگرداندن وضعیت قبلی در صورت خطا
-                statusBadge.innerHTML = originalContent;
+                if (statusBadge) {
+                    statusBadge.innerHTML = originalContent;
+                }
+                if (mobileBadge) {
+                    mobileBadge.innerHTML = originalMobileContent;
+                }
                 
                 // نمایش پیام خطا
                 showAlert('danger', data.message || 'خطایی در تغییر وضعیت رخ داد.');

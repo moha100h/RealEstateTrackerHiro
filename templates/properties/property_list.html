@@ -10,15 +10,15 @@
 
 {% block content %}
 <!-- مودال تغییر وضعیت ملک -->
-<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0">
-                <h5 class="modal-title" id="statusModalLabel">تغییر وضعیت ملک</h5>
+                <h5 class="modal-title" id="changeStatusModalLabel">تغییر وضعیت ملک</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body pt-0">
-                <h6 id="propertyTitle" class="mb-4 text-muted fs-6">عنوان ملک</h6>
+                <h6 id="property-title-display" class="mb-4 text-muted fs-6">عنوان ملک</h6>
                 
                 {% csrf_token %}
                 
@@ -293,69 +293,7 @@
     </div>
 </div>
 
-<!-- Modal for changing property status -->
-<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="changeStatusModalLabel">تغییر وضعیت ملک</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="property-title-display" class="mb-3 fw-bold"></p>
-                
-                <div class="form-group mb-3">
-                    <label class="form-label d-block">وضعیت جدید را انتخاب کنید:</label>
-                    <div class="status-options d-flex flex-wrap gap-2">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="statusOption" id="status1" value="1">
-                            <label class="form-check-label" for="status1">موجود</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="statusOption" id="status2" value="2">
-                            <label class="form-check-label" for="status2">فروخته شده</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="statusOption" id="status3" value="3">
-                            <label class="form-check-label" for="status3">اجاره داده شده</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="statusOption" id="status4" value="4">
-                            <label class="form-check-label" for="status4">رزرو شده</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="statusOption" id="status5" value="5">
-                            <label class="form-check-label" for="status5">در حال ساخت</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="statusOption" id="status6" value="6">
-                            <label class="form-check-label" for="status6">آماده تحویل</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group mb-3" id="description-container" style="display: none;">
-                    <label for="status-description" class="form-label">توضیحات (اختیاری):</label>
-                    <textarea id="status-description" class="form-control" rows="3"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                <button type="button" class="btn btn-primary" id="save-status-btn">ذخیره تغییرات</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Enable any property action buttons 
-        if (typeof initPropertyActions === 'function') {
-            initPropertyActions();
-        }
-    });
-</script>
-{% endblock %}
+
 
 {% endblock %}
