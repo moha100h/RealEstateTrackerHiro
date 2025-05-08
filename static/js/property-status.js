@@ -8,8 +8,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // متغیرهای مودال
     let currentPropertyId = null;
-    const statusModal = document.getElementById('statusModal');
-    const saveStatusBtn = document.getElementById('saveStatusBtn');
+    const statusModal = document.getElementById('changeStatusModal');
+    const saveStatusBtn = document.getElementById('save-status-btn');
     
     // مطمئن شویم مودال و دکمه ذخیره وجود دارند
     if (!statusModal || !saveStatusBtn) {
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPropertyId = propertyId;
         
         // نمایش عنوان ملک در مودال
-        const titleElement = document.getElementById('propertyTitle');
+        const titleElement = document.getElementById('property-title-display');
         if (titleElement) {
             titleElement.textContent = propertyTitle;
         }
