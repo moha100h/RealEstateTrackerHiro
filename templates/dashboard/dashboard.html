@@ -3,289 +3,393 @@
 {% load jalali_tags %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
     /* استایل کلی داشبورد */
     .dashboard-container {
-        padding: 1.5rem 0;
+        padding: 2rem 0;
     }
     
-    .dashboard-title-section {
-        margin-bottom: 2rem;
+    /* هدر داشبورد */
+    .dashboard-header {
+        margin-bottom: 2.5rem;
+    }
+    
+    .dashboard-title-wrapper {
+        background-image: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
         position: relative;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(68, 129, 235, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .dashboard-title-wrapper::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(30deg);
+        pointer-events: none;
     }
     
     .dashboard-title {
-        font-weight: 700;
-        color: var(--dark-color);
-        margin-bottom: 0.5rem;
-        display: inline-flex;
-        align-items: center;
-    }
-    
-    .dashboard-title-card {
-        border-radius: 1rem;
-        padding: 0.8rem 1.5rem;
-        display: inline-flex;
-        align-items: center;
-        background: linear-gradient(120deg, #f8f9fa, #e9ecef);
-        border: none;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    }
-    
-    .dashboard-title-icon {
-        margin-left: 0.5rem;
-        color: var(--primary-color);
-    }
-    
-    /* کارت‌های آماری */
-    .stat-card {
-        border-radius: 1rem;
-        border: none;
-        overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        height: 100%;
-        position: relative;
-        background-color: white;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-    
-    .stat-card::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 5px;
-        background: linear-gradient(to right, var(--primary-color), var(--primary-light));
-    }
-    
-    .stat-card.success-card::after {
-        background: linear-gradient(to right, var(--success-color), #4ade80);
-    }
-    
-    .stat-card.danger-card::after {
-        background: linear-gradient(to right, var(--danger-color), #f87171);
-    }
-    
-    .stat-card .card-body {
-        padding: 1.8rem;
-        text-align: center;
-    }
-    
-    .stat-value {
-        font-size: 3.5rem;
-        font-weight: 700;
-        line-height: 1;
-        letter-spacing: -1px;
-        margin-bottom: 0.75rem;
-        color: var(--dark-color);
-        background: linear-gradient(45deg, var(--dark-color), var(--gray-700));
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .stat-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--gray-800);
-    }
-    
-    .stat-subtitle {
-        font-size: 0.85rem;
-        color: var(--gray-600);
+        color: white;
         margin-bottom: 0;
+        z-index: 1;
     }
     
-    .stat-card.primary-card .stat-value {
-        background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-        -webkit-background-clip: text;
-        background-clip: text;
-    }
-    
-    .stat-card.success-card .stat-value {
-        background: linear-gradient(45deg, var(--success-color), #4ade80);
-        -webkit-background-clip: text;
-        background-clip: text;
-    }
-    
-    .stat-card.danger-card .stat-value {
-        background: linear-gradient(45deg, var(--danger-color), #f87171);
-        -webkit-background-clip: text;
-        background-clip: text;
-    }
-    
-    /* کارت‌های اطلاعاتی */
-    .info-card {
-        border-radius: 1rem;
+    .dashboard-action-btn {
+        background: white;
+        color: #4481eb;
         border: none;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        transition: all 0.3s ease;
-        height: 100%;
-    }
-    
-    .info-card:hover {
-        box-shadow: 0 8px 25px rgba(0,0,0,0.07);
-    }
-    
-    .info-card .card-header {
-        background-color: white;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        padding: 1rem 1.5rem;
-    }
-    
-    .info-card .card-header .card-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 0;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
         display: flex;
         align-items: center;
-        color: var(--primary-color);
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        z-index: 1;
     }
     
-    .info-card .card-header .card-title svg {
-        margin-left: 0.5rem;
+    .dashboard-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        background: #f8f9fa;
     }
     
-    .info-card .list-group-item {
-        padding: 0.8rem 1.5rem;
-        border-color: rgba(0,0,0,0.03);
-        transition: all 0.2s ease;
+    /* کارت های آماری */
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        height: 100%;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
     }
     
-    .info-card .list-group-item:hover {
-        background-color: rgba(0,0,0,0.01);
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
     
-    /* جداول */
-    .dashboard-table {
-        width: 100%;
+    .stats-card-icon {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+    
+    .stats-card-primary .stats-card-icon {
+        background: rgba(68, 129, 235, 0.15);
+        color: #4481eb;
+    }
+    
+    .stats-card-success .stats-card-icon {
+        background: rgba(25, 135, 84, 0.15);
+        color: #198754;
+    }
+    
+    .stats-card-danger .stats-card-icon {
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+    }
+    
+    .stats-card-content {
+        padding: 1.5rem;
+        padding-top: 5rem;
+    }
+    
+    .stats-value {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-card-primary .stats-value {
+        color: #4481eb;
+    }
+    
+    .stats-card-success .stats-value {
+        color: #198754;
+    }
+    
+    .stats-card-danger .stats-value {
+        color: #dc3545;
+    }
+    
+    .stats-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #343a40;
+    }
+    
+    .stats-subtitle {
+        font-size: 0.85rem;
+        color: #6c757d;
         margin-bottom: 0;
     }
     
-    .dashboard-table thead th {
-        font-size: 0.85rem;
+    .stats-footer {
+        margin-top: auto;
+        padding: 1rem 1.5rem;
+        background: #f8f9fa;
+        border-top: 1px solid #f1f1f1;
+        display: flex;
+        align-items: center;
+    }
+    
+    .growth-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-left: auto;
+    }
+    
+    .growth-badge-up {
+        background: rgba(25, 135, 84, 0.15);
+        color: #198754;
+    }
+    
+    .growth-badge-down {
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+    }
+    
+    /* کارت های اطلاعاتی */
+    .data-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .data-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .data-card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
+        display: flex;
+        align-items: center;
+    }
+    
+    .data-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 1rem;
+    }
+    
+    .data-card-primary .data-card-icon {
+        background: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        color: white;
+    }
+    
+    .data-card-info .data-card-icon {
+        background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+        color: white;
+    }
+    
+    .data-card-warning .data-card-icon {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        color: white;
+    }
+    
+    .data-card-success .data-card-icon {
+        background: linear-gradient(135deg, #20c997 0%, #198754 100%);
+        color: white;
+    }
+    
+    .data-card-title {
         font-weight: 600;
-        text-transform: uppercase;
+        margin-bottom: 0;
+        color: #343a40;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .data-table th {
+        background-color: #f9fafb;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 0.85rem;
         letter-spacing: 0.5px;
-        padding: 0.75rem 1rem;
-        background-color: rgba(0,0,0,0.02);
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
     }
     
-    .dashboard-table tbody td {
-        padding: 0.75rem 1rem;
+    .data-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
         vertical-align: middle;
-        border-bottom: 1px solid rgba(0,0,0,0.03);
     }
     
-    .dashboard-table tbody tr:last-child td {
+    .data-table tr:last-child td {
         border-bottom: none;
     }
     
-    .dashboard-table tbody tr:hover {
-        background-color: rgba(0,0,0,0.01);
+    .data-table tr:hover {
+        background-color: #f8f9fa;
     }
     
-    /* نوار پیشرفت */
-    .micro-progress {
-        height: 4px;
-        border-radius: 2px;
-        margin-top: 0.25rem;
-        background-color: rgba(0,0,0,0.05);
+    /* Progress Bar */
+    .progress-slim {
+        height: 6px;
         overflow: hidden;
+        background-color: #f1f1f1;
+        border-radius: 6px;
+        margin-top: 0.5rem;
     }
     
-    .micro-progress-bar {
-        height: 100%;
-        border-radius: 2px;
+    .progress-bar-primary {
+        background-color: #4481eb;
     }
     
-    /* استایل‌های بج */
-    .badge-pill {
-        border-radius: 50rem;
-        padding: 0.35rem 0.75rem;
-        font-weight: 500;
-        font-size: 0.8rem;
+    .progress-bar-success {
+        background-color: #198754;
     }
     
-    .badge-outlined {
-        background-color: transparent;
-        border: 1px solid;
+    .progress-bar-danger {
+        background-color: #dc3545;
     }
     
-    .badge-success-soft {
-        color: var(--success-color);
-        background-color: rgba(25, 135, 84, 0.15);
+    .progress-bar-info {
+        background-color: #0dcaf0;
     }
     
-    .badge-danger-soft {
-        color: var(--danger-color);
-        background-color: rgba(220, 53, 69, 0.15);
+    .progress-bar-warning {
+        background-color: #ffc107;
     }
     
-    .badge-primary-soft {
-        color: var(--primary-color);
-        background-color: rgba(63, 81, 181, 0.15);
+    .progress-bar-secondary {
+        background-color: #6c757d;
     }
     
-    .badge-info-soft {
-        color: var(--info-color);
-        background-color: rgba(13, 202, 240, 0.15);
-    }
-    
-    .badge-warning-soft {
-        color: var(--warning-color);
-        background-color: rgba(255, 193, 7, 0.15);
-    }
-    
-    .badge-secondary-soft {
-        color: var(--secondary-color);
-        background-color: rgba(108, 117, 125, 0.15);
-    }
-    
-    /* دکمه اضافه کردن */
-    .add-button {
-        border-radius: 50rem;
-        padding: 0.6rem 1.2rem;
+    /* بج ها */
+    .status-badge {
+        padding: 0.4rem 0.85rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
         font-weight: 500;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 10px rgba(63, 81, 181, 0.15);
+        gap: 0.35rem;
     }
     
-    .add-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(63, 81, 181, 0.25);
+    .badge-available {
+        background-color: rgba(25, 135, 84, 0.15);
+        color: #198754;
     }
     
-    .add-button:active {
-        transform: translateY(0);
+    .badge-sold {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+    }
+    
+    .badge-reserved {
+        background-color: rgba(68, 129, 235, 0.15);
+        color: #4481eb;
+    }
+    
+    .badge-construction {
+        background-color: rgba(108, 117, 125, 0.15);
+        color: #6c757d;
+    }
+    
+    .badge-ready {
+        background-color: rgba(13, 202, 240, 0.15);
+        color: #0dcaf0;
+    }
+    
+    .badge-rented {
+        background-color: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
+    }
+    
+    .badge-other {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+    }
+    
+    .property-link {
+        color: #4481eb;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .property-link:hover {
+        color: #04befe;
+        text-decoration: underline;
+    }
+    
+    .property-code {
+        font-family: monospace;
+        padding: 0.25rem 0.5rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .price-value {
+        font-weight: 600;
+        color: #343a40;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container dashboard-container">
-    <div class="dashboard-title-section d-flex justify-content-between align-items-center">
-        <div>
-            <div class="dashboard-title-card">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dashboard-title-icon feather feather-bar-chart-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                <h5 class="mb-0 fw-bold">پنل مدیریت</h5>
-            </div>
+    <div class="dashboard-header">
+        <div class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">خانه</a></li>
+                    <li class="breadcrumb-item active">داشبورد مدیریت</li>
+                </ol>
+            </nav>
         </div>
-        <div>
-            <a href="{% url 'properties:property_create' %}" class="btn btn-primary add-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        
+        <div class="dashboard-title-wrapper">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-grid-3x3-gap-fill fs-3 me-3"></i>
+                <h4 class="dashboard-title">داشبورد مدیریت املاک</h4>
+            </div>
+            <a href="{% url 'properties:property_create' %}" class="dashboard-action-btn">
+                <i class="bi bi-plus-lg"></i>
                 افزودن ملک جدید
             </a>
         </div>
@@ -294,47 +398,93 @@
     <!-- کارت‌های آماری -->
     <div class="row mb-5">
         <div class="col-md-4 mb-4">
-            <div class="stat-card primary-card">
-                <div class="card-body">
-                    <div class="stat-value">{{ total_properties }}</div>
-                    <h5 class="stat-title">کل املاک</h5>
-                    <p class="stat-subtitle">تعداد کل املاک ثبت شده در سیستم</p>
+            <div class="stats-card stats-card-primary">
+                <div class="stats-card-icon">
+                    <i class="bi bi-building fs-4"></i>
+                </div>
+                <div class="stats-card-content">
+                    <div class="stats-value">{{ total_properties }}</div>
+                    <h5 class="stats-title">کل املاک</h5>
+                    <p class="stats-subtitle">تعداد کل املاک ثبت شده در سیستم</p>
+                </div>
+                <div class="stats-footer">
+                    <span class="text-muted small">
+                        <i class="bi bi-clock me-1"></i>
+                        به‌روزرسانی شده در این لحظه
+                    </span>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="stat-card success-card">
-                <div class="card-body">
-                    <div class="stat-value">{{ available_properties }}</div>
-                    <h5 class="stat-title">املاک موجود</h5>
-                    <p class="stat-subtitle">تعداد املاک قابل معامله</p>
+            <div class="stats-card stats-card-success">
+                <div class="stats-card-icon">
+                    <i class="bi bi-check-circle fs-4"></i>
+                </div>
+                <div class="stats-card-content">
+                    <div class="stats-value">{{ available_properties }}</div>
+                    <h5 class="stats-title">املاک موجود</h5>
+                    <p class="stats-subtitle">تعداد املاک قابل معامله</p>
+                </div>
+                <div class="stats-footer">
+                    <span class="text-muted small">
+                        <i class="bi bi-percent me-1"></i>
+                        {% if total_properties %}
+                        {{ available_properties|floatformat:0 }}% از کل املاک
+                        {% else %}
+                        0% از کل املاک
+                        {% endif %}
+                    </span>
+                    
+                    <span class="growth-badge growth-badge-up">
+                        <i class="bi bi-graph-up-arrow me-1"></i>
+                        قابل معامله
+                    </span>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="stat-card danger-card">
-                <div class="card-body">
-                    <div class="stat-value">{{ sold_properties }}</div>
-                    <h5 class="stat-title">معاملات انجام شده</h5>
-                    <p class="stat-subtitle">تعداد املاک فروخته/اجاره شده</p>
+            <div class="stats-card stats-card-danger">
+                <div class="stats-card-icon">
+                    <i class="bi bi-bag-check fs-4"></i>
+                </div>
+                <div class="stats-card-content">
+                    <div class="stats-value">{{ sold_properties }}</div>
+                    <h5 class="stats-title">معاملات انجام شده</h5>
+                    <p class="stats-subtitle">تعداد املاک فروخته/اجاره شده</p>
+                </div>
+                <div class="stats-footer">
+                    <span class="text-muted small">
+                        <i class="bi bi-percent me-1"></i>
+                        {% if total_properties %}
+                        {{ sold_properties|floatformat:0 }}% از کل املاک
+                        {% else %}
+                        0% از کل املاک
+                        {% endif %}
+                    </span>
+                    
+                    <span class="growth-badge growth-badge-down">
+                        <i class="bi bi-reception-4 me-1"></i>
+                        معامله شده
+                    </span>
                 </div>
             </div>
         </div>
     </div>
     
+    <!-- نمودارها و آمار -->
     <div class="row mb-4">
         <!-- آمار بر اساس وضعیت -->
         <div class="col-lg-6 mb-4">
-            <div class="info-card">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-                        آمار بر اساس وضعیت
-                    </h5>
+            <div class="data-card data-card-primary">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-pie-chart-fill"></i>
+                    </div>
+                    <h5 class="data-card-title">آمار بر اساس وضعیت</h5>
                 </div>
-                <div class="card-body p-0">
+                <div class="p-0">
                     <div class="table-responsive">
-                        <table class="dashboard-table">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>وضعیت</th>
@@ -346,40 +496,61 @@
                                 {% for stat in property_status_stats %}
                                 <tr>
                                     <td>
-                                        <span class="badge badge-pill 
-                                        {% if stat.status__name == 'موجود' %}badge-success-soft
-                                        {% elif stat.status__name == 'فروخته شده' or stat.status__name == 'اجاره داده شده' %}badge-danger-soft
-                                        {% elif stat.status__name == 'رزرو شده' %}badge-primary-soft
-                                        {% elif stat.status__name == 'در حال ساخت' %}badge-secondary-soft
-                                        {% elif stat.status__name == 'آماده تحویل' %}badge-info-soft
-                                        {% else %}badge-warning-soft{% endif %}">
+                                        <span class="status-badge 
+                                        {% if stat.status__name == 'موجود' %}badge-available
+                                        {% elif stat.status__name == 'فروخته شده' %}badge-sold
+                                        {% elif stat.status__name == 'اجاره داده شده' %}badge-rented
+                                        {% elif stat.status__name == 'رزرو شده' %}badge-reserved
+                                        {% elif stat.status__name == 'در حال ساخت' %}badge-construction
+                                        {% elif stat.status__name == 'آماده تحویل' %}badge-ready
+                                        {% else %}badge-other{% endif %}">
+                                            {% if stat.status__name == 'موجود' %}
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            {% elif stat.status__name == 'فروخته شده' %}
+                                            <i class="bi bi-currency-dollar"></i>
+                                            {% elif stat.status__name == 'اجاره داده شده' %}
+                                            <i class="bi bi-house-check-fill"></i>
+                                            {% elif stat.status__name == 'رزرو شده' %}
+                                            <i class="bi bi-bookmark-fill"></i>
+                                            {% elif stat.status__name == 'در حال ساخت' %}
+                                            <i class="bi bi-tools"></i>
+                                            {% elif stat.status__name == 'آماده تحویل' %}
+                                            <i class="bi bi-check2-all"></i>
+                                            {% else %}
+                                            <i class="bi bi-question-circle-fill"></i>
+                                            {% endif %}
                                             {{ stat.status__name }}
                                         </span>
                                     </td>
                                     <td class="text-center fw-bold">{{ stat.count }}</td>
                                     <td class="text-center">
                                         {% if total_properties %}
-                                        <div class="d-flex align-items-center justify-content-center gap-2">
-                                            <span>{{ stat.count|floatformat:0|default:"0" }}%</span>
-                                            <div class="micro-progress flex-grow-1 ms-2">
-                                                <div class="micro-progress-bar 
-                                                {% if stat.status__name == 'موجود' %}bg-success
-                                                {% elif stat.status__name == 'فروخته شده' or stat.status__name == 'اجاره داده شده' %}bg-danger
-                                                {% elif stat.status__name == 'رزرو شده' %}bg-primary
-                                                {% elif stat.status__name == 'در حال ساخت' %}bg-secondary
-                                                {% elif stat.status__name == 'آماده تحویل' %}bg-info
-                                                {% else %}bg-warning{% endif %}" 
-                                                style="width: {{ stat.count|floatformat:0|default:"0" }}%"></div>
+                                        <div class="d-flex flex-column">
+                                            <span class="mb-1">{{ stat.count|floatformat:0|default:"0" }}%</span>
+                                            <div class="progress-slim">
+                                                <div class="
+                                                {% if stat.status__name == 'موجود' %}progress-bar-success
+                                                {% elif stat.status__name == 'فروخته شده' or stat.status__name == 'اجاره داده شده' %}progress-bar-danger
+                                                {% elif stat.status__name == 'رزرو شده' %}progress-bar-primary
+                                                {% elif stat.status__name == 'در حال ساخت' %}progress-bar-secondary
+                                                {% elif stat.status__name == 'آماده تحویل' %}progress-bar-info
+                                                {% else %}progress-bar-warning{% endif %}" 
+                                                style="width: {{ stat.count|floatformat:0|default:"0" }}%; height: 100%;"></div>
                                             </div>
                                         </div>
                                         {% else %}
-                                        -
+                                        <span class="text-muted">-</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">هیچ داده‌ای موجود نیست</td>
+                                    <td colspan="3" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -391,16 +562,16 @@
         
         <!-- آمار بر اساس نوع معامله -->
         <div class="col-lg-6 mb-4">
-            <div class="info-card">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
-                        آمار بر اساس نوع معامله
-                    </h5>
+            <div class="data-card data-card-info">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
+                    <h5 class="data-card-title">آمار بر اساس نوع معامله</h5>
                 </div>
-                <div class="card-body p-0">
+                <div class="p-0">
                     <div class="table-responsive">
-                        <table class="dashboard-table">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>نوع معامله</th>
@@ -412,27 +583,33 @@
                                 {% for stat in transaction_type_stats %}
                                 <tr>
                                     <td>
-                                        <span class="badge badge-pill badge-primary-soft">
+                                        <span class="status-badge badge-reserved">
+                                            <i class="bi bi-cash-coin"></i>
                                             {{ stat.transaction_type__name }}
                                         </span>
                                     </td>
                                     <td class="text-center fw-bold">{{ stat.count }}</td>
                                     <td class="text-center">
                                         {% if total_properties %}
-                                        <div class="d-flex align-items-center justify-content-center gap-2">
-                                            <span>{{ stat.count|floatformat:0|default:"0" }}%</span>
-                                            <div class="micro-progress flex-grow-1 ms-2">
-                                                <div class="micro-progress-bar bg-primary" style="width: {{ stat.count|floatformat:0|default:"0" }}%"></div>
+                                        <div class="d-flex flex-column">
+                                            <span class="mb-1">{{ stat.count|floatformat:0|default:"0" }}%</span>
+                                            <div class="progress-slim">
+                                                <div class="progress-bar-primary" style="width: {{ stat.count|floatformat:0|default:"0" }}%; height: 100%;"></div>
                                             </div>
                                         </div>
                                         {% else %}
-                                        -
+                                        <span class="text-muted">-</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">هیچ داده‌ای موجود نیست</td>
+                                    <td colspan="3" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -443,38 +620,57 @@
         </div>
     </div>
     
-    <div class="row">
-        <!-- میانگین قیمت بر اساس نوع ملک -->
+    <div class="row mb-4">
+        <!-- آمار بر اساس نوع ملک -->
         <div class="col-lg-6 mb-4">
-            <div class="info-card">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                        میانگین قیمت بر اساس نوع ملک
-                    </h5>
+            <div class="data-card data-card-warning">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-house-fill"></i>
+                    </div>
+                    <h5 class="data-card-title">آمار بر اساس نوع ملک</h5>
                 </div>
-                <div class="card-body p-0">
+                <div class="p-0">
                     <div class="table-responsive">
-                        <table class="dashboard-table">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>نوع ملک</th>
-                                    <th class="text-center">میانگین قیمت (تومان)</th>
+                                    <th class="text-center">تعداد</th>
+                                    <th class="text-center">درصد</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for avg in avg_price_by_type %}
+                                {% for stat in property_type_stats %}
                                 <tr>
                                     <td>
-                                        <span class="badge badge-pill badge-secondary-soft">
-                                            {{ avg.property_type__name }}
+                                        <span class="status-badge badge-other">
+                                            <i class="bi bi-building"></i>
+                                            {{ stat.property_type__name }}
                                         </span>
                                     </td>
-                                    <td class="text-center fw-bold">{{ avg.avg_price|floatformat:"0"|intcomma }}</td>
+                                    <td class="text-center fw-bold">{{ stat.count }}</td>
+                                    <td class="text-center">
+                                        {% if total_properties %}
+                                        <div class="d-flex flex-column">
+                                            <span class="mb-1">{{ stat.count|floatformat:0|default:"0" }}%</span>
+                                            <div class="progress-slim">
+                                                <div class="progress-bar-warning" style="width: {{ stat.count|floatformat:0|default:"0" }}%; height: 100%;"></div>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">هیچ داده‌ای موجود نیست</td>
+                                    <td colspan="3" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -484,45 +680,148 @@
             </div>
         </div>
         
-        <!-- املاک اخیر -->
+        <!-- میانگین قیمت بر اساس نوع ملک -->
         <div class="col-lg-6 mb-4">
-            <div class="info-card">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        املاک اخیراً اضافه شده
-                    </h5>
+            <div class="data-card data-card-success">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                    <h5 class="data-card-title">میانگین قیمت بر اساس نوع ملک</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for property in recent_properties %}
-                        <a href="{% url 'properties:property_detail' property.slug %}" class="list-group-item list-group-item-action">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge badge-pill badge-primary-soft me-2">{{ property.property_code }}</span>
-                                        <h6 class="mb-0 fw-bold">{{ property.title }}</h6>
-                                    </div>
-                                    <small class="text-muted">{{ property.address|truncatechars:40 }}</small>
-                                </div>
-                                <div class="text-start">
-                                    <div class="fw-bold">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
-                                    <small class="text-muted">{{ property.created_at|to_jalali_datetime }}</small>
-                                </div>
-                            </div>
-                        </a>
-                        {% empty %}
-                        <div class="list-group-item text-center text-muted py-4">
-                            هیچ ملکی ثبت نشده است
-                        </div>
-                        {% endfor %}
+                <div class="p-0">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>نوع ملک</th>
+                                    <th class="text-center">میانگین قیمت (تومان)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in avg_price_by_type %}
+                                <tr>
+                                    <td>
+                                        <span class="status-badge badge-reserved">
+                                            <i class="bi bi-building"></i>
+                                            {{ stat.property_type__name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center fs-5 fw-bold">{{ stat.avg_price|floatformat:0|intcomma }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="card-footer text-center bg-white py-3">
-                    <a href="{% url 'properties:property_list' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">
-                        مشاهده همه املاک
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left ms-1"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                    </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- املاک اخیراً اضافه شده -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="data-card data-card-primary">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h5 class="data-card-title">املاک اخیراً اضافه شده</h5>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>عنوان</th>
+                                    <th>کد ملک</th>
+                                    <th>نوع معامله</th>
+                                    <th>نوع ملک</th>
+                                    <th>قیمت (تومان)</th>
+                                    <th>وضعیت</th>
+                                    <th>تاریخ ثبت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for property in recent_properties %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'properties:property_detail' property.property_code %}" class="property-link">
+                                            {{ property.title }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="property-code">{{ property.property_code }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge badge-reserved">
+                                            <i class="bi bi-cash"></i>
+                                            {{ property.transaction_type.name }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge badge-other">
+                                            <i class="bi bi-building"></i>
+                                            {{ property.property_type.name }}
+                                        </span>
+                                    </td>
+                                    <td class="price-value">{{ property.price|intcomma }}</td>
+                                    <td>
+                                        <span class="status-badge 
+                                        {% if property.status.name == 'موجود' %}badge-available
+                                        {% elif property.status.name == 'فروخته شده' %}badge-sold
+                                        {% elif property.status.name == 'اجاره داده شده' %}badge-rented
+                                        {% elif property.status.name == 'رزرو شده' %}badge-reserved
+                                        {% elif property.status.name == 'در حال ساخت' %}badge-construction
+                                        {% elif property.status.name == 'آماده تحویل' %}badge-ready
+                                        {% else %}badge-other{% endif %}">
+                                            {% if property.status.name == 'موجود' %}
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            {% elif property.status.name == 'فروخته شده' %}
+                                            <i class="bi bi-currency-dollar"></i>
+                                            {% elif property.status.name == 'اجاره داده شده' %}
+                                            <i class="bi bi-house-check-fill"></i>
+                                            {% elif property.status.name == 'رزرو شده' %}
+                                            <i class="bi bi-bookmark-fill"></i>
+                                            {% elif property.status.name == 'در حال ساخت' %}
+                                            <i class="bi bi-tools"></i>
+                                            {% elif property.status.name == 'آماده تحویل' %}
+                                            <i class="bi bi-check2-all"></i>
+                                            {% else %}
+                                            <i class="bi bi-question-circle-fill"></i>
+                                            {% endif %}
+                                            {{ property.status.name }}
+                                        </span>
+                                    </td>
+                                    <td>{{ property.created_at|jformat:"%Y/%m/%d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="bi bi-clipboard-x text-muted mb-3" style="font-size: 3rem;"></i>
+                                            <h5 class="mb-2">هنوز هیچ ملکی ثبت نشده است</h5>
+                                            <p class="text-muted mb-3">برای افزودن ملک جدید، دکمه زیر را کلیک کنید</p>
+                                            <a href="{% url 'properties:property_create' %}" class="btn btn-primary rounded-pill px-4">
+                                                <i class="bi bi-plus-lg me-2"></i>
+                                                افزودن ملک جدید
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
