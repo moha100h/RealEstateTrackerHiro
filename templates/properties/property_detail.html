@@ -241,6 +241,7 @@
             <!-- ستون کناری -->
             <div class="col-lg-4">
                 <!-- کارت اطلاعات تماس -->
+                {% if system_config.show_property_contact_info %}
                 <div class="contact-card mb-4">
                     <div class="contact-header">
                         <h5 class="mb-0">اطلاعات تماس</h5>
@@ -248,33 +249,52 @@
                     <div class="contact-body">
                         <div class="text-center mb-4">
                             <div class="contact-icon">
+                                {% if system_config.property_contact_avatar %}
+                                <img src="{{ system_config.property_contact_avatar.url }}" alt="مشاور املاک" class="rounded-circle contact-avatar">
+                                {% else %}
                                 <i class="bi bi-person fs-1"></i>
+                                {% endif %}
                             </div>
-                            <h5 class="mt-3 mb-1">مشاور املاک هیرو</h5>
-                            <p class="text-muted">کارشناس فروش و اجاره</p>
+                            <h5 class="mt-3 mb-1">{{ system_config.property_contact_name|default:"مشاور املاک هیرو" }}</h5>
+                            <p class="text-muted">{{ system_config.property_contact_position|default:"کارشناس فروش و اجاره" }}</p>
                         </div>
                         
                         <div>
+                            {% if system_config.property_contact_phone %}
                             <div class="contact-info-item">
                                 <div class="contact-info-icon">
                                     <i class="bi bi-telephone"></i>
                                 </div>
-                                <span>021-12345678</span>
+                                <span>{{ system_config.property_contact_phone }}</span>
                             </div>
+                            {% endif %}
                             
+                            {% if system_config.property_contact_mobile %}
                             <div class="contact-info-item">
                                 <div class="contact-info-icon">
                                     <i class="bi bi-phone"></i>
                                 </div>
-                                <span>0912-3456789</span>
+                                <span>{{ system_config.property_contact_mobile }}</span>
                             </div>
+                            {% endif %}
                             
+                            {% if system_config.property_contact_email %}
                             <div class="contact-info-item">
                                 <div class="contact-info-icon">
                                     <i class="bi bi-envelope"></i>
                                 </div>
-                                <span>info@hiroestate.com</span>
+                                <span>{{ system_config.property_contact_email }}</span>
                             </div>
+                            {% endif %}
+                            
+                            {% if system_config.property_contact_whatsapp %}
+                            <div class="contact-info-item">
+                                <div class="contact-info-icon">
+                                    <i class="bi bi-whatsapp"></i>
+                                </div>
+                                <span>{{ system_config.property_contact_whatsapp }}</span>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="card-footer p-3">
@@ -284,6 +304,7 @@
                         </button>
                     </div>
                 </div>
+                {% endif %}
                 
                 <!-- کارت املاک مشابه -->
                 <div class="similar-properties-card">

@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from .models import Property, PropertyType, TransactionType, PropertyStatus
 from .forms import PropertyForm
 from .filters import PropertyFilter
+from config.models import SystemConfig
 
 class PropertyListView(ListView):
     """نمایش لیست املاک"""
@@ -47,6 +48,11 @@ class PropertyDetailView(DetailView):
     template_name = 'properties/property_detail.html'
     context_object_name = 'property'
     slug_url_kwarg = 'slug'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['system_config'] = SystemConfig.get_config()
+        return context
 
 class PropertyCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """ایجاد ملک جدید"""
