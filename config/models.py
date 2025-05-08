@@ -205,6 +205,66 @@ class SystemConfig(models.Model):
         help_text='کد iframe گوگل مپ برای نمایش موقعیت دفتر'
     )
     
+    # تنظیمات اطلاعات تماس در صفحه جزئیات ملک
+    property_contact_name = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True,
+        validators=[MaxLengthValidator(100), validate_no_script],
+        verbose_name='نام مشاور املاک',
+        help_text='نام نمایش داده شده در بخش اطلاعات تماس جزئیات ملک'
+    )
+    property_contact_position = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True,
+        validators=[MaxLengthValidator(100), validate_no_script],
+        verbose_name='عنوان شغلی مشاور',
+        help_text='مثال: کارشناس فروش و اجاره'
+    )
+    property_contact_avatar = models.ImageField(
+        upload_to='config/contacts/', 
+        blank=True, 
+        null=True, 
+        verbose_name='تصویر مشاور'
+    )
+    property_contact_phone = models.CharField(
+        max_length=15, 
+        blank=True, 
+        null=True,
+        validators=[RegexValidator(regex=r'^\+?[0-9]{8,15}$', message='شماره تلفن باید فقط شامل اعداد و حداکثر یک علامت + باشد')],
+        verbose_name='شماره تماس ثابت',
+        help_text='شماره تماس ثابت نمایش داده شده در صفحه جزئیات ملک'
+    )
+    property_contact_mobile = models.CharField(
+        max_length=15, 
+        blank=True, 
+        null=True,
+        validators=[RegexValidator(regex=r'^\+?[0-9]{8,15}$', message='شماره موبایل باید فقط شامل اعداد و حداکثر یک علامت + باشد')],
+        verbose_name='شماره موبایل',
+        help_text='شماره موبایل نمایش داده شده در صفحه جزئیات ملک'
+    )
+    property_contact_email = models.EmailField(
+        blank=True, 
+        null=True,
+        validators=[EmailValidator(message='ایمیل وارد شده معتبر نیست')],
+        verbose_name='ایمیل مشاور',
+        help_text='ایمیل نمایش داده شده در صفحه جزئیات ملک'
+    )
+    property_contact_whatsapp = models.CharField(
+        max_length=15, 
+        blank=True, 
+        null=True,
+        validators=[RegexValidator(regex=r'^\+?[0-9]{8,15}$', message='شماره واتس‌اپ باید فقط شامل اعداد و حداکثر یک علامت + باشد')],
+        verbose_name='واتس‌اپ مشاور',
+        help_text='شماره واتس‌اپ برای تماس در صفحه جزئیات ملک (اگر با موبایل متفاوت است)'
+    )
+    show_property_contact_info = models.BooleanField(
+        default=True, 
+        verbose_name='نمایش اطلاعات تماس مشاور',
+        help_text='فعال یا غیرفعال کردن بخش اطلاعات تماس در صفحه جزئیات ملک'
+    )
+    
     # تنظیمات شبکه‌های اجتماعی
     instagram_url = models.URLField(
         blank=True,
