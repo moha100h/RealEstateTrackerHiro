@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}خطای امنیتی{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-page {
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .error-icon {
+        font-size: 5rem;
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+    
+    .error-code {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+    
+    .error-message {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .error-detail {
+        padding: 1rem;
+        border-radius: 0.25rem;
+        background-color: #f8f9fa;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        width: 100%;
+    }
+    
+    .security-tip {
+        background-color: #ffefef;
+        border-right: 4px solid #dc3545;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        width: 100%;
+    }
+    
+    .home-button {
+        padding: 0.5rem 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="error-page">
+        <div class="error-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <div class="error-code">{{ status_code|default:"403" }}</div>
+        
+        <div class="error-message">
+            {{ message|default:"دسترسی به این صفحه به دلایل امنیتی مسدود شده است." }}
+        </div>
+        
+        {% if show_details %}
+        <div class="error-detail">
+            <h5 class="text-center mb-3">جزئیات خطا</h5>
+            <p>{{ detail|default:"درخواست شما دارای الگوهای مشکوک است که ممکن است نشان‌دهنده تلاش برای نفوذ باشد." }}</p>
+            <p class="text-muted small">کد خطا: {{ error_code|default:"SEC-403" }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="security-tip">
+            <h5>توصیه امنیتی</h5>
+            <p>{{ security_tip|default:"فعالیت‌های مشکوک در سیستم ثبت و بررسی می‌شوند. لطفاً از ارسال درخواست‌های غیرمعمول خودداری فرمایید." }}</p>
+        </div>
+        
+        <a href="{% url 'home' %}" class="btn btn-primary home-button">
+            <i class="fas fa-home me-2"></i> بازگشت به صفحه اصلی
+        </a>
+    </div>
+</div>
+{% endblock %}

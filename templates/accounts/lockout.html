@@ -1,111 +1,148 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}حساب کاربری قفل شده{% endblock %}
+{% block title %}حساب کاربری مسدود شده{% endblock %}
 
-{% block content %}
-<div class="container my-5 py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-lg border-0 rounded-lg">
-                <div class="card-header bg-danger text-white">
-                    <h3 class="my-2 text-center">
-                        <i class="fas fa-lock me-2"></i> حساب کاربری قفل شده
-                    </h3>
-                </div>
-                <div class="card-body bg-light-subtle p-4">
-                    <div class="alert alert-danger">
-                        <p class="mb-2 fs-5 fw-bold text-center">{{ message }}</p>
-                        
-                        <div class="text-center my-4">
-                            <div class="d-flex align-items-center justify-content-center">
-                                <i class="fas fa-stopwatch me-2 fa-2x"></i>
-                                <span class="fs-3 fw-bold" id="countdown">{{ remaining_minutes }} دقیقه</span>
-                            </div>
-                            <p class="text-muted mt-2">زمان باقی‌مانده تا رفع قفل حساب</p>
-                        </div>
-                        
-                        {% if is_system_lockout %}
-                            <p class="text-center">
-                                <i class="fas fa-shield-alt me-1"></i>
-                                به دلیل تشخیص حمله امنیتی به سیستم، 
-                                ورود کاربران به صورت موقت مسدود شده است.
-                            </p>
-                        {% else %}
-                            <p class="text-center">
-                                <i class="fas fa-exclamation-triangle me-1"></i>
-                                این قفل به دلیل تلاش‌های ناموفق متعدد برای ورود فعال شده است.
-                            </p>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="accordion" id="helpAccordion">
-                        <div class="accordion-item border-0">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed bg-light-subtle border shadow-sm" type="button" 
-                                        data-bs-toggle="collapse" data-bs-target="#helpCollapse">
-                                    <i class="fas fa-question-circle me-2"></i> چگونه این مشکل را حل کنم؟
-                                </button>
-                            </h2>
-                            <div id="helpCollapse" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
-                                <div class="accordion-body bg-light-subtle">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item bg-transparent">
-                                            <i class="fas fa-clock me-2 text-primary"></i> صبر کنید تا زمان قفل به پایان برسد.
-                                        </li>
-                                        <li class="list-group-item bg-transparent">
-                                            <i class="fas fa-key me-2 text-primary"></i> اطمینان حاصل کنید که نام کاربری و رمز عبور را درست وارد می‌کنید.
-                                        </li>
-                                        <li class="list-group-item bg-transparent">
-                                            <i class="fas fa-sync-alt me-2 text-primary"></i> در صورت فراموشی رمز عبور، از گزینه «فراموشی رمز عبور» استفاده کنید.
-                                        </li>
-                                        <li class="list-group-item bg-transparent">
-                                            <i class="fas fa-headset me-2 text-primary"></i> در صورت ادامه مشکل با مدیر سیستم تماس بگیرید.
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-light-subtle text-center p-3">
-                    <a href="{% url 'home' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-home me-1"></i> بازگشت به صفحه اصلی
-                    </a>
-                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-sign-in-alt me-1"></i> صفحه ورود
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+    .lockout-page {
+        min-height: 75vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .lockout-icon {
+        font-size: 5rem;
+        color: #dc3545;
+        margin-bottom: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .lockout-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #343a40;
+    }
+    
+    .lockout-message {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+    
+    .lockout-timer {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1rem 2rem;
+        margin-bottom: 2rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .lockout-timer span {
+        color: #dc3545;
+    }
+    
+    .security-tip {
+        background-color: #f8f8f8;
+        border-right: 4px solid #007bff;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        text-align: right;
+    }
+    
+    .home-button {
+        margin-top: 1rem;
+    }
+</style>
 {% endblock %}
 
-{% block extra_js %}
+{% block content %}
+<div class="container my-5">
+    <div class="lockout-page">
+        <div class="lockout-icon">
+            <i class="fas fa-user-lock"></i>
+        </div>
+        
+        <h1 class="lockout-title">حساب کاربری موقتاً مسدود شده است</h1>
+        
+        <div class="lockout-message">
+            به دلیل تعداد زیاد تلاش‌های ناموفق برای ورود، حساب کاربری شما موقتاً مسدود شده است.
+            لطفاً پس از زمان مشخص شده دوباره تلاش کنید.
+        </div>
+        
+        <div class="lockout-timer">
+            <i class="fas fa-hourglass-half me-2"></i>
+            زمان باقیمانده: <span id="countdown">{{ remaining_minutes }}</span> دقیقه
+        </div>
+        
+        <div class="security-tip">
+            <h5><i class="fas fa-shield-alt me-2"></i> توصیه امنیتی</h5>
+            <p>
+                در صورتی که رمز عبور خود را فراموش کرده‌اید، می‌توانید از گزینه «فراموشی رمز عبور» استفاده کنید.
+                همچنین توجه داشته باشید که تلاش‌های متعدد و ناموفق برای ورود ممکن است منجر به مسدود شدن طولانی‌تر حساب کاربری شود.
+            </p>
+        </div>
+        
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary home-button">
+            <i class="fas fa-home me-2"></i> بازگشت به صفحه اصلی
+        </a>
+        
+        {% if reset_password_url %}
+        <a href="{{ reset_password_url }}" class="btn btn-primary ms-2 home-button">
+            <i class="fas fa-key me-2"></i> بازیابی رمز عبور
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if remaining_minutes %}
 <script>
-    // شمارنده معکوس برای زمان باقی‌مانده قفل حساب
+    // اسکریپت شمارنده معکوس
     document.addEventListener('DOMContentLoaded', function() {
-        let remainingMinutes = {{ remaining_minutes }};
+        let minutes = {{ remaining_minutes }};
+        let seconds = 0;
         const countdownElement = document.getElementById('countdown');
         
-        if (remainingMinutes > 0 && countdownElement) {
-            // آپدیت هر دقیقه
-            const countdownInterval = setInterval(function() {
-                remainingMinutes--;
-                
-                if (remainingMinutes <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownElement.innerHTML = 'قفل حساب رفع شده است';
+        const interval = setInterval(function() {
+            if (seconds <= 0) {
+                if (minutes <= 0) {
+                    clearInterval(interval);
+                    countdownElement.innerHTML = 'پایان';
+                    
+                    // بارگذاری مجدد صفحه پس از 2 ثانیه
                     setTimeout(function() {
-                        window.location.href = "{% url 'accounts:login' %}";
+                        window.location.reload();
                     }, 2000);
-                } else {
-                    countdownElement.innerHTML = remainingMinutes + ' دقیقه';
+                    
+                    return;
                 }
-                
-            }, 60000); // هر دقیقه
-        }
+                minutes--;
+                seconds = 59;
+            } else {
+                seconds--;
+            }
+            
+            // نمایش فقط دقیقه یا دقیقه و ثانیه
+            if (minutes > 0) {
+                countdownElement.innerHTML = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+            } else {
+                countdownElement.innerHTML = seconds + ' ثانیه';
+            }
+        }, 1000);
     });
 </script>
+{% endif %}
 {% endblock %}

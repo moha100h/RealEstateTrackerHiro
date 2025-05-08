@@ -1,41 +1,52 @@
 """
-Views related to security features
+ویوهای مرتبط با امنیت سیستم
+محافظت در برابر حملات سایبری و گزارش تخلفات امنیتی
 """
 import json
 import logging
-from django.http import HttpResponse, JsonResponse
+import time
+import ipaddress
+import hashlib
+import re
+import os
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.conf import settings
+from django.shortcuts import render
+from django.utils.translation import gettext as _
+from django.core.cache import cache
+from django.urls import reverse
 
-# Logger for security events
+# لاگر برای رویدادهای امنیتی
 security_logger = logging.getLogger('security')
 
 @csrf_exempt
 @require_POST
 def csp_report_view(request):
     """
-    Endpoint for receiving Content Security Policy violation reports
+    نقطه پایانی برای دریافت گزارش‌های نقض سیاست امنیت محتوا (CSP)
     """
     try:
-        # Parse the CSP report from the request body
+        # تحلیل گزارش CSP از بدنه درخواست
         csp_report = json.loads(request.body.decode('utf-8'))
         
-        # Extract relevant information
+        # استخراج اطلاعات مربوطه
         document_uri = csp_report.get('csp-report', {}).get('document-uri', 'unknown')
         blocked_uri = csp_report.get('csp-report', {}).get('blocked-uri', 'unknown')
         violated_directive = csp_report.get('csp-report', {}).get('violated-directive', 'unknown')
         original_policy = csp_report.get('csp-report', {}).get('original-policy', 'unknown')
         
-        # Check if user is authenticated before accessing user.username
+        # بررسی احراز هویت کاربر قبل از دسترسی به username
         username = 'anonymous'
         if hasattr(request, 'user') and request.user.is_authenticated:
             username = request.user.username
         
-        # Log the CSP violation with relevant details
+        # ثبت تخلف CSP با جزئیات مربوطه
         security_logger.warning(
             f"CSP Violation: {violated_directive} directive violated on {document_uri} by {blocked_uri}",
             extra={
-                'ip': request.META.get('REMOTE_ADDR', 'unknown'),
+                'ip': _get_client_ip(request),
                 'user': username,
                 'document_uri': document_uri,
                 'blocked_uri': blocked_uri,
@@ -44,7 +55,25 @@ def csp_report_view(request):
             }
         )
         
-        return HttpResponse(status=204)  # No content response
+        # اقدامات امنیتی اضافی - بررسی تکرار نقض از یک منبع
+        ip_key = f"csp_violation:{_get_client_ip(request)}"
+        violation_count = cache.get(ip_key, 0) + 1
+        cache.set(ip_key, violation_count, 3600)  # ذخیره برای یک ساعت
+        
+        # اگر تعداد نقض‌ها از حد مجاز بیشتر باشد، شروع بررسی بیشتر
+        if violation_count > 10:
+            security_logger.error(
+                f"Multiple CSP violations from IP: {_get_client_ip(request)}. Possible attack.",
+                extra={
+                    'ip': _get_client_ip(request),
+                    'user': username,
+                    'count': violation_count
+                }
+            )
+            
+            # در سیستم واقعی - ارسال هشدار به ادمین‌ها یا محدودیت دسترسی
+        
+        return HttpResponse(status=204)  # پاسخ بدون محتوا
     
     except (json.JSONDecodeError, ValueError, KeyError) as e:
         security_logger.error(f"Failed to process CSP report: {str(e)}")
@@ -53,11 +82,9 @@ def csp_report_view(request):
 @csrf_exempt
 def security_headers_test_view(request):
     """
-    View to test security headers
-    This is only accessible in DEBUG mode
+    ویو تست هدرهای امنیتی
+    این فقط در حالت DEBUG قابل دسترسی است
     """
-    from django.conf import settings
-    
     if not settings.DEBUG:
         return HttpResponse("Forbidden: This page is only available in DEBUG mode".encode('utf-8'), status=403)
     
@@ -171,8 +198,67 @@ def security_headers_test_view(request):
     
     response = HttpResponse(html_content.encode('utf-8'))
     
-    # Add all headers to the response
+    # افزودن همه هدرها به پاسخ
     for header, value in headers.items():
         response[header] = value
     
     return response
+
+def security_error_handler(request, exception=None):
+    """
+    هندلر خطاهای امنیتی سفارشی برای صفحات 403، 404 و 500
+    """
+    status_code = getattr(exception, 'status_code', 403)
+    
+    if status_code == 404:
+        message = "صفحه مورد نظر یافت نشد."
+        error_code = "PAGE_NOT_FOUND"
+    elif status_code == 403:
+        message = "دسترسی به این صفحه مجاز نیست."
+        error_code = "ACCESS_DENIED"
+    elif status_code == 500:
+        message = "خطای داخلی سرور رخ داده است."
+        error_code = "SERVER_ERROR"
+    else:
+        message = "خطای امنیتی رخ داده است."
+        error_code = f"SEC-{status_code}"
+    
+    # ثبت اطلاعات در لاگ امنیتی
+    security_logger.warning(
+        f"Security error: {error_code} - {message}",
+        extra={
+            'ip': _get_client_ip(request),
+            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
+            'path': request.path
+        }
+    )
+    
+    # تشخیص درخواست API
+    if ('application/json' in request.headers.get('Accept', '') or
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'):
+        return JsonResponse({
+            'error': True,
+            'message': message,
+            'error_code': error_code,
+            'status': status_code
+        }, status=status_code)
+    
+    # نمایش صفحه خطای امنیتی
+    context = {
+        'message': message,
+        'status_code': status_code,
+        'error_code': error_code,
+        'show_details': settings.DEBUG,
+        'security_tip': "سیستم مجهز به سامانه تشخیص و دفع حملات است. فعالیت‌های مشکوک ثبت و پیگیری می‌شوند."
+    }
+    
+    return render(request, 'security/error.html', context, status=status_code)
+
+def _get_client_ip(request):
+    """دریافت IP واقعی کاربر با در نظر گرفتن پراکسی‌ها"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
+    return ip
