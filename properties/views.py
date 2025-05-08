@@ -95,33 +95,134 @@ class PropertyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 def search_properties(request):
-    """جستجوی پیشرفته املاک"""
-    queryset = Property.objects.all()
-    property_filter = PropertyFilter(request.GET, queryset=queryset)
+    """جستجوی پیشرفته املاک با فیلترهای متنوع و قالب مدرن"""
+    queryset = Property.objects.all().order_by('-created_at')
+    
+    # پارامترهای جستجو
+    query = request.GET.get('query', '')
+    transaction_type = request.GET.get('transaction_type', '')
+    property_type = request.GET.get('property_type', '')
+    status = request.GET.get('status', '')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    min_area = request.GET.get('min_area', '')
+    max_area = request.GET.get('max_area', '')
+    rooms = request.GET.get('rooms', '')
+    has_parking = request.GET.get('has_parking', '')
+    has_elevator = request.GET.get('has_elevator', '')
+    has_storage = request.GET.get('has_storage', '')
+    
+    # فیلتر کردن بر اساس پارامترها
+    if query:
+        queryset = queryset.filter(
+            Q(property_code__icontains=query) | 
+            Q(title__icontains=query) | 
+            Q(address__icontains=query) | 
+            Q(description__icontains=query)
+        )
+    
+    if transaction_type:
+        queryset = queryset.filter(transaction_type_id=transaction_type)
+    
+    if property_type:
+        queryset = queryset.filter(property_type_id=property_type)
+    
+    if status:
+        queryset = queryset.filter(status_id=status)
+    
+    if min_price:
+        queryset = queryset.filter(price__gte=min_price)
+    
+    if max_price:
+        queryset = queryset.filter(price__lte=max_price)
+    
+    if min_area:
+        queryset = queryset.filter(area__gte=min_area)
+    
+    if max_area:
+        queryset = queryset.filter(area__lte=max_area)
+    
+    if rooms:
+        queryset = queryset.filter(rooms__gte=rooms)
+    
+    if has_parking:
+        queryset = queryset.filter(has_parking=True)
+    
+    if has_elevator:
+        queryset = queryset.filter(has_elevator=True)
+    
+    if has_storage:
+        queryset = queryset.filter(has_storage=True)
+    
+    # گرفتن اطلاعات لازم برای فیلترها
+    transaction_types = TransactionType.objects.all()
+    property_types = PropertyType.objects.all()
+    property_statuses = PropertyStatus.objects.all()
+    
+    # متغیرهای کمکی برای نمایش فیلترهای انتخاب شده
+    transaction_type_name = ''
+    property_type_name = ''
+    status_name = ''
+    price_range = ''
+    area_range = ''
+    
+    if transaction_type:
+        try:
+            transaction_type_obj = TransactionType.objects.get(id=transaction_type)
+            transaction_type_name = transaction_type_obj.name
+        except:
+            pass
+            
+    if property_type:
+        try:
+            property_type_obj = PropertyType.objects.get(id=property_type)
+            property_type_name = property_type_obj.name
+        except:
+            pass
+            
+    if status:
+        try:
+            status_obj = PropertyStatus.objects.get(id=status)
+            status_name = status_obj.name
+        except:
+            pass
+    
+    if min_price or max_price:
+        min_price_display = f"{int(min_price):,}" if min_price else "0"
+        max_price_display = f"{int(max_price):,}" if max_price else "نامحدود"
+        price_range = f"{min_price_display} تا {max_price_display} تومان"
+    
+    if min_area or max_area:
+        min_area_display = min_area if min_area else "0"
+        max_area_display = max_area if max_area else "نامحدود"
+        area_range = f"{min_area_display} تا {max_area_display} متر مربع"
+    
+    # بررسی وجود هر گونه فیلتر
+    has_filters = any([
+        query, transaction_type, property_type, status, 
+        min_price, max_price, min_area, max_area, 
+        rooms, has_parking, has_elevator, has_storage
+    ])
     
     # گزارش تعداد املاک پیدا شده برای دیباگ
-    filtered_properties = property_filter.qs
     print(f"GET params: {request.GET}")
-    print(f"Properties before filter: {queryset.count()}")
-    print(f"Properties after filter: {filtered_properties.count()}")
+    print(f"Properties found: {queryset.count()}")
     
     context = {
-        'filter': property_filter,
-        'properties': filtered_properties,
-        'debug_params': dict(request.GET.items())
+        'properties': queryset,
+        'transaction_types': transaction_types,
+        'property_types': property_types,
+        'property_statuses': property_statuses,
+        'has_filters': has_filters,
+        'transaction_type_name': transaction_type_name,
+        'property_type_name': property_type_name,
+        'status_name': status_name,
+        'price_range': price_range,
+        'area_range': area_range
     }
     
-    # بررسی نوع دستگاه از هدر User-Agent
-    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
-    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or 'ipad' in user_agent
-    
-    # انتخاب قالب مناسب بر اساس نوع دستگاه
-    if is_mobile:
-        # استفاده از قالب موبایل-فرندلی
-        return render(request, 'properties/property_search_mobile.html', context)
-    else:
-        # استفاده از قالب اصلی دسکتاپ
-        return render(request, 'properties/property_search.html', context)
+    # استفاده از قالب جدید
+    return render(request, 'properties/property_search_advanced.html', context)
 
 
 @login_required

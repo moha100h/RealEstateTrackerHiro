@@ -3,6 +3,11 @@
 {% load jalali_tags %}
 
 {% block extra_css %}
+<!-- Nouilder - برای اسلایدر قیمت و متراژ -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.css">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 <style>
     /* استایل‌های صفحه جستجوی پیشرفته */
     .search-container {
@@ -394,6 +399,8 @@
 {% block extra_js %}
 <!-- استفاده از اسکریپت مدیریت وضعیت املاک -->
 <script src="/static/js/status-manager.js"></script>
+<!-- Nouislider - برای اسلایدر قیمت و متراژ -->
+<script src="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
