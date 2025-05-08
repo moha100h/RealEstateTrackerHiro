@@ -66,6 +66,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    
+    # میدل‌ویر کنترل دسترسی برای محدود کردن صفحات
+    'hiro_estate.security_decorators.access_control_middleware',  # کنترل دسترسی صفحات
+    
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.http.ConditionalGetMiddleware',   # محافظت در برابر حملات HTTP
@@ -196,6 +200,30 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+# تنظیمات صفحات خطای سفارشی
+HANDLER403 = 'hiro_estate.security_views.custom_permission_denied'
+HANDLER404 = 'hiro_estate.security_views.custom_page_not_found'
+HANDLER500 = 'hiro_estate.security_views.custom_server_error'
+
+# لیست صفحات عمومی (بدون نیاز به لاگین)
+PUBLIC_PAGES = [
+    '/',                    # صفحه اصلی
+    '/accounts/login/',     # صفحه ورود
+    '/accounts/logout/',    # صفحه خروج
+    '/static/',             # فایل‌های استاتیک
+    '/media/',              # فایل‌های رسانه‌ای
+    '/favicon.ico',         # آیکون سایت
+]
+
+# لیست صفحات دسترسی محدود (فقط مدیران)
+ADMIN_ONLY_PAGES = [
+    '/properties/',         # صفحه مدیریت املاک
+    '/properties/add/',     # افزودن ملک
+    '/properties/edit/',    # ویرایش ملک
+    '/config/',             # تنظیمات سیستم
+    '/dashboard/',          # داشبورد مدیریتی
 ]
 
 WSGI_APPLICATION = 'hiro_estate.wsgi.application'

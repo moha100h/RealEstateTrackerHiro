@@ -30,9 +30,9 @@ urlpatterns = [
 ]
 
 # هندلرهای خطای سفارشی
-handler403 = 'hiro_estate.security_views.security_error_handler'
-handler404 = 'hiro_estate.security_views.security_error_handler'
-handler500 = 'hiro_estate.security_views.security_error_handler'
+handler403 = 'hiro_estate.security_views.custom_permission_denied'
+handler404 = 'hiro_estate.security_views.custom_page_not_found'
+handler500 = 'hiro_estate.security_views.custom_server_error'
 
 # مسیرهای فقط محیط توسعه
 if settings.DEBUG:

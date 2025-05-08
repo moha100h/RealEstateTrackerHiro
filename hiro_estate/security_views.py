@@ -1,261 +1,151 @@
 """
-ویوهای مرتبط با امنیت سیستم
-محافظت در برابر حملات سایبری و گزارش تخلفات امنیتی
+ویوهای امنیتی برای مدیریت خطاها و صفحات خطای سفارشی
 """
-import json
+
 import logging
-import time
-import ipaddress
-import hashlib
-import re
-import os
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+import json
+from django.shortcuts import render
+from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError, JsonResponse
+from django.urls import reverse
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.conf import settings
-from django.shortcuts import render
-from django.utils.translation import gettext as _
-from django.core.cache import cache
-from django.urls import reverse
 
-# لاگر برای رویدادهای امنیتی
+# تنظیم لاگر امنیتی
 security_logger = logging.getLogger('security')
+
+def custom_permission_denied(request, exception=None):
+    """
+    صفحه خطای سفارشی 403 (دسترسی غیرمجاز)
+    """
+    # ثبت تلاش دسترسی غیرمجاز
+    security_logger.warning(
+        f"Access forbidden to path: {request.path}",
+        extra={
+            'ip': _get_client_ip(request),
+            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
+            'path': request.path,
+            'method': request.method,
+            'referer': request.META.get('HTTP_REFERER', 'None'),
+            'user_agent': request.META.get('HTTP_USER_AGENT', 'None')
+        }
+    )
+    
+    context = {
+        'title': 'خطای دسترسی',
+        'message': 'شما مجوز لازم برای دسترسی به این صفحه را ندارید.',
+        'code': 403,
+        'login_url': f"{reverse('accounts:login')}?next={request.path}" if not request.user.is_authenticated else None
+    }
+    
+    response = render(request, 'errors/403.html', context)
+    response.status_code = 403
+    return response
+
+
+def custom_page_not_found(request, exception=None):
+    """
+    صفحه خطای سفارشی 404 (صفحه یافت نشد)
+    """
+    # ثبت درخواست صفحه نامعتبر
+    security_logger.info(
+        f"Page not found: {request.path}",
+        extra={
+            'ip': _get_client_ip(request),
+            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
+            'path': request.path,
+            'method': request.method,
+            'referer': request.META.get('HTTP_REFERER', 'None')
+        }
+    )
+    
+    context = {
+        'title': 'صفحه یافت نشد',
+        'message': 'صفحه مورد نظر شما در سیستم وجود ندارد.',
+        'code': 404
+    }
+    
+    response = render(request, 'errors/404.html', context)
+    response.status_code = 404
+    return response
+
+
+def custom_server_error(request, *args, **kwargs):
+    """
+    صفحه خطای سفارشی 500 (خطای سرور)
+    """
+    # ثبت خطای سرور
+    security_logger.error(
+        f"Server error for path: {request.path}",
+        extra={
+            'ip': _get_client_ip(request),
+            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
+            'path': request.path,
+            'method': request.method
+        }
+    )
+    
+    context = {
+        'title': 'خطای سرور',
+        'message': 'متأسفانه خطایی در سرور رخ داده است. لطفاً بعداً مجدداً تلاش کنید.',
+        'code': 500
+    }
+    
+    response = render(request, 'errors/500.html', context, status=500)
+    return response
+
 
 @csrf_exempt
 @require_POST
 def csp_report_view(request):
     """
-    نقطه پایانی برای دریافت گزارش‌های نقض سیاست امنیت محتوا (CSP)
+    دریافت گزارش‌های نقض سیاست امنیت محتوا (CSP)
     """
     try:
-        # تحلیل گزارش CSP از بدنه درخواست
         csp_report = json.loads(request.body.decode('utf-8'))
-        
-        # استخراج اطلاعات مربوطه
-        document_uri = csp_report.get('csp-report', {}).get('document-uri', 'unknown')
-        blocked_uri = csp_report.get('csp-report', {}).get('blocked-uri', 'unknown')
-        violated_directive = csp_report.get('csp-report', {}).get('violated-directive', 'unknown')
-        original_policy = csp_report.get('csp-report', {}).get('original-policy', 'unknown')
-        
-        # بررسی احراز هویت کاربر قبل از دسترسی به username
-        username = 'anonymous'
-        if hasattr(request, 'user') and request.user.is_authenticated:
-            username = request.user.username
-        
-        # ثبت تخلف CSP با جزئیات مربوطه
         security_logger.warning(
-            f"CSP Violation: {violated_directive} directive violated on {document_uri} by {blocked_uri}",
+            "CSP Violation Report",
             extra={
                 'ip': _get_client_ip(request),
-                'user': username,
-                'document_uri': document_uri,
-                'blocked_uri': blocked_uri,
-                'violated_directive': violated_directive,
-                'original_policy': original_policy
+                'user_agent': request.META.get('HTTP_USER_AGENT', 'Unknown'),
+                'report': csp_report
             }
         )
-        
-        # اقدامات امنیتی اضافی - بررسی تکرار نقض از یک منبع
-        ip_key = f"csp_violation:{_get_client_ip(request)}"
-        violation_count = cache.get(ip_key, 0) + 1
-        cache.set(ip_key, violation_count, 3600)  # ذخیره برای یک ساعت
-        
-        # اگر تعداد نقض‌ها از حد مجاز بیشتر باشد، شروع بررسی بیشتر
-        if violation_count > 10:
-            security_logger.error(
-                f"Multiple CSP violations from IP: {_get_client_ip(request)}. Possible attack.",
-                extra={
-                    'ip': _get_client_ip(request),
-                    'user': username,
-                    'count': violation_count
-                }
-            )
-            
-            # در سیستم واقعی - ارسال هشدار به ادمین‌ها یا محدودیت دسترسی
-        
-        return HttpResponse(status=204)  # پاسخ بدون محتوا
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
     
-    except (json.JSONDecodeError, ValueError, KeyError) as e:
-        security_logger.error(f"Failed to process CSP report: {str(e)}")
-        return JsonResponse({'error': 'Invalid CSP report format'}, status=400)
+    return JsonResponse({'status': 'success'})
 
-@csrf_exempt
+
 def security_headers_test_view(request):
     """
-    ویو تست هدرهای امنیتی
-    این فقط در حالت DEBUG قابل دسترسی است
+    صفحه تست هدرهای امنیتی (فقط در محیط توسعه)
     """
-    if not settings.DEBUG:
-        return HttpResponse("Forbidden: This page is only available in DEBUG mode".encode('utf-8'), status=403)
-    
-    headers = {}
-    
-    # Content Security Policy
-    headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'"
-    
-    # HTTP Strict Transport Security
-    headers['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains"
-    
-    # X-Content-Type-Options
-    headers['X-Content-Type-Options'] = "nosniff"
-    
-    # X-Frame-Options
-    headers['X-Frame-Options'] = "SAMEORIGIN"
-    
-    # X-XSS-Protection
-    headers['X-XSS-Protection'] = "1; mode=block"
-    
-    # Referrer-Policy
-    headers['Referrer-Policy'] = "strict-origin-when-cross-origin"
-    
-    # Feature-Policy
-    headers['Feature-Policy'] = "geolocation 'self'; microphone 'none'; camera 'none'"
-    
-    # Permissions-Policy (newer version of Feature-Policy)
-    headers['Permissions-Policy'] = "geolocation=(self), microphone=(), camera=()"
-    
-    html_content = """
-        <html>
-        <head>
-            <title>Security Headers Test</title>
-            <style>
-                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; direction: rtl; }
-                h1 { color: #333; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
-                th { background-color: #f5f5f5; }
-                tr:nth-child(even) { background-color: #f9f9f9; }
-                code { font-family: monospace; background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
-            </style>
-        </head>
-        <body>
-            <h1>تست هدرهای امنیتی</h1>
-            <p>این صفحه برای آزمایش هدرهای امنیتی است. هدرهای زیر در پاسخ HTTP این صفحه گنجانده شده‌اند:</p>
-            
-            <table>
-                <tr>
-                    <th>هدر</th>
-                    <th>مقدار</th>
-                    <th>توضیحات</th>
-                </tr>
-                <tr>
-                    <td>Content-Security-Policy</td>
-                    <td><code>default-src 'self'; script-src 'self' 'unsafe-inline'</code></td>
-                    <td>محدود کردن منابع مجاز برای بارگذاری محتوا</td>
-                </tr>
-                <tr>
-                    <td>Strict-Transport-Security</td>
-                    <td><code>max-age=31536000; includeSubDomains</code></td>
-                    <td>اجبار استفاده از HTTPS</td>
-                </tr>
-                <tr>
-                    <td>X-Content-Type-Options</td>
-                    <td><code>nosniff</code></td>
-                    <td>جلوگیری از MIME type sniffing</td>
-                </tr>
-                <tr>
-                    <td>X-Frame-Options</td>
-                    <td><code>SAMEORIGIN</code></td>
-                    <td>محافظت از Clickjacking</td>
-                </tr>
-                <tr>
-                    <td>X-XSS-Protection</td>
-                    <td><code>1; mode=block</code></td>
-                    <td>محافظت از حملات XSS</td>
-                </tr>
-                <tr>
-                    <td>Referrer-Policy</td>
-                    <td><code>strict-origin-when-cross-origin</code></td>
-                    <td>کنترل اطلاعات Referrer</td>
-                </tr>
-                <tr>
-                    <td>Feature-Policy</td>
-                    <td><code>geolocation 'self'; microphone 'none'; camera 'none'</code></td>
-                    <td>محدود کردن دسترسی به ویژگی‌های حساس</td>
-                </tr>
-                <tr>
-                    <td>Permissions-Policy</td>
-                    <td><code>geolocation=(self), microphone=(), camera=()</code></td>
-                    <td>نسخه جدیدتر Feature-Policy</td>
-                </tr>
-            </table>
-            
-            <h2>تست CSP</h2>
-            <p>این اسکریپت اجرا نخواهد شد، چون منبع آن با CSP مطابقت ندارد:</p>
-            <pre><code>&lt;script src="https://example.com/malicious.js"&gt;&lt;/script&gt;</code></pre>
-            <script src="https://example.com/malicious.js"></script>
-            
-            <h2>اطلاعات مرورگر</h2>
-            <p>User-Agent شما: <code id="user-agent">?</code></p>
-            
-            <script>
-                // این اسکریپت اجرا خواهد شد، چون با CSP مطابقت دارد
-                document.getElementById('user-agent').textContent = navigator.userAgent;
-            </script>
-        </body>
-        </html>
-        """
-    
-    response = HttpResponse(html_content.encode('utf-8'))
-    
-    # افزودن همه هدرها به پاسخ
-    for header, value in headers.items():
-        response[header] = value
-    
-    return response
+    return render(request, 'security/headers_test.html', {
+        'title': 'تست هدرهای امنیتی',
+        'headers': dict(request.headers)
+    })
 
-def security_error_handler(request, exception=None):
+
+def security_error_handler(request, **kwargs):
     """
-    هندلر خطاهای امنیتی سفارشی برای صفحات 403، 404 و 500
+    هندلر خطاهای امنیتی
+    بر اساس استاتوس کد، مسیردهی به صفحه خطای مناسب
     """
-    status_code = getattr(exception, 'status_code', 403)
+    status_code = kwargs.get('status_code', 500)
+    exception = kwargs.get('exception', None)
     
-    if status_code == 404:
-        message = "صفحه مورد نظر یافت نشد."
-        error_code = "PAGE_NOT_FOUND"
-    elif status_code == 403:
-        message = "دسترسی به این صفحه مجاز نیست."
-        error_code = "ACCESS_DENIED"
-    elif status_code == 500:
-        message = "خطای داخلی سرور رخ داده است."
-        error_code = "SERVER_ERROR"
-    else:
-        message = "خطای امنیتی رخ داده است."
-        error_code = f"SEC-{status_code}"
-    
-    # ثبت اطلاعات در لاگ امنیتی
-    security_logger.warning(
-        f"Security error: {error_code} - {message}",
-        extra={
-            'ip': _get_client_ip(request),
-            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
-            'path': request.path
-        }
-    )
-    
-    # تشخیص درخواست API
-    if ('application/json' in request.headers.get('Accept', '') or
-        request.headers.get('X-Requested-With') == 'XMLHttpRequest'):
-        return JsonResponse({
-            'error': True,
-            'message': message,
-            'error_code': error_code,
-            'status': status_code
-        }, status=status_code)
-    
-    # نمایش صفحه خطای امنیتی
-    context = {
-        'message': message,
-        'status_code': status_code,
-        'error_code': error_code,
-        'show_details': settings.DEBUG,
-        'security_tip': "سیستم مجهز به سامانه تشخیص و دفع حملات است. فعالیت‌های مشکوک ثبت و پیگیری می‌شوند."
-    }
-    
-    return render(request, 'security/error.html', context, status=status_code)
+    # بررسی نوع خطا
+    if status_code == 403:
+        return custom_permission_denied(request, exception)
+    elif status_code == 404:
+        return custom_page_not_found(request, exception)
+    else:  # 500 و غیره
+        return custom_server_error(request)
+
 
 def _get_client_ip(request):
-    """دریافت IP واقعی کاربر با در نظر گرفتن پراکسی‌ها"""
+    """دریافت IP واقعی کاربر"""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0].strip()

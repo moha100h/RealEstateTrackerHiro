@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+{{ block.super }}
+<style>
+    .error-page {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    .error-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .error-header {
+        background: linear-gradient(120deg, #ffc107, #fd7e14);
+        color: #343a40;
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .error-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        font-weight: bold;
+        backdrop-filter: blur(5px);
+    }
+    .error-content {
+        padding: 3rem;
+        background: white;
+    }
+    .error-icon {
+        font-size: 80px;
+        color: #ffc107;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    .error-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #343a40;
+    }
+    .error-message {
+        font-size: 1.2rem;
+        color: #6c757d;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    .error-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    .error-btn {
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+    }
+    .error-btn:hover {
+        transform: translateY(-3px);
+    }
+    .error-btn-primary {
+        background: #ffc107;
+        color: #343a40;
+        border: none;
+        box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+    }
+    .error-btn-primary:hover {
+        background: #e0a800;
+        box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
+    }
+    .error-btn-outline {
+        background: transparent;
+        color: #6c757d;
+        border: 2px solid #dee2e6;
+    }
+    .error-btn-outline:hover {
+        border-color: #adb5bd;
+        color: #343a40;
+    }
+    .error-illustration {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+    .rotating {
+        animation: rotating 10s linear infinite;
+    }
+    @keyframes rotating {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .shaking {
+        animation: shaking 0.5s ease-in-out infinite;
+    }
+    @keyframes shaking {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        25% { transform: translate(5px, 5px) rotate(5deg); }
+        50% { transform: translate(-5px, -5px) rotate(-5deg); }
+        75% { transform: translate(-5px, 5px) rotate(5deg); }
+        100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    @media (max-width: 767.98px) {
+        .error-content {
+            padding: 2rem 1.5rem;
+        }
+        .error-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="container py-5">
+        <div class="error-card">
+            <div class="error-header">
+                <div class="error-badge">خطای 500</div>
+                <h2 class="mb-2">خطای سرور داخلی</h2>
+                <p class="mb-0">مشکلی در سمت سرور رخ داده است</p>
+            </div>
+            
+            <div class="error-content">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-4 mb-md-0">
+                        <div class="error-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                        </div>
+                        
+                        <h1 class="error-title text-center">خطای سرور</h1>
+                        
+                        <div class="error-message">
+                            <p>{{ message|default:"متأسفانه خطایی در سرور رخ داده است. لطفاً بعداً مجدداً تلاش کنید." }}</p>
+                            <p>تیم فنی ما در حال بررسی و رفع این مشکل هستند.</p>
+                            <p>در صورت تداوم مشکل، لطفاً با پشتیبانی تماس بگیرید.</p>
+                        </div>
+                        
+                        <div class="error-actions">
+                            <a href="/" class="error-btn error-btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                <span>بازگشت به صفحه اصلی</span>
+                            </a>
+                            
+                            <a href="javascript:location.reload()" class="error-btn error-btn-outline">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                <span>تلاش مجدد</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <svg class="error-illustration" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                            <g class="shaking">
+                                <!-- Server Rack Base -->
+                                <rect x="150" y="100" width="200" height="300" fill="#f8f9fa" stroke="#6c757d" stroke-width="4" rx="10"/>
+                                <!-- Server Units -->
+                                <rect x="170" y="130" width="160" height="30" fill="#e9ecef" stroke="#6c757d" stroke-width="2" rx="5"/>
+                                <rect x="170" y="180" width="160" height="30" fill="#e9ecef" stroke="#6c757d" stroke-width="2" rx="5"/>
+                                <rect x="170" y="230" width="160" height="30" fill="#e9ecef" stroke="#6c757d" stroke-width="2" rx="5"/>
+                                <rect x="170" y="280" width="160" height="30" fill="#e9ecef" stroke="#6c757d" stroke-width="2" rx="5"/>
+                                <rect x="170" y="330" width="160" height="30" fill="#e9ecef" stroke="#6c757d" stroke-width="2" rx="5"/>
+                                
+                                <!-- Warning Signs -->
+                                <circle cx="190" y="145" r="5" fill="#ffc107"/>
+                                <circle cx="190" y="195" r="5" fill="#ffc107"/>
+                                <circle cx="190" y="245" r="5" fill="#fd7e14"/>
+                                <circle cx="190" y="295" r="5" fill="#dc3545" class="rotating"/>
+                                <circle cx="190" y="345" r="5" fill="#ffc107"/>
+                            </g>
+                            
+                            <!-- Lightning Bolt -->
+                            <path d="M300,60 L270,150 L310,160 L260,260" stroke="#ffc107" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            
+                            <!-- Error Code -->
+                            <text x="250" y="410" font-family="Arial" font-size="24" font-weight="bold" fill="#dc3545" text-anchor="middle">500</text>
+                            
+                            <!-- Rotating Gears -->
+                            <g class="rotating" transform="translate(400, 150)">
+                                <circle cx="0" cy="0" r="25" fill="#f8f9fa" stroke="#ffc107" stroke-width="3"/>
+                                <circle cx="0" cy="0" r="15" fill="#ffc107"/>
+                                <rect x="-5" y="-30" width="10" height="60" fill="#f8f9fa" rx="5"/>
+                                <rect x="-30" y="-5" width="60" height="10" fill="#f8f9fa" rx="5"/>
+                                <rect x="-20" y="-20" width="40" height="40" fill="#f8f9fa" rx="5" transform="rotate(45)"/>
+                            </g>
+                            <g class="rotating" style="animation-direction: reverse" transform="translate(100, 200)">
+                                <circle cx="0" cy="0" r="20" fill="#f8f9fa" stroke="#ffc107" stroke-width="3"/>
+                                <circle cx="0" cy="0" r="10" fill="#ffc107"/>
+                                <rect x="-4" y="-24" width="8" height="48" fill="#f8f9fa" rx="4"/>
+                                <rect x="-24" y="-4" width="48" height="8" fill="#f8f9fa" rx="4"/>
+                                <rect x="-16" y="-16" width="32" height="32" fill="#f8f9fa" rx="4" transform="rotate(45)"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-muted">کد خطا: 500 Internal Server Error | شناسه خطا: {{ request.META.REQUEST_ID|default:"Unknown" }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

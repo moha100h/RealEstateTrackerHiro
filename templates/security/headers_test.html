@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}تست هدرهای امنیتی{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">تست هدرهای امنیتی</h4>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-info">
+                        این صفحه فقط در محیط توسعه قابل دسترسی است و برای تست هدرهای امنیتی استفاده می‌شود.
+                    </p>
+                    
+                    <h5 class="mt-4">هدرهای درخواست</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>نام هدر</th>
+                                    <th>مقدار</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for name, value in headers.items %}
+                                <tr>
+                                    <td><code>{{ name }}</code></td>
+                                    <td><code>{{ value }}</code></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">تست CSP</h5>
+                    <div class="alert alert-warning">
+                        <p>این قسمت سعی می‌کند تا چند نقض CSP ایجاد کند:</p>
+                    </div>
+                    
+                    <!-- تست اینلاین اسکریپت -->
+                    <script>
+                        console.log("تست نقض CSP: اینلاین اسکریپت");
+                    </script>
+                    
+                    <!-- تست اسکریپت خارجی از منبع غیرمجاز -->
+                    <script id="external-js-test" src="https://example.com/test.js"></script>
+                    
+                    <!-- تست استایل اینلاین -->
+                    <div style="color: red;">تست نقض CSP: استایل اینلاین</div>
+                    
+                    <!-- تست iframe از منبع غیرمجاز -->
+                    <iframe src="https://example.com" width="0" height="0" style="display:none"></iframe>
+                    
+                    <h5 class="mt-4">آزمون XSS</h5>
+                    <div class="alert alert-danger">
+                        <p>تست XSS (این قسمت باید به درستی اسکیپ شود):</p>
+                        <code>&lt;script&gt;alert('XSS');&lt;/script&gt;</code>
+                    </div>
+                    
+                    <h5 class="mt-4">آزمون CSRF</h5>
+                    <div class="card bg-light mt-3">
+                        <div class="card-body">
+                            <form method="post" action="">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">نام کاربری:</label>
+                                    <input type="text" class="form-control" name="username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">رمز عبور:</label>
+                                    <input type="password" class="form-control" name="password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">تست CSRF</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="/" class="btn btn-outline-secondary">بازگشت به صفحه اصلی</a>
+                        <button class="btn btn-info" onclick="window.location.reload()">بارگذاری مجدد صفحه</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
