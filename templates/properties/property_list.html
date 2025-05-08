@@ -211,6 +211,26 @@
         margin-top: 1rem;
     }
     
+    .property-link {
+        color: #4481eb;
+        font-weight: 500;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
+    
+    .property-link:hover {
+        color: #0d6efd;
+    }
+    
+    .property-link i {
+        margin-left: 0.5rem;
+    }
+    
     .property-link-btn {
         color: #4481eb;
         font-weight: 500;
@@ -308,6 +328,10 @@
         margin-left: 0.5rem;
         background-color: rgba(13, 110, 253, 0.1);
         color: #0d6efd;
+    }
+    
+    .bg-primary-soft {
+        background-color: rgba(13, 110, 253, 0.1);
     }
     
     .price-wrapper {
@@ -562,111 +586,67 @@
                         {% elif system_config.default_property_image %}
                         <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
                         {% else %}
-                        <div class="bg-light h-100 d-flex align-items-center justify-content-center">
-                            <i class="bi bi-building text-secondary" style="font-size: 3rem;"></i>
+                        <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                            <i class="bi bi-building fs-1 text-muted"></i>
                         </div>
                         {% endif %}
                         
                         <!-- کد ملک -->
-                        <span class="property-code">{{ property.property_code }}</span>
+                        <span class="badge bg-primary property-code">{{ property.property_code }}</span>
                         
                         <!-- وضعیت ملک -->
-                        <span id="status-badge-{{ property.id }}" class="status-badge 
-                            {% if property.status.name == 'موجود' %}bg-success
-                            {% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger
-                            {% elif property.status.name == 'رزرو شده' %}bg-primary
-                            {% elif property.status.name == 'در حال ساخت' %}bg-secondary
-                            {% elif property.status.name == 'آماده تحویل' %}bg-info
-                            {% else %}bg-warning{% endif %}">
+                        <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% elif property.status.name == 'رزرو شده' %}bg-primary{% elif property.status.name == 'در حال ساخت' %}bg-secondary{% else %}bg-info{% endif %} status-badge">
                             {{ property.status.name }}
                         </span>
-                        
-                        <!-- دکمه تغییر وضعیت برای مدیران -->
-                        {% if user.is_staff %}
-                        <button type="button" 
-                                onclick="showStatusModal({{ property.id }}, '{{ property.title }}')" 
-                                class="action-btn primary-action"
-                                style="position: absolute; bottom: 1rem; left: 1rem; z-index: 3; width: 36px; height: 36px;">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        {% endif %}
-                        
-                        <!-- اورلی مشاهده جزئیات -->
-                        <div class="property-overlay">
-                            <a href="{% url 'properties:property_detail' property.slug %}" class="property-overlay-button">
-                                <i class="bi bi-eye me-1"></i>
-                                مشاهده جزئیات
-                            </a>
-                        </div>
                     </div>
                     
                     <div class="property-content">
-                        <h5 class="property-title">{{ property.title }}</h5>
+                        <h3 class="property-title">{{ property.title }}</h3>
                         
                         <div class="property-location">
                             <i class="bi bi-geo-alt-fill"></i>
-                            <span>{{ property.address|truncatechars:60 }}</span>
+                            <span>{{ property.address|truncatechars:50 }}</span>
                         </div>
                         
                         <div class="property-meta">
-                            {% if property.area %}
                             <div class="meta-item">
-                                <span class="meta-value">{{ property.area }}</span>
+                                <span class="meta-value">{{ property.area|default:"0" }}</span>
                                 <span class="meta-label">متر مربع</span>
                             </div>
-                            {% endif %}
                             
-                            {% if property.rooms %}
                             <div class="meta-item">
-                                <span class="meta-value">{{ property.rooms }}</span>
+                                <span class="meta-value">{{ property.rooms|default:"0" }}</span>
                                 <span class="meta-label">اتاق</span>
                             </div>
-                            {% endif %}
                             
-                            {% if property.has_parking %}
                             <div class="meta-item">
-                                <span class="meta-value"><i class="bi bi-check-circle-fill text-success"></i></span>
-                                <span class="meta-label">پارکینگ</span>
+                                <span class="meta-value">{{ property.year_built|default:"--" }}</span>
+                                <span class="meta-label">سال ساخت</span>
                             </div>
-                            {% endif %}
-                            
-                            {% if property.has_elevator %}
-                            <div class="meta-item">
-                                <span class="meta-value"><i class="bi bi-check-circle-fill text-success"></i></span>
-                                <span class="meta-label">آسانسور</span>
-                            </div>
-                            {% endif %}
                         </div>
                         
-                        <div class="price-wrapper">
-                            <div class="property-price">
-                                {% if property.total_price %}
-                                {{ property.total_price|intcomma }} تومان
-                                {% elif property.price_per_meter %}
-                                متری {{ property.price_per_meter|intcomma }} تومان
-                                {% endif %}
-                            </div>
-                            
+                        <div class="property-price">
+                            {% if property.total_price %}
+                            {{ property.total_price|intcomma }} تومان
+                            {% elif property.price_per_meter %}
+                            متری {{ property.price_per_meter|intcomma }} تومان
+                            {% endif %}
                             {% if property.transaction_type %}
-                            <span class="transaction-badge">{{ property.transaction_type.name }}</span>
+                            <span class="badge bg-primary-soft text-primary ms-1">{{ property.transaction_type.name }}</span>
                             {% endif %}
                         </div>
                         
                         <div class="property-links">
-                            <a href="{% url 'properties:property_detail' property.slug %}" class="property-link-btn">
-                                <i class="bi bi-eye"></i>
+                            <a href="{% url 'properties:property_detail' property.slug %}" class="property-link">
+                                <i class="bi bi-eye-fill"></i>
                                 مشاهده جزئیات
                             </a>
                             
                             {% if user.is_staff %}
-                            <div class="action-buttons">
-                                <a href="{% url 'properties:property_update' property.id %}" class="action-btn">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="{% url 'properties:property_delete' property.id %}" class="action-btn">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
+                            <button type="button" class="property-link" onclick="showStatusModal({{ property.id }}, '{{ property.title }}')">
+                                <i class="bi bi-pencil-square"></i>
+                                تغییر وضعیت
+                            </button>
                             {% endif %}
                         </div>
                     </div>
