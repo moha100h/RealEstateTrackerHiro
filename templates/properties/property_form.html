@@ -1,6 +1,90 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    .property-form-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-card-header {
+        background-image: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        padding: 1.5rem;
+        color: white;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #f5f5f5;
+        padding-bottom: 1.5rem;
+    }
+    
+    .form-section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-section-title i {
+        margin-left: 0.5rem;
+        color: #4481eb;
+    }
+    
+    .form-check-label {
+        margin-right: 0.5rem;
+    }
+    
+    .feature-checkbox {
+        margin-bottom: 0.75rem;
+    }
+    
+    .image-preview {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s;
+        border: 1px solid #eee;
+    }
+    
+    .image-preview:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .map-container {
+        height: 200px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+    }
+    
+    .btn-primary, .btn-outline-secondary {
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(68, 129, 235, 0.3);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="mb-4">
@@ -15,123 +99,242 @@
     
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <div class="card shadow-sm">
-                <div class="card-header text-white" style="background-image: linear-gradient(135deg, #3f51b5 0%, #5d6cc1 100%); border-radius: 0.8rem 0.8rem 0 0;">
-                    <h4 class="mb-0" style="color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+            <div class="property-form-card mb-4">
+                <div class="form-card-header">
+                    <h4 class="mb-0">
+                        <i class="bi {% if object %}bi-pencil-square{% else %}bi-building-add{% endif %} me-2"></i>
                         {% if object %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit me-2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             ویرایش ملک {{ object.property_code }}
                         {% else %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home me-2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                             افزودن ملک جدید
                         {% endif %}
                     </h4>
                 </div>
-                <div class="card-body" style="border-radius: 0 0 0.8rem 0.8rem;">
+                <div class="card-body p-4">
                     <form method="post" enctype="multipart/form-data" class="property-form">
                         {% csrf_token %}
                         
                         {% if form.errors %}
                         <div class="alert alert-danger">
-                            <h5 class="alert-heading">خطاهای فرم را برطرف کنید:</h5>
+                            <h5 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>خطاهای فرم را برطرف کنید:</h5>
                             {{ form.errors }}
                         </div>
                         {% endif %}
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
-                                {{ form.title }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.property_type.id_for_label }}" class="form-label">{{ form.property_type.label }}</label>
-                                {{ form.property_type }}
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.transaction_type.id_for_label }}" class="form-label">{{ form.transaction_type.label }}</label>
-                                {{ form.transaction_type }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
-                                {{ form.status }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.document_type.id_for_label }}" class="form-label">{{ form.document_type.label }}</label>
-                                {{ form.document_type }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.price.id_for_label }}" class="form-label">{{ form.price.label }}</label>
-                                {{ form.price }}
-                                <small class="form-text text-muted">به تومان</small>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.area.id_for_label }}" class="form-label">{{ form.area.label }}</label>
-                                {{ form.area }}
-                                <small class="form-text text-muted">به متر مربع</small>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.rooms.id_for_label }}" class="form-label">{{ form.rooms.label }}</label>
-                                {{ form.rooms }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.year_built.id_for_label }}" class="form-label">{{ form.year_built.label }}</label>
-                                {{ form.year_built }}
-                                <small class="form-text text-muted">سال شمسی</small>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.address.id_for_label }}" class="form-label">{{ form.address.label }}</label>
-                            {{ form.address }}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
-                            {{ form.description }}
-                        </div>
-                        
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
-                                {% if object and object.image %}
-                                <div class="mb-2">
-                                    <img src="{{ object.image.url }}" alt="تصویر فعلی" class="img-thumbnail" style="max-height: 150px;">
-                                    <p class="small text-muted">تصویر اصلی ملک</p>
+                        <!-- اطلاعات اصلی -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-info-circle"></i>
+                                اطلاعات اصلی
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                                    {{ form.title }}
                                 </div>
-                                {% endif %}
-                                {{ form.image }}
-                                <div class="form-text text-muted">در صورت عدم انتخاب، از تصویر پیش‌فرض استفاده می‌شود.</div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.property_type.id_for_label }}" class="form-label">{{ form.property_type.label }}</label>
+                                    {{ form.property_type }}
+                                </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <label for="{{ form.additional_images.id_for_label }}" class="form-label">{{ form.additional_images.label }}</label>
-                                {% if object and object.get_additional_images %}
-                                <div class="mb-2 d-flex flex-wrap gap-2">
-                                    {% for img in object.get_additional_images %}
-                                    <div class="position-relative">
-                                        <img src="{{ img.image.url }}" alt="تصویر {{ forloop.counter }}" class="img-thumbnail" style="max-height: 100px; max-width: 100px; object-fit: cover;">
-                                    </div>
-                                    {% endfor %}
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.transaction_type.id_for_label }}" class="form-label">{{ form.transaction_type.label }}</label>
+                                    {{ form.transaction_type }}
                                 </div>
-                                {% endif %}
-                                {{ form.additional_images }}
-                                <div class="form-text text-muted">{{ form.additional_images.help_text }}</div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                                    {{ form.status }}
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.document_type.id_for_label }}" class="form-label">{{ form.document_type.label }}</label>
+                                    {{ form.document_type }}
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.price.id_for_label }}" class="form-label">{{ form.price.label }}</label>
+                                    {{ form.price }}
+                                    <small class="form-text text-muted">به تومان</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.area.id_for_label }}" class="form-label">{{ form.area.label }}</label>
+                                    {{ form.area }}
+                                    <small class="form-text text-muted">به متر مربع</small>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.rooms.id_for_label }}" class="form-label">{{ form.rooms.label }}</label>
+                                    {{ form.rooms }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.year_built.id_for_label }}" class="form-label">{{ form.year_built.label }}</label>
+                                    {{ form.year_built }}
+                                    <small class="form-text text-muted">سال شمسی</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.address.id_for_label }}" class="form-label">{{ form.address.label }}</label>
+                                {{ form.address }}
                             </div>
                         </div>
                         
-                        <div class="d-flex justify-content-between">
+                        <!-- امکانات و ویژگی‌ها -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-check2-square"></i>
+                                امکانات و ویژگی‌ها
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check feature-checkbox">
+                                        {{ form.has_elevator }}
+                                        <label class="form-check-label" for="{{ form.has_elevator.id_for_label }}">
+                                            <i class="bi bi-arrow-up-square me-1"></i>
+                                            {{ form.has_elevator.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check feature-checkbox">
+                                        {{ form.has_parking }}
+                                        <label class="form-check-label" for="{{ form.has_parking.id_for_label }}">
+                                            <i class="bi bi-p-square me-1"></i>
+                                            {{ form.has_parking.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check feature-checkbox">
+                                        {{ form.has_warehouse }}
+                                        <label class="form-check-label" for="{{ form.has_warehouse.id_for_label }}">
+                                            <i class="bi bi-box-seam me-1"></i>
+                                            {{ form.has_warehouse.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check feature-checkbox">
+                                        {{ form.has_balcony }}
+                                        <label class="form-check-label" for="{{ form.has_balcony.id_for_label }}">
+                                            <i class="bi bi-door-open me-1"></i>
+                                            {{ form.has_balcony.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check feature-checkbox">
+                                        {{ form.is_renovated }}
+                                        <label class="form-check-label" for="{{ form.is_renovated.id_for_label }}">
+                                            <i class="bi bi-tools me-1"></i>
+                                            {{ form.is_renovated.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check feature-checkbox">
+                                        {{ form.has_package }}
+                                        <label class="form-check-label" for="{{ form.has_package.id_for_label }}">
+                                            <i class="bi bi-thermometer-half me-1"></i>
+                                            {{ form.has_package.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- موقعیت جغرافیایی -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-geo-alt"></i>
+                                موقعیت جغرافیایی
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.latitude.id_for_label }}" class="form-label">{{ form.latitude.label }}</label>
+                                    {{ form.latitude }}
+                                    <small class="form-text text-muted">{{ form.latitude.help_text }}</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.longitude.id_for_label }}" class="form-label">{{ form.longitude.label }}</label>
+                                    {{ form.longitude }}
+                                    <small class="form-text text-muted">{{ form.longitude.help_text }}</small>
+                                </div>
+                            </div>
+                            <div class="map-container">
+                                <div class="text-center">
+                                    <i class="bi bi-map fs-2 mb-2"></i>
+                                    <p class="mb-0">برای نمایش موقعیت روی نقشه، مختصات جغرافیایی را وارد کنید</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- توضیحات -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-file-text"></i>
+                                توضیحات
+                            </h5>
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                                {{ form.description }}
+                            </div>
+                        </div>
+                        
+                        <!-- تصاویر -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-images"></i>
+                                تصاویر
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                                    {% if object and object.image %}
+                                    <div class="mb-3 image-preview">
+                                        <img src="{{ object.image.url }}" alt="تصویر فعلی" class="img-fluid rounded" style="width: 100%;">
+                                    </div>
+                                    {% endif %}
+                                    <div class="input-group">
+                                        {{ form.image }}
+                                    </div>
+                                    <div class="form-text text-muted">در صورت عدم انتخاب، از تصویر پیش‌فرض استفاده می‌شود.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.additional_images.id_for_label }}" class="form-label">{{ form.additional_images.label }}</label>
+                                    {% if object and object.get_additional_images %}
+                                    <div class="mb-3">
+                                        <div class="row g-2">
+                                            {% for img in object.get_additional_images %}
+                                            <div class="col-4">
+                                                <div class="image-preview">
+                                                    <img src="{{ img.image.url }}" alt="تصویر {{ forloop.counter }}" class="img-fluid" style="width: 100%; height: 100px; object-fit: cover;">
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="input-group">
+                                        {{ form.additional_images }}
+                                    </div>
+                                    <div class="form-text text-muted">{{ form.additional_images.help_text }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
                             <a href="{% if object %}{% url 'properties:property_detail' object.slug %}{% else %}{% url 'properties:property_list' %}{% endif %}" class="btn btn-outline-secondary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x me-1"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <i class="bi bi-x-lg"></i>
                                 انصراف
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                <i class="bi bi-save"></i>
                                 ذخیره
                             </button>
                         </div>
