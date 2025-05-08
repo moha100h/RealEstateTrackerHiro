@@ -54,7 +54,7 @@ def security_headers_test_view(request):
     from django.conf import settings
     
     if not settings.DEBUG:
-        return HttpResponse("Forbidden: This page is only available in DEBUG mode", status=403)
+        return HttpResponse("Forbidden: This page is only available in DEBUG mode".encode('utf-8'), status=403)
     
     headers = {}
     
@@ -82,8 +82,7 @@ def security_headers_test_view(request):
     # Permissions-Policy (newer version of Feature-Policy)
     headers['Permissions-Policy'] = "geolocation=(self), microphone=(), camera=()"
     
-    response = HttpResponse(
-        """
+    html_content = """
         <html>
         <head>
             <title>Security Headers Test</title>
@@ -164,7 +163,8 @@ def security_headers_test_view(request):
         </body>
         </html>
         """
-    )
+    
+    response = HttpResponse(html_content.encode('utf-8'))
     
     # Add all headers to the response
     for header, value in headers.items():
