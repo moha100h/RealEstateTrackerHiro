@@ -1,166 +1,458 @@
 {% extends 'base.html' %}
 
 {% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-    .settings-tabs .nav-link {
-        color: var(--gray-700);
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 0.5rem;
+    /* === استایل اصلی صفحه === */
+    .page-container {
+        padding: 2rem 0;
+    }
+    
+    .section-title {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title-icon {
+        width: 42px;
+        height: 42px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-    
-    .settings-tabs .nav-link:hover {
-        background-color: var(--gray-100);
-    }
-    
-    .settings-tabs .nav-link.active {
-        background-color: var(--primary-color);
+        justify-content: center;
+        background: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
         color: white;
+        border-radius: 12px;
+        margin-left: 1rem;
+        box-shadow: 0 4px 15px rgba(68, 129, 235, 0.2);
     }
     
+    .section-title-text {
+        margin: 0;
+    }
+    
+    /* === کارت‌های محتوا === */
     .settings-card {
-        border: none;
-        border-radius: 1rem;
+        border-radius: 15px;
         overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    }
-    
-    .settings-card .card-header {
-        padding: 1.25rem 1.5rem;
-        background-color: #f8f9fc;
-        border-bottom: 1px dashed rgba(0,0,0,0.05);
-    }
-    
-    .settings-card .card-body {
-        padding: 1.5rem;
-    }
-    
-    .settings-section {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        background-color: white;
         margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px dashed var(--gray-200);
+        transition: all 0.3s ease;
+    }
+    
+    .settings-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    .settings-card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
+        background-color: #f9fafb;
+        display: flex;
+        align-items: center;
+    }
+    
+    .settings-card-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        color: white;
+        border-radius: 12px;
+        margin-left: 1rem;
+    }
+    
+    .settings-card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .settings-card-subtitle {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+    
+    .settings-card-body {
+        padding: 2rem;
+    }
+    
+    /* === منوی تنظیمات === */
+    .settings-menu {
+        position: sticky;
+        top: 2rem;
+    }
+    
+    .settings-menu-item {
+        padding: 1rem 1.25rem;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: #495057;
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    
+    .settings-menu-item:hover {
+        color: #4481eb;
+        background-color: rgba(68, 129, 235, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .settings-menu-item.active {
+        color: white;
+        background: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        box-shadow: 0 5px 15px rgba(68, 129, 235, 0.2);
+    }
+    
+    .settings-menu-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        font-size: 1.1rem;
+    }
+    
+    /* === مکان نمای پیمایش === */
+    .settings-tab {
+        display: none;
+    }
+    
+    .settings-tab.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* === بخش‌های تنظیمات === */
+    .settings-section {
+        margin-bottom: 2.5rem;
+        animation: fadeIn 0.5s ease;
     }
     
     .settings-section:last-child {
-        border-bottom: none;
         margin-bottom: 0;
-        padding-bottom: 0;
     }
     
     .settings-section-header {
         margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 0.75rem;
+    }
+    
+    .settings-section-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(68, 129, 235, 0.1);
+        color: #4481eb;
+        font-size: 1rem;
     }
     
     .settings-section-title {
-        color: var(--primary-color);
         font-weight: 600;
+        margin-bottom: 0;
         font-size: 1.15rem;
+        color: #343a40;
+    }
+    
+    /* === فرم‌ها و ورودی‌ها === */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #4481eb;
+        box-shadow: 0 0 0 4px rgba(68, 129, 235, 0.1);
+    }
+    
+    .form-text {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    /* === کادر پیش‌نمایش === */
+    .preview-box {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        background-color: #f9fafb;
+    }
+    
+    .preview-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #343a40;
+    }
+    
+    .preview-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    /* === سوییچ و چک‌باکس‌ها === */
+    .switch-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background-color: #f9fafb;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .switch-wrapper:last-child {
         margin-bottom: 0;
     }
     
-    .form-check-label {
+    .switch-label {
+        font-weight: 500;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .switch-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    .form-switch {
+        padding-right: 2.5em;
+    }
+    
+    .form-check-input {
+        width: 3em;
+        height: 1.5em;
         cursor: pointer;
+        background-color: #dee2e6;
+        border-color: #dee2e6;
+    }
+    
+    .form-check-input:checked {
+        background-color: #4481eb;
+        border-color: #4481eb;
+    }
+    
+    /* === گزینه‌های رنگ === */
+    .color-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
     }
     
     .color-option {
-        display: inline-block;
-        width: 30px;
-        height: 30px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         cursor: pointer;
-        border: 2px solid transparent;
-        margin-left: 5px;
-        transition: transform 0.2s ease;
-    }
-    
-    .color-option.selected {
-        transform: scale(1.2);
-        border-color: white;
-        box-shadow: 0 0 0 2px var(--primary-color);
+        position: relative;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
     }
     
     .color-option:hover {
         transform: scale(1.1);
     }
     
-    .color-blue { background-color: #3F51B5; }
-    .color-green { background-color: #4CAF50; }
-    .color-red { background-color: #F44336; }
-    .color-purple { background-color: #673AB7; }
-    .color-orange { background-color: #FF9800; }
-    .color-teal { background-color: #009688; }
+    .color-option.active {
+        transform: scale(1.15);
+    }
     
-    .preview-box {
-        border: 1px solid var(--gray-200);
-        border-radius: 0.5rem;
+    .color-option.active::after {
+        content: "✓";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        font-weight: bold;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    
+    .color-blue { background: linear-gradient(135deg, #4481eb 0%, #04befe 100%); }
+    .color-green { background: linear-gradient(135deg, #4ca74c 0%, #2ec973 100%); }
+    .color-red { background: linear-gradient(135deg, #f64b4b 0%, #ff5170 100%); }
+    .color-purple { background: linear-gradient(135deg, #6c49eb 0%, #9665ff 100%); }
+    .color-orange { background: linear-gradient(135deg, #ff9b4b 0%, #ff7d50 100%); }
+    .color-teal { background: linear-gradient(135deg, #009e8a 0%, #3fd4c0 100%); }
+    
+    /* === پیش‌نمایش تصاویر === */
+    .image-preview-area {
         padding: 1rem;
-        margin-top: 1rem;
-        background-color: #f8f9fa;
-    }
-    
-    .preview-title {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-        color: var(--gray-700);
-    }
-    
-    .form-label {
-        font-weight: 500;
-        color: var(--gray-700);
+        border: 1px dashed #dee2e6;
+        border-radius: 10px;
+        position: relative;
+        text-align: center;
+        margin-bottom: 1rem;
+        background-color: #f9fafb;
     }
     
     .image-preview {
         display: inline-block;
-        padding: 3px;
-        border: 1px solid var(--gray-200);
-        border-radius: 4px;
-        background-color: white;
-        margin-right: 10px;
+        margin: 0.5rem;
         position: relative;
     }
     
     .image-preview img {
-        max-height: 100px;
-        max-width: 200px;
-        border-radius: 2px;
+        max-height: 120px;
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .image-preview-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+        display: block;
+    }
+    
+    /* === دکمه‌ها === */
+    .btn-save {
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        border-radius: 50px;
+        background: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        border: none;
+        color: white;
+        box-shadow: 0 4px 15px rgba(68, 129, 235, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(68, 129, 235, 0.4);
+        color: white;
+    }
+    
+    .btn-save:active {
+        transform: translateY(-1px);
+    }
+    
+    .btn-reset {
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        border-radius: 50px;
+        background-color: #f9fafb;
+        border: 1px solid #dee2e6;
+        color: #495057;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-reset:hover {
+        background-color: #f1f3f5;
+    }
+    
+    @media (max-width: 992px) {
+        .settings-menu {
+            position: relative;
+            top: 0;
+            margin-bottom: 2rem;
+        }
+        
+        .settings-menu-list {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            -ms-overflow-style: none; /* for Internet Explorer, Edge */
+            scrollbar-width: none; /* for Firefox */
+        }
+        
+        .settings-menu-list::-webkit-scrollbar {
+            display: none; /* for Chrome, Safari, and Opera */
+        }
+        
+        .settings-menu-item {
+            flex: 0 0 auto;
+            padding: 0.75rem 1rem;
+        }
     }
 </style>
 {% endblock %}
 
-{% block title %}تنظیمات سیستم | سیستم مدیریت املاک هیرو{% endblock %}
-
 {% block content %}
-<div class="container">
+<div class="container page-container">
+    <!-- نوار مسیر (Breadcrumb) -->
     <div class="mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'home' %}">خانه</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">داشبورد</a></li>
                 <li class="breadcrumb-item active">تنظیمات سیستم</li>
             </ol>
         </nav>
     </div>
     
-    <div class="d-flex align-items-center mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings text-primary me-3"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <!-- عنوان صفحه -->
+    <div class="section-title mb-4">
+        <div class="section-title-icon">
+            <i class="bi bi-gear-fill"></i>
+        </div>
         <div>
-            <h1 class="mb-0">تنظیمات سیستم</h1>
-            <p class="text-muted mb-0">تنظیمات و پیکربندی کامل سیستم مدیریت املاک</p>
+            <h2 class="section-title-text">تنظیمات سیستم</h2>
+            <p class="text-muted mb-0">پیکربندی و شخصی‌سازی سیستم مدیریت املاک</p>
         </div>
     </div>
     
+    <!-- پیام‌های سیستم -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} d-flex" role="alert">
+            <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-circle-fill{% endif %} me-2 fs-5"></i>
+            <div>{{ message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- خطاهای فرم -->
     {% if form.errors %}
     <div class="alert alert-danger d-flex" role="alert">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-circle flex-shrink-0 me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
         <div>
-            <h5 class="alert-heading mb-1">خطاهای زیر را برطرف کنید:</h5>
+            <h5 class="alert-heading mb-1">لطفاً خطاهای زیر را برطرف کنید:</h5>
             <ul class="mb-0 ps-3">
                 {% for field, errors in form.errors.items %}
                 <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
@@ -170,372 +462,239 @@
     </div>
     {% endif %}
     
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} d-flex" role="alert">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle flex-shrink-0 me-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        <div>{{ message }}</div>
-    </div>
-    {% endfor %}
-    {% endif %}
-    
-    <div class="row">
-        <div class="col-lg-3 mb-4">
-            <div class="settings-tabs">
-                <nav class="nav flex-column" id="settingsTabs" role="tablist">
-                    <a class="nav-link active" id="general-tab" data-bs-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        تنظیمات عمومی
-                    </a>
-                    <a class="nav-link" id="appearance-tab" data-bs-toggle="tab" href="#appearance" role="tab" aria-controls="appearance" aria-selected="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        ظاهر سیستم
-                    </a>
-                    <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                        اطلاعات تماس
-                    </a>
-                    <a class="nav-link" id="social-tab" data-bs-toggle="tab" href="#social" role="tab" aria-controls="social" aria-selected="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                        شبکه‌های اجتماعی
-                    </a>
-                    <a class="nav-link" id="seo-tab" data-bs-toggle="tab" href="#seo" role="tab" aria-controls="seo" aria-selected="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        SEO
-                    </a>
-                    <a class="nav-link" id="property-tab" data-bs-toggle="tab" href="#property" role="tab" aria-controls="property" aria-selected="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-box"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                        تنظیمات ملک
-                    </a>
-                    <a class="nav-link" id="advanced-tab" data-bs-toggle="tab" href="#advanced" role="tab" aria-controls="advanced" aria-selected="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-                        تنظیمات پیشرفته
-                    </a>
-                </nav>
+    <div class="row g-4">
+        <!-- منوی جانبی تنظیمات -->
+        <div class="col-lg-3">
+            <div class="settings-menu">
+                <div id="settingsMenuList" class="settings-menu-list">
+                    <div class="settings-menu-item active" data-target="general-settings">
+                        <div class="settings-menu-icon">
+                            <i class="bi bi-house-fill"></i>
+                        </div>
+                        <span>تنظیمات عمومی</span>
+                    </div>
+                    <div class="settings-menu-item" data-target="appearance-settings">
+                        <div class="settings-menu-icon">
+                            <i class="bi bi-palette-fill"></i>
+                        </div>
+                        <span>ظاهر و قالب</span>
+                    </div>
+                    <div class="settings-menu-item" data-target="contact-settings">
+                        <div class="settings-menu-icon">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <span>اطلاعات تماس</span>
+                    </div>
+                    <div class="settings-menu-item" data-target="social-settings">
+                        <div class="settings-menu-icon">
+                            <i class="bi bi-globe"></i>
+                        </div>
+                        <span>شبکه‌های اجتماعی</span>
+                    </div>
+                    <div class="settings-menu-item" data-target="seo-settings">
+                        <div class="settings-menu-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <span>بهینه‌سازی SEO</span>
+                    </div>
+                    <div class="settings-menu-item" data-target="property-settings">
+                        <div class="settings-menu-icon">
+                            <i class="bi bi-building-fill"></i>
+                        </div>
+                        <span>تنظیمات املاک</span>
+                    </div>
+                    <div class="settings-menu-item" data-target="advanced-settings">
+                        <div class="settings-menu-icon">
+                            <i class="bi bi-sliders"></i>
+                        </div>
+                        <span>تنظیمات پیشرفته</span>
+                    </div>
+                </div>
             </div>
         </div>
         
+        <!-- بخش اصلی تنظیمات -->
         <div class="col-lg-9">
             <form method="post" enctype="multipart/form-data" class="settings-form">
                 {% csrf_token %}
                 
-                <div class="tab-content" id="settingsTabsContent">
-                    <!-- تنظیمات عمومی -->
-                    <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home me-2 text-primary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                    تنظیمات عمومی
-                                </h5>
+                <!-- تنظیمات عمومی -->
+                <div class="settings-tab active" id="general-settings">
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i class="bi bi-house-fill"></i>
                             </div>
-                            <div class="card-body">
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">اطلاعات پایه سیستم</h5>
+                            <div>
+                                <h4 class="settings-card-title">تنظیمات عمومی سیستم</h4>
+                                <p class="settings-card-subtitle">اطلاعات پایه و تصاویر سیستم</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <!-- اطلاعات پایه -->
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-info-circle-fill"></i>
                                     </div>
-                                    
-                                    <div class="row mb-3">
-                                        <div class="col-md-8">
-                                            <div class="mb-3">
-                                                <label for="{{ form.website_title.id_for_label }}" class="form-label">{{ form.website_title.label }}</label>
-                                                {{ form.website_title }}
-                                                <div class="form-text text-muted">این عنوان در بالای صفحات و در تب مرورگر نمایش داده می‌شود.</div>
-                                            </div>
+                                    <h5 class="settings-section-title">اطلاعات پایه</h5>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label for="{{ form.website_title.id_for_label }}" class="form-label">{{ form.website_title.label }}</label>
+                                            {{ form.website_title }}
+                                            <div class="form-text text-muted">عنوان اصلی سایت که در بالای صفحات و تب مرورگر نمایش داده می‌شود</div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- تصاویر سیستم -->
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-images"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">تصاویر سیستم</h5>
+                                </div>
                                 
-                                <div class="settings-section">
-                                    <div class="settings-section-header">
-                                        <h5 class="settings-section-title">تصاویر و آیکون‌ها</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <label for="{{ form.favicon.id_for_label }}" class="form-label">{{ form.favicon.label }}</label>
+                                        
+                                        {% if form.instance.favicon %}
+                                        <div class="image-preview-area mb-3">
+                                            <div class="image-preview">
+                                                <img src="{{ form.instance.favicon.url }}" alt="آیکون وب‌سایت">
+                                                <span class="image-preview-label">آیکون فعلی</span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {{ form.favicon }}
+                                        <div class="form-text text-muted">آیکون کوچکی که در تب مرورگر نمایش داده می‌شود (16×16 یا 32×32 پیکسل)</div>
                                     </div>
                                     
-                                    <div class="row g-4">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.favicon.id_for_label }}" class="form-label">{{ form.favicon.label }}</label>
-                                                {% if form.instance.favicon %}
-                                                <div class="d-flex mb-2 align-items-center">
-                                                    <div class="image-preview">
-                                                        <img src="{{ form.instance.favicon.url }}" alt="آیکون سایت" class="img-fluid">
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                                {{ form.favicon }}
-                                                <div class="form-text text-muted">آیکونی که در تب مرورگر نمایش داده می‌شود (ترجیحاً با فرمت .ico یا .png)</div>
-                                            </div>
-                                        </div>
+                                    <div class="col-md-6 mb-4">
+                                        <label for="{{ form.logo.id_for_label }}" class="form-label">{{ form.logo.label }}</label>
                                         
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.logo.id_for_label }}" class="form-label">{{ form.logo.label }}</label>
-                                                {% if form.instance.logo %}
-                                                <div class="d-flex mb-2 align-items-center">
-                                                    <div class="image-preview">
-                                                        <img src="{{ form.instance.logo.url }}" alt="لوگوی فعلی" class="img-fluid">
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                                {{ form.logo }}
-                                                <div class="form-text text-muted">لوگوی سایت که در هدر نمایش داده می‌شود. ابعاد پیشنهادی ۲۰۰×۶۰ پیکسل با پس‌زمینه شفاف.</div>
+                                        {% if form.instance.logo %}
+                                        <div class="image-preview-area mb-3">
+                                            <div class="image-preview">
+                                                <img src="{{ form.instance.logo.url }}" alt="لوگوی سایت">
+                                                <span class="image-preview-label">لوگوی فعلی</span>
                                             </div>
                                         </div>
+                                        {% endif %}
                                         
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="{{ form.default_property_image.id_for_label }}" class="form-label">{{ form.default_property_image.label }}</label>
-                                                {% if form.instance.default_property_image %}
-                                                <div class="d-flex mb-2 align-items-center">
-                                                    <div class="image-preview">
-                                                        <img src="{{ form.instance.default_property_image.url }}" alt="تصویر پیش‌فرض املاک" class="img-fluid">
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                                {{ form.default_property_image }}
-                                                <div class="form-text text-muted">تصویر پیش‌فرض برای املاکی که تصویر ندارند. ابعاد پیشنهادی ۶۰۰×۴۰۰ پیکسل.</div>
+                                        {{ form.logo }}
+                                        <div class="form-text text-muted">لوگوی اصلی سیستم که در منوی بالای صفحات نمایش داده می‌شود</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-4">
+                                        <label for="{{ form.default_property_image.id_for_label }}" class="form-label">{{ form.default_property_image.label }}</label>
+                                        
+                                        {% if form.instance.default_property_image %}
+                                        <div class="image-preview-area mb-3">
+                                            <div class="image-preview">
+                                                <img src="{{ form.instance.default_property_image.url }}" alt="تصویر پیش‌فرض ملک">
+                                                <span class="image-preview-label">تصویر پیش‌فرض فعلی</span>
                                             </div>
                                         </div>
+                                        {% endif %}
+                                        
+                                        {{ form.default_property_image }}
+                                        <div class="form-text text-muted">تصویری که در صورت عدم وجود تصویر برای یک ملک نمایش داده می‌شود</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- ظاهر سیستم -->
-                    <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye me-2 text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    ظاهر سیستم
-                                </h5>
+                </div>
+                
+                <!-- تنظیمات ظاهر و قالب -->
+                <div class="settings-tab" id="appearance-settings">
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i class="bi bi-palette-fill"></i>
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-4">
-                                            <label class="form-label">{{ form.primary_color.label }}</label>
-                                            <div>
-                                                {{ form.primary_color }}
+                            <div>
+                                <h4 class="settings-card-title">تنظیمات ظاهری</h4>
+                                <p class="settings-card-subtitle">شخصی‌سازی رنگ‌ها و فونت‌های سیستم</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-droplet-fill"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">رنگ‌بندی و حالت نمایش</h5>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-lg-8">
+                                        <label class="form-label">{{ form.primary_color.label }}</label>
+                                        <div class="color-options" id="colorOptions">
+                                            <div class="color-option color-blue {% if form.instance.primary_color == 'blue' %}active{% endif %}" data-value="blue" data-color="#4481eb"></div>
+                                            <div class="color-option color-green {% if form.instance.primary_color == 'green' %}active{% endif %}" data-value="green" data-color="#4ca74c"></div>
+                                            <div class="color-option color-red {% if form.instance.primary_color == 'red' %}active{% endif %}" data-value="red" data-color="#f64b4b"></div>
+                                            <div class="color-option color-purple {% if form.instance.primary_color == 'purple' %}active{% endif %}" data-value="purple" data-color="#6c49eb"></div>
+                                            <div class="color-option color-orange {% if form.instance.primary_color == 'orange' %}active{% endif %}" data-value="orange" data-color="#ff9b4b"></div>
+                                            <div class="color-option color-teal {% if form.instance.primary_color == 'teal' %}active{% endif %}" data-value="teal" data-color="#009e8a"></div>
+                                        </div>
+                                        {{ form.primary_color.as_hidden }}
+                                        <div class="form-text text-muted">انتخاب رنگ اصلی برای دکمه‌ها، لینک‌ها و سایر المان‌های سیستم</div>
+                                        
+                                        <div class="preview-box mt-4">
+                                            <div class="preview-title">پیش‌نمایش رنگ انتخابی</div>
+                                            <div class="preview-content">
+                                                <button class="btn btn-primary" id="previewButton">دکمه نمونه</button>
+                                                <div class="progress" style="height: 20px; width: 200px;">
+                                                    <div class="progress-bar" id="previewProgressBar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="mb-4">
+                                </div>
+                                
+                                <div class="switch-wrapper">
+                                    <div class="switch-label">
+                                        <span>{{ form.enable_dark_mode.label }}</span>
+                                        <small class="switch-description">فعال‌سازی حالت تاریک برای کاربران سیستم</small>
+                                    </div>
+                                    <div class="form-check form-switch form-check-reverse">
+                                        {{ form.enable_dark_mode }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-type"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">فونت و تایپوگرافی</h5>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
                                             <label for="{{ form.font_type.id_for_label }}" class="form-label">{{ form.font_type.label }}</label>
                                             {{ form.font_type }}
+                                            <div class="form-text text-muted">فونت پیش‌فرض برای نمایش متن در سرتاسر سیستم</div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="mb-4 form-check form-switch">
-                                            {{ form.enable_dark_mode }}
-                                            <label class="form-check-label" for="{{ form.enable_dark_mode.id_for_label }}">
-                                                {{ form.enable_dark_mode.label }}
-                                            </label>
-                                            <div class="form-text text-muted">فعال‌سازی حالت تاریک برای سیستم</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- اطلاعات تماس -->
-                    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone me-2 text-primary"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                    اطلاعات تماس
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.company_name.id_for_label }}" class="form-label">{{ form.company_name.label }}</label>
-                                            {{ form.company_name }}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.company_phone.id_for_label }}" class="form-label">{{ form.company_phone.label }}</label>
-                                            {{ form.company_phone }}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.company_email.id_for_label }}" class="form-label">{{ form.company_email.label }}</label>
-                                            {{ form.company_email }}
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label for="{{ form.company_address.id_for_label }}" class="form-label">{{ form.company_address.label }}</label>
-                                            {{ form.company_address }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- شبکه‌های اجتماعی -->
-                    <div class="tab-pane fade" id="social" role="tabpanel" aria-labelledby="social-tab">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe me-2 text-primary"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                                    شبکه‌های اجتماعی
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.instagram_url.id_for_label }}" class="form-label">{{ form.instagram_url.label }}</label>
-                                            {{ form.instagram_url }}
-                                            <div class="form-text text-muted">مثال: https://instagram.com/username</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.telegram_url.id_for_label }}" class="form-label">{{ form.telegram_url.label }}</label>
-                                            {{ form.telegram_url }}
-                                            <div class="form-text text-muted">مثال: https://t.me/username</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.whatsapp_number.id_for_label }}" class="form-label">{{ form.whatsapp_number.label }}</label>
-                                            {{ form.whatsapp_number }}
-                                            <div class="form-text text-muted">با کد کشور وارد کنید. مثال: +98912...</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- SEO -->
-                    <div class="tab-pane fade" id="seo" role="tabpanel" aria-labelledby="seo-tab">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search me-2 text-primary"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    تنظیمات SEO
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label for="{{ form.site_description.id_for_label }}" class="form-label">{{ form.site_description.label }}</label>
-                                            {{ form.site_description }}
-                                            <div class="form-text text-muted">توضیحات متا برای موتورهای جستجو. ایده‌آل بین ۵۰ تا ۱۶۰ کاراکتر است.</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label for="{{ form.site_keywords.id_for_label }}" class="form-label">{{ form.site_keywords.label }}</label>
-                                            {{ form.site_keywords }}
-                                            <div class="form-text text-muted">کلمات کلیدی را با کاما (،) از هم جدا کنید.</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- تنظیمات ملک -->
-                    <div class="tab-pane fade" id="property" role="tabpanel" aria-labelledby="property-tab">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-box me-2 text-primary"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                                    تنظیمات ملک
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.price_unit.id_for_label }}" class="form-label">{{ form.price_unit.label }}</label>
-                                            {{ form.price_unit }}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.property_per_page.id_for_label }}" class="form-label">{{ form.property_per_page.label }}</label>
-                                            {{ form.property_per_page }}
-                                            <div class="form-text text-muted">تعداد املاک نمایش داده شده در هر صفحه</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-4 form-check form-switch">
-                                            {{ form.show_property_views }}
-                                            <label class="form-check-label" for="{{ form.show_property_views.id_for_label }}">
-                                                {{ form.show_property_views.label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-4 form-check form-switch">
-                                            {{ form.enable_property_comments }}
-                                            <label class="form-check-label" for="{{ form.enable_property_comments.id_for_label }}">
-                                                {{ form.enable_property_comments.label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- تنظیمات پیشرفته -->
-                    <div class="tab-pane fade" id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders me-2 text-primary"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-                                    تنظیمات پیشرفته
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="alert alert-warning">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle me-2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                                    تغییر این تنظیمات ممکن است بر روی عملکرد سیستم تأثیر بگذارد. با احتیاط تغییر دهید.
-                                </div>
-                                
-                                <div class="row g-3 mt-2">
-                                    <div class="col-md-6">
-                                        <div class="mb-4 form-check form-switch">
-                                            {{ form.enable_sms_notifications }}
-                                            <label class="form-check-label" for="{{ form.enable_sms_notifications.id_for_label }}">
-                                                {{ form.enable_sms_notifications.label }}
-                                            </label>
-                                            <div class="form-text text-muted">ارسال پیامک اطلاع‌رسانی برای تغییرات مهم</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="mb-4 form-check form-switch">
-                                            {{ form.maintenance_mode }}
-                                            <label class="form-check-label" for="{{ form.maintenance_mode.id_for_label }}">
-                                                {{ form.maintenance_mode.label }}
-                                            </label>
-                                            <div class="form-text text-muted">وقتی فعال باشد، سایت برای بازدیدکنندگان غیرمدیر در دسترس نخواهد بود</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label for="{{ form.maintenance_message.id_for_label }}" class="form-label">{{ form.maintenance_message.label }}</label>
-                                            {{ form.maintenance_message }}
-                                            <div class="form-text text-muted">این پیام زمانی که سایت در حالت تعمیر و نگهداری است نمایش داده می‌شود</div>
+                                        
+                                        <div class="preview-box mt-3">
+                                            <div class="preview-title">پیش‌نمایش فونت‌ها</div>
+                                            <div id="fontPreview">
+                                                <p class="mb-2 p-2" style="font-family: 'Vazir'; background-color: #f8f9fa; border-radius: 5px;">نمونه متن با فونت وزیر</p>
+                                                <p class="mb-2 p-2" style="font-family: 'IRANSans'; background-color: #f8f9fa; border-radius: 5px;">نمونه متن با فونت ایران سنس</p>
+                                                <p class="mb-0 p-2" style="font-family: 'Sahel'; background-color: #f8f9fa; border-radius: 5px;">نمونه متن با فونت ساحل</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -544,13 +703,317 @@
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-end mt-4">
-                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary me-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x me-1"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        انصراف
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                <!-- تنظیمات اطلاعات تماس -->
+                <div class="settings-tab" id="contact-settings">
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i class="bi bi-telephone-fill"></i>
+                            </div>
+                            <div>
+                                <h4 class="settings-card-title">اطلاعات تماس</h4>
+                                <p class="settings-card-subtitle">اطلاعات تماس شرکت/آژانس املاک</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">اطلاعات سازمانی</h5>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.company_name.id_for_label }}" class="form-label">{{ form.company_name.label }}</label>
+                                            {{ form.company_name }}
+                                            <div class="form-text text-muted">نام شرکت یا آژانس املاک</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.company_phone.id_for_label }}" class="form-label">{{ form.company_phone.label }}</label>
+                                            {{ form.company_phone }}
+                                            <div class="form-text text-muted">شماره تماس اصلی شرکت (مثال: ۰۹۱۲۳۴۵۶۷۸۹)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.company_email.id_for_label }}" class="form-label">{{ form.company_email.label }}</label>
+                                            {{ form.company_email }}
+                                            <div class="form-text text-muted">ایمیل رسمی شرکت برای ارتباط مشتریان</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="{{ form.company_address.id_for_label }}" class="form-label">{{ form.company_address.label }}</label>
+                                            {{ form.company_address }}
+                                            <div class="form-text text-muted">آدرس کامل دفتر شرکت/آژانس املاک</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- تنظیمات شبکه‌های اجتماعی -->
+                <div class="settings-tab" id="social-settings">
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i class="bi bi-globe"></i>
+                            </div>
+                            <div>
+                                <h4 class="settings-card-title">شبکه‌های اجتماعی</h4>
+                                <p class="settings-card-subtitle">لینک صفحات شبکه‌های اجتماعی</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="settings-section">
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.instagram_url.id_for_label }}" class="form-label d-flex align-items-center">
+                                                <i class="bi bi-instagram me-2 text-danger"></i>
+                                                {{ form.instagram_url.label }}
+                                            </label>
+                                            {{ form.instagram_url }}
+                                            <div class="form-text text-muted">آدرس کامل صفحه اینستاگرام (مثال: https://instagram.com/yourpage)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.telegram_url.id_for_label }}" class="form-label d-flex align-items-center">
+                                                <i class="bi bi-telegram me-2 text-primary"></i>
+                                                {{ form.telegram_url.label }}
+                                            </label>
+                                            {{ form.telegram_url }}
+                                            <div class="form-text text-muted">آدرس کامل کانال تلگرام (مثال: https://t.me/yourname)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.whatsapp_number.id_for_label }}" class="form-label d-flex align-items-center">
+                                                <i class="bi bi-whatsapp me-2 text-success"></i>
+                                                {{ form.whatsapp_number.label }}
+                                            </label>
+                                            {{ form.whatsapp_number }}
+                                            <div class="form-text text-muted">شماره واتس‌اپ با کد کشور (مثال: ۹۸۹۱۲۳۴۵۶۷۸۹+)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- تنظیمات SEO -->
+                <div class="settings-tab" id="seo-settings">
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i class="bi bi-search"></i>
+                            </div>
+                            <div>
+                                <h4 class="settings-card-title">بهینه‌سازی SEO</h4>
+                                <p class="settings-card-subtitle">تنظیمات بهینه‌سازی برای موتورهای جستجو</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="settings-section">
+                                <div class="row">
+                                    <div class="col-12 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.site_description.id_for_label }}" class="form-label">{{ form.site_description.label }}</label>
+                                            {{ form.site_description }}
+                                            <div class="form-text text-muted">توضیح کوتاه و جذاب درباره سایت (پیشنهاد: حداکثر 160 کاراکتر)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.site_keywords.id_for_label }}" class="form-label">{{ form.site_keywords.label }}</label>
+                                            {{ form.site_keywords }}
+                                            <div class="form-text text-muted">کلمات کلیدی مرتبط با سایت، با کاما (،) از هم جدا شوند</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="preview-box mt-3">
+                                    <div class="preview-title mb-3">پیش‌نمایش نتیجه گوگل</div>
+                                    <div style="max-width: 600px; font-family: Arial, sans-serif;">
+                                        <div style="color: #1a0dab; font-size: 18px; margin-bottom: 5px;" id="seoTitlePreview">{{ form.instance.website_title|default:"سیستم مدیریت املاک هیرو" }}</div>
+                                        <div style="color: #006621; font-size: 14px; margin-bottom: 5px;">www.yourwebsite.com</div>
+                                        <div style="color: #545454; font-size: 14px;" id="seoDescriptionPreview">{{ form.instance.site_description|default:"سیستم هوشمند مدیریت املاک با قابلیت جستجوی پیشرفته و امکانات حرفه‌ای برای مشاوران املاک" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- تنظیمات املاک -->
+                <div class="settings-tab" id="property-settings">
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i class="bi bi-building-fill"></i>
+                            </div>
+                            <div>
+                                <h4 class="settings-card-title">تنظیمات املاک</h4>
+                                <p class="settings-card-subtitle">پیکربندی نحوه نمایش و مدیریت املاک</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-currency-exchange"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">واحد پول</h5>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.price_unit.id_for_label }}" class="form-label">{{ form.price_unit.label }}</label>
+                                            {{ form.price_unit }}
+                                            <div class="form-text text-muted">واحد پولی که در قیمت املاک نمایش داده می‌شود</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-eye"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">نمایش املاک</h5>
+                                </div>
+                                
+                                <div class="switch-wrapper mb-3">
+                                    <div class="switch-label">
+                                        <span>{{ form.show_property_views.label }}</span>
+                                        <small class="switch-description">نمایش تعداد بازدیدها در صفحه جزئیات ملک</small>
+                                    </div>
+                                    <div class="form-check form-switch form-check-reverse">
+                                        {{ form.show_property_views }}
+                                    </div>
+                                </div>
+                                
+                                <div class="switch-wrapper mb-3">
+                                    <div class="switch-label">
+                                        <span>{{ form.enable_property_comments.label }}</span>
+                                        <small class="switch-description">فعال‌سازی امکان ارسال نظر برای املاک</small>
+                                    </div>
+                                    <div class="form-check form-switch form-check-reverse">
+                                        {{ form.enable_property_comments }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.property_per_page.id_for_label }}" class="form-label">{{ form.property_per_page.label }}</label>
+                                            {{ form.property_per_page }}
+                                            <div class="form-text text-muted">تعداد املاک در هر صفحه (توصیه: بین 10 تا 24)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- تنظیمات پیشرفته -->
+                <div class="settings-tab" id="advanced-settings">
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i class="bi bi-sliders"></i>
+                            </div>
+                            <div>
+                                <h4 class="settings-card-title">تنظیمات پیشرفته</h4>
+                                <p class="settings-card-subtitle">تنظیمات اضافی و پیشرفته سیستم</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="alert alert-warning d-flex" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-1">هشدار!</h5>
+                                    <p class="mb-0">تغییر در این تنظیمات می‌تواند روی عملکرد کلی سیستم تأثیر بگذارد. لطفاً با آگاهی کامل تغییرات را اعمال نمایید.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section mt-4">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-bell-fill"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">اطلاع‌رسانی</h5>
+                                </div>
+                                
+                                <div class="switch-wrapper mb-3">
+                                    <div class="switch-label">
+                                        <span>{{ form.enable_sms_notifications.label }}</span>
+                                        <small class="switch-description">فعال‌سازی سیستم اطلاع‌رسانی پیامکی برای رویدادهای مهم</small>
+                                    </div>
+                                    <div class="form-check form-switch form-check-reverse">
+                                        {{ form.enable_sms_notifications }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon">
+                                        <i class="bi bi-tools"></i>
+                                    </div>
+                                    <h5 class="settings-section-title">تعمیر و نگهداری</h5>
+                                </div>
+                                
+                                <div class="switch-wrapper mb-3">
+                                    <div class="switch-label">
+                                        <span>{{ form.maintenance_mode.label }}</span>
+                                        <small class="switch-description">فعال‌سازی حالت تعمیر و نگهداری برای دسترسی‌های غیرمدیریتی</small>
+                                    </div>
+                                    <div class="form-check form-switch form-check-reverse">
+                                        {{ form.maintenance_mode }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="{{ form.maintenance_message.id_for_label }}" class="form-label">{{ form.maintenance_message.label }}</label>
+                                            {{ form.maintenance_message }}
+                                            <div class="form-text text-muted">پیامی که در زمان فعال بودن حالت تعمیر و نگهداری به بازدیدکنندگان نمایش داده می‌شود</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- دکمه‌های فرم -->
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <button type="reset" class="btn btn-reset">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>
+                        بازنشانی
+                    </button>
+                    <button type="submit" class="btn btn-save">
+                        <i class="bi bi-check2-all me-2"></i>
                         ذخیره تنظیمات
                     </button>
                 </div>
@@ -560,67 +1023,160 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // فعال‌سازی تب‌ها
-        const triggerTabList = document.querySelectorAll('#settingsTabs a')
-        triggerTabList.forEach(triggerEl => {
-            const tabTrigger = new bootstrap.Tab(triggerEl)
-            triggerEl.addEventListener('click', event => {
-                event.preventDefault()
-                tabTrigger.show()
-            })
+document.addEventListener('DOMContentLoaded', function() {
+    // مدیریت تب‌ها
+    const menuItems = document.querySelectorAll('.settings-menu-item');
+    const tabs = document.querySelectorAll('.settings-tab');
+    
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            
+            // فعال کردن منوی انتخاب شده
+            menuItems.forEach(m => m.classList.remove('active'));
+            this.classList.add('active');
+            
+            // نمایش تب مربوطه
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.id === targetId) {
+                    tab.classList.add('active');
+                }
+            });
+        });
+    });
+    
+    // مدیریت انتخاب رنگ
+    const colorOptions = document.querySelectorAll('.color-option');
+    const primaryColorInput = document.querySelector('input[name="primary_color"]');
+    const previewButton = document.getElementById('previewButton');
+    const previewProgressBar = document.getElementById('previewProgressBar');
+    
+    colorOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // حذف کلاس فعال از همه گزینه‌ها
+            colorOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // افزودن کلاس فعال به گزینه انتخاب شده
+            this.classList.add('active');
+            
+            // ذخیره مقدار در فیلد مخفی
+            const colorValue = this.getAttribute('data-value');
+            primaryColorInput.value = colorValue;
+            
+            // بروزرسانی رنگ در پیش‌نمایش
+            const colorCode = this.getAttribute('data-color');
+            previewButton.style.backgroundColor = colorCode;
+            previewButton.style.borderColor = colorCode;
+            previewProgressBar.style.backgroundColor = colorCode;
+        });
+    });
+    
+    // پیش‌نمایش توضیحات SEO
+    const siteDescription = document.getElementById('id_site_description');
+    const seoDescriptionPreview = document.getElementById('seoDescriptionPreview');
+    
+    if (siteDescription && seoDescriptionPreview) {
+        siteDescription.addEventListener('input', function() {
+            if (this.value) {
+                seoDescriptionPreview.textContent = this.value;
+            } else {
+                seoDescriptionPreview.textContent = "سیستم هوشمند مدیریت املاک با قابلیت جستجوی پیشرفته و امکانات حرفه‌ای برای مشاوران املاک";
+            }
+        });
+    }
+    
+    // پیش‌نمایش عنوان سایت
+    const websiteTitle = document.getElementById('id_website_title');
+    const seoTitlePreview = document.getElementById('seoTitlePreview');
+    
+    if (websiteTitle && seoTitlePreview) {
+        websiteTitle.addEventListener('input', function() {
+            if (this.value) {
+                seoTitlePreview.textContent = this.value;
+            } else {
+                seoTitlePreview.textContent = "سیستم مدیریت املاک هیرو";
+            }
+        });
+    }
+    
+    // پیش‌نمایش فونت‌ها
+    const fontType = document.getElementById('id_font_type');
+    const fontPreview = document.getElementById('fontPreview');
+    
+    if (fontType && fontPreview) {
+        fontType.addEventListener('change', function() {
+            const selectedFont = this.value;
+            
+            fontPreview.querySelectorAll('p').forEach(p => {
+                p.style.fontWeight = 'normal';
+                p.style.backgroundColor = '#f8f9fa';
+            });
+            
+            // برجسته کردن فونت انتخاب شده
+            const selectedPreview = fontPreview.querySelector(`p[style*="${selectedFont}"]`);
+            if (selectedPreview) {
+                selectedPreview.style.fontWeight = 'bold';
+                selectedPreview.style.backgroundColor = '#e9ecef';
+            }
         });
         
-        // انتخاب رنگ اصلی
-        const colorSelect = document.getElementById('id_primary_color');
-        if (colorSelect) {
-            // ایجاد نشانگرهای رنگی
-            const colorOptions = [
-                {value: 'blue', color: '#3F51B5', name: 'آبی'},
-                {value: 'green', color: '#4CAF50', name: 'سبز'},
-                {value: 'red', color: '#F44336', name: 'قرمز'},
-                {value: 'purple', color: '#673AB7', name: 'بنفش'},
-                {value: 'orange', color: '#FF9800', name: 'نارنجی'},
-                {value: 'teal', color: '#009688', name: 'فیروزه‌ای'},
-            ];
-            
-            // مخفی کردن سلکت اصلی
-            colorSelect.style.display = 'none';
-            
-            // ایجاد کانتینر برای نشانگرهای رنگی
-            const colorContainer = document.createElement('div');
-            colorContainer.className = 'd-flex gap-2 align-items-center';
-            colorSelect.parentNode.insertBefore(colorContainer, colorSelect.nextSibling);
-            
-            // ایجاد نشانگرهای رنگی
-            colorOptions.forEach(option => {
-                const colorDiv = document.createElement('div');
-                colorDiv.className = `color-option color-${option.value}`;
-                colorDiv.title = option.name;
-                colorDiv.style.backgroundColor = option.color;
-                
-                // اضافه کردن کلاس 'selected' به رنگ انتخاب شده
-                if (colorSelect.value === option.value) {
-                    colorDiv.classList.add('selected');
+        // اجرای اولیه برای تنظیم حالت پیش‌فرض
+        const event = new Event('change');
+        fontType.dispatchEvent(event);
+    }
+    
+    // پیش‌نمایش آپلود تصویر
+    const imageInputs = document.querySelectorAll('input[type="file"]');
+    
+    imageInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const fileType = this.files[0].type;
+                if (!fileType.startsWith('image/')) {
+                    alert('لطفاً فقط فایل تصویری آپلود کنید.');
+                    this.value = '';
+                    return;
                 }
                 
-                // رویداد کلیک برای انتخاب رنگ
-                colorDiv.addEventListener('click', function() {
-                    // حذف کلاس 'selected' از همه گزینه‌ها
-                    document.querySelectorAll('.color-option').forEach(el => {
-                        el.classList.remove('selected');
-                    });
-                    
-                    // افزودن کلاس 'selected' به گزینه انتخاب شده
-                    this.classList.add('selected');
-                    
-                    // بروزرسانی مقدار سلکت
-                    colorSelect.value = option.value;
-                });
-                
-                colorContainer.appendChild(colorDiv);
-            });
-        }
+                // نمایش پیش‌نمایش تصویر انتخاب شده
+                const previewArea = this.closest('.col-md-6').querySelector('.image-preview-area');
+                if (previewArea) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // آیا پیش‌نمایش از قبل وجود دارد؟
+                        let preview = previewArea.querySelector('.image-preview');
+                        if (preview) {
+                            // بروزرسانی تصویر
+                            const img = preview.querySelector('img');
+                            if (img) {
+                                img.src = e.target.result;
+                            }
+                        } else {
+                            // ایجاد پیش‌نمایش جدید
+                            preview = document.createElement('div');
+                            preview.classList.add('image-preview');
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.alt = 'پیش‌نمایش تصویر جدید';
+                            
+                            const label = document.createElement('span');
+                            label.classList.add('image-preview-label');
+                            label.textContent = 'تصویر جدید';
+                            
+                            preview.appendChild(img);
+                            preview.appendChild(label);
+                            previewArea.innerHTML = '';
+                            previewArea.appendChild(preview);
+                            previewArea.style.display = 'block';
+                        }
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            }
+        });
     });
+});
 </script>
 {% endblock %}
