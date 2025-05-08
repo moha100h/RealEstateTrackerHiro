@@ -207,10 +207,21 @@ LOGOUT_REDIRECT_URL = 'home'
 # Custom user model
 # AUTH_USER_MODEL = 'accounts.User'
 
-# CSRF configuration
+# تنظیمات امنیتی جامع برای حفاظت از سیستم
+# -------------------------------------------------
+
+# تنظیمات امنیتی سشن‌ها
+SESSION_COOKIE_SECURE = True  # فقط در HTTPS ارسال شود
+SESSION_COOKIE_HTTPONLY = True  # جلوگیری از دسترسی JavaScript به کوکی‌ها
+SESSION_COOKIE_SAMESITE = 'Lax'  # محافظت در برابر حملات CSRF
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # خروج کاربر با بستن مرورگر
+SESSION_COOKIE_AGE = 3600  # منقضی شدن سشن بعد از یک ساعت (تنظیم بر حسب ثانیه)
+
+# CSRF configuration (محافظت در برابر حملات جعل درخواست)
 CSRF_COOKIE_HTTPONLY = True  # محافظت از توکن CSRF در برابر دسترسی JavaScript
 CSRF_USE_SESSIONS = True  # ذخیره توکن CSRF در سشن به جای کوکی برای امنیت بیشتر
 CSRF_COOKIE_SAMESITE = 'Lax'  # محافظت در برابر حملات CSRF
+CSRF_COOKIE_SECURE = True  # فقط در HTTPS ارسال شود
 CSRF_TRUSTED_ORIGINS = [
     'https://*.replit.app', 
     'http://localhost:5000', 
@@ -222,18 +233,40 @@ CSRF_TRUSTED_ORIGINS = [
 # برای مدیریت بهتر خطاهای CSRF
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
-# Content Security Policy settings
-# این هدر به مرورگر می‌گوید که منابع مجاز برای بارگذاری از کجا هستند
-# برای محافظت در برابر حملات XSS
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", 'cdn.jsdelivr.net')
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com')
-CSP_FONT_SRC = ("'self'", 'fonts.gstatic.com')
-CSP_IMG_SRC = ("'self'", 'data:')
-CSP_CONNECT_SRC = ("'self'",)
+# HTTP Strict Transport Security (HSTS)
+# مجبور کردن مرورگر به استفاده از HTTPS برای ارتباطات آینده
+SECURE_HSTS_SECONDS = 31536000  # یک سال
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # شامل زیردامنه‌ها هم بشود
+SECURE_HSTS_PRELOAD = True  # پشتیبانی از لیست preload مرورگرها
 
-# تنظیمات محافظت در برابر حملات XSS
+# Content Security Policy (CSP) 
+# محدود کردن منابع مجاز برای بارگذاری محتوا
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'www.google-analytics.com', 'tagmanager.google.com')
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com')
+CSP_FONT_SRC = ("'self'", 'fonts.gstatic.com', 'cdn.jsdelivr.net')
+CSP_IMG_SRC = ("'self'", 'data:', 'www.google-analytics.com', 'stats.g.doubleclick.net')
+CSP_CONNECT_SRC = ("'self'", 'www.google-analytics.com')
+CSP_INCLUDE_NONCE_IN_CSP = True  # استفاده از nonce برای اسکریپت‌های پویا
+CSP_FRAME_ANCESTORS = ("'self'",)  # محافظت در برابر حملات Clickjacking
+CSP_REPORT_URI = '/security/csp-report/'  # آدرس گزارش تخلفات CSP
+
+# X-Content-Type-Options
+# جلوگیری از تشخیص نوع فایل توسط مرورگر (MIME sniffing)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# X-XSS-Protection
+# محافظت داخلی مرورگر در برابر حملات XSS
+SECURE_BROWSER_XSS_FILTER = True
 X_XSS_PROTECTION = "1; mode=block"
+
+# X-Frame-Options
+# محافظت در برابر حملات Clickjacking
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+# Content-Security-Policy-Report-Only
+# گزارش تخلفات بدون مسدود کردن محتوا (برای تست‌های اولیه)
+# CSP_REPORT_ONLY = True  # در محیط توسعه فعال شود
 
 # محدودیت نوع فایل‌های آپلودی مجاز
 ALLOWED_UPLOAD_EXTENSIONS = [
