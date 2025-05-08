@@ -4,19 +4,25 @@ from django.contrib.auth.models import User, Group
 from .models import UserProfile
 
 class CustomAuthenticationForm(AuthenticationForm):
-    """فرم سفارشی ورود به سیستم با طراحی RTL"""
+    """فرم سفارشی ورود به سیستم با طراحی RTL و امنیت بالا"""
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # افزودن کلاس‌های بوتسترپ
+        # افزودن کلاس‌های بوتسترپ و ویژگی‌های امنیتی
         self.fields['username'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'نام کاربری'
+            'class': 'form-control form-control-lg',
+            'placeholder': 'نام کاربری خود را وارد کنید',
+            'autocomplete': 'username',
+            'autocapitalize': 'none',
+            'spellcheck': 'false',
+            'dir': 'rtl'
         })
         
         self.fields['password'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'رمز عبور'
+            'class': 'form-control form-control-lg',
+            'placeholder': 'رمز عبور خود را وارد کنید',
+            'autocomplete': 'current-password',
+            'dir': 'rtl'
         })
 
 class UserForm(forms.ModelForm):
