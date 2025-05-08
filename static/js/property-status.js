@@ -8,14 +8,26 @@
 document.addEventListener('DOMContentLoaded', function() {
     // متغیرهای مودال
     let currentPropertyId = null;
-    // متناسب با ID مودال در فایل HTML
-    const statusModal = document.getElementById('changeStatusModal') || document.getElementById('statusModal');
-    // متناسب با ID دکمه ذخیره در فایل HTML
-    const saveStatusBtn = document.getElementById('save-status-btn') || document.getElementById('saveStatusBtn');
+    let statusModal;
+    let saveStatusBtn;
     
-    // مطمئن شویم مودال و دکمه ذخیره وجود دارند
-    if (!statusModal || !saveStatusBtn) {
-        console.log('مودال تغییر وضعیت یا دکمه ذخیره پیدا نشد');
+    // سعی می‌کنیم المان‌هایی که لازم داریم را پیدا کنیم
+    function findElements() {
+        // جستجوی عناصر مودال
+        statusModal = document.getElementById('changeStatusModal');
+        saveStatusBtn = document.getElementById('saveStatusBtn');
+        
+        // اگر پیدا نشد، دوباره تلاش می‌کنیم
+        if (!statusModal || !saveStatusBtn) {
+            console.log('تلاش مجدد برای پیدا کردن عناصر مودال...');
+            setTimeout(findElements, 1000); // تلاش دوباره بعد از 1 ثانیه
+            return false;
+        }
+        return true;
+    }
+    
+    // اگر عناصر پیدا نشد، از اجرای کد بقیه خودداری می‌کنیم
+    if (!findElements()) {
         return;
     }
     
@@ -148,7 +160,12 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             
             // بازگرداندن وضعیت قبلی در صورت خطا
-            statusBadge.innerHTML = originalContent;
+            if (statusBadge) {
+                statusBadge.innerHTML = originalContent;
+            }
+            if (mobileBadge) {
+                mobileBadge.innerHTML = originalMobileContent;
+            }
             
             // نمایش پیام خطا
             showAlert('danger', 'خطایی در ارتباط با سرور رخ داد.');
