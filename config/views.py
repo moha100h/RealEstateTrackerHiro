@@ -55,12 +55,40 @@ def system_config_view(request):
 @login_required
 @user_passes_test(is_superuser)
 def backup_view(request):
-    """مدیریت پشتیبان‌گیری و بازیابی سیستم"""
-    backups = BackupRecord.objects.all()
+    """مدیریت پشتیبان‌گیری و بازیابی سیستم با امکانات پیشرفته"""
+    # بدست آوردن لیست پشتیبان‌ها با مرتب سازی بر اساس جدیدترین
+    backups = BackupRecord.objects.all().order_by('-created_at')
+    
+    # آمار و اطلاعات سیستم
+    total_properties = Property.objects.count()
+    total_users = User.objects.count()
+    total_backups = backups.count()
+    
+    # دریافت آخرین پشتیبان
+    latest_backup = backups.first()
+    
+    # حجم کل داده‌های پشتیبان
+    total_backup_size = sum(backup.file_size for backup in backups)
+    total_backup_size_mb = round(total_backup_size / (1024 * 1024), 2) if total_backup_size else 0
+    
+    # آمار روند پشتیبان‌گیری در ماه‌های اخیر (6 ماه گذشته)
+    now = timezone.now()
+    six_months_ago = now - timezone.timedelta(days=180)
+    backups_by_month = BackupRecord.objects.filter(
+        created_at__gte=six_months_ago
+    ).extra(
+        select={'month': "EXTRACT(month FROM created_at)"}
+    ).values('month').annotate(count=models.Count('id')).order_by('month')
     
     context = {
         'backups': backups,
-        'title': 'پشتیبان‌گیری و بازیابی'
+        'title': 'پشتیبان‌گیری و بازیابی',
+        'total_properties': total_properties,
+        'total_users': total_users,
+        'total_backups': total_backups,
+        'latest_backup': latest_backup,
+        'total_backup_size_mb': total_backup_size_mb,
+        'backups_by_month': list(backups_by_month),
     }
     return render(request, 'config/backup.html', context)
 
