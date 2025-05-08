@@ -8,7 +8,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
-from .security_views import csp_report_view, security_headers_test_view
+from .security_views import csp_report_view, security_headers_test_view, security_error_handler
 
 urlpatterns = [
     # مسیرهای اصلی سیستم
@@ -26,7 +26,13 @@ urlpatterns = [
     
     # مسیرهای مرتبط با امنیت
     path('security/csp-report/', csp_report_view, name='csp_report'),
+    path('security/error/', security_error_handler, name='security_error'),
 ]
+
+# هندلرهای خطای سفارشی
+handler403 = 'hiro_estate.security_views.security_error_handler'
+handler404 = 'hiro_estate.security_views.security_error_handler'
+handler500 = 'hiro_estate.security_views.security_error_handler'
 
 # مسیرهای فقط محیط توسعه
 if settings.DEBUG:

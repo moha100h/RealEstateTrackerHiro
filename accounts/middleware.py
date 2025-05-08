@@ -2,22 +2,26 @@
 میدل‌ویر‌های سفارشی برای امنیت پیشرفته سیستم
 محافظت در برابر حملات سایبری و تهدیدات امنیتی
 """
-import time
+
 import re
+import time
 import logging
 import hashlib
+import ipaddress
 import json
-import random
-import string
+import os
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
+
+from django.http import HttpResponseForbidden, JsonResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.conf import settings
 from django.core.cache import cache
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
-from django.utils.translation import gettext as _
-from django.shortcuts import render
-from django.urls import reverse, resolve
+from django.utils.crypto import get_random_string, constant_time_compare
+from django.contrib.auth import logout
+from django.urls import reverse
 
-# ثبت لاگ‌های امنیتی
+# لاگر برای ثبت رویدادهای امنیتی
 security_logger = logging.getLogger('security')
 
 class RateLimitMiddleware:
@@ -30,193 +34,217 @@ class RateLimitMiddleware:
     
     def __init__(self, get_response):
         self.get_response = get_response
-        # تنظیمات پیش‌فرض با محدودیت‌های سخت‌گیرانه‌تر
-        self.default_window_size = getattr(settings, 'RATE_LIMIT_MIDDLEWARE', {}).get('WINDOW_SIZE', 60 * 5)  # 5 دقیقه
-        self.default_max_requests = getattr(settings, 'RATE_LIMIT_MIDDLEWARE', {}).get('MAX_REQUESTS', 200)  # 200 درخواست
+        # تنظیمات پیش‌فرض محدودیت نرخ درخواست
+        self.default_rate_limit = getattr(settings, 'DEFAULT_RATE_LIMIT', 200)  # درخواست در دقیقه
+        self.login_rate_limit = getattr(settings, 'LOGIN_RATE_LIMIT', 10)  # درخواست در دقیقه
+        self.api_rate_limit = getattr(settings, 'API_RATE_LIMIT', 60)  # درخواست در دقیقه
+        self.static_rate_limit = getattr(settings, 'STATIC_RATE_LIMIT', 500)  # درخواست در دقیقه
+        self.burst_multiplier = getattr(settings, 'BURST_MULTIPLIER', 5)  # ضریب افزایش برای محدودیت‌های لحظه‌ای
         
-        # تنظیمات محدودیت برای صفحات حساس
-        self.sensitive_endpoints = {
-            '/accounts/login/': {'window_size': 60 * 5, 'max_requests': 15},
-            '/accounts/register/': {'window_size': 60 * 5, 'max_requests': 10},
-            '/accounts/reset-password/': {'window_size': 60 * 10, 'max_requests': 5},
-            '/admin/': {'window_size': 60 * 5, 'max_requests': 50},
-            '/api/': {'window_size': 60 * 5, 'max_requests': 100},
+        # مسیرهای مستثنی از محدودیت
+        self.exempt_paths = getattr(settings, 'RATE_LIMIT_EXEMPT_PATHS', [
+            r'^/static/',
+            r'^/media/',
+            r'^/favicon\.ico$',
+            r'^/robots\.txt$',
+        ])
+        
+        # شبکه‌های مجاز بدون محدودیت
+        self.trusted_networks = getattr(settings, 'TRUSTED_NETWORKS', [
+            '127.0.0.1/32',  # localhost
+            '::1/128',       # localhost IPv6
+        ])
+        
+        # مسیرهای با محدودیت‌های خاص
+        self.special_paths = {
+            r'^/accounts/login/': self.login_rate_limit,
+            r'^/api/': self.api_rate_limit,
+            r'^/static/': self.static_rate_limit,
         }
         
-        # مسیرهای استثنا
-        self.exempt_paths = getattr(settings, 'RATE_LIMIT_MIDDLEWARE', {}).get('EXEMPT_PATHS', 
-                                   ['/static/', '/media/', '/favicon.ico'])
-        
-        # مقادیر مربوط به جریمه (penalty) برای رفتارهای مشکوک
-        self.burst_penalty = 10  # هر درخواست بیش از حد، ۱۰ درخواست به حساب می‌آید
-        self.suspicious_penalty_multiplier = 5  # ضریب جریمه برای رفتار مشکوک
-        
     def __call__(self, request):
-        # بررسی استثناها
-        path = request.path_info
-        for exempt_path in self.exempt_paths:
-            if path.startswith(exempt_path):
-                return self.get_response(request)
+        # بررسی مسیرهای مستثنی
+        path = request.path_info.lstrip('/')
         
-        # شناسایی کلاینت
+        if any(re.match(exempt, path) for exempt in self.exempt_paths):
+            return self.get_response(request)
+        
+        # دریافت IP کاربر
         client_ip = self._get_client_ip(request)
-        user_agent = request.META.get('HTTP_USER_AGENT', '')
         
-        # هش کردن اطلاعات برای ایجاد شناسه منحصر به فرد
-        client_identifier = hashlib.md5(f"{client_ip}:{user_agent}".encode()).hexdigest()
+        # بررسی اعتبار IP
+        if not self._is_valid_ip(client_ip):
+            return HttpResponseForbidden('Invalid IP address'.encode())
         
-        # کلیدهای کش برای این کلاینت
-        rate_key = f"rate_limit:{client_identifier}"
-        penalty_key = f"rate_penalty:{client_identifier}"
-        blacklist_key = f"blacklist:{client_identifier}"
+        # بررسی شبکه‌های مجاز
+        if any(self._ip_in_network(client_ip, network) for network in self.trusted_networks):
+            return self.get_response(request)
         
-        # بررسی لیست سیاه
-        if cache.get(blacklist_key):
-            security_logger.warning(f"Blocked blacklisted request from {client_ip}")
-            return HttpResponseForbidden(
-                _('دسترسی شما به دلیل فعالیت‌های مشکوک مسدود شده است. لطفاً با مدیر سیستم تماس بگیرید.')
-            )
-        
-        # انتخاب تنظیمات مناسب برای این مسیر
-        for endpoint, limits in self.sensitive_endpoints.items():
-            if path.startswith(endpoint):
-                window_size = limits['window_size']
-                max_requests = limits['max_requests']
+        # تعیین محدودیت مناسب برای مسیر
+        rate_limit = self.default_rate_limit
+        for pattern, limit in self.special_paths.items():
+            if re.match(pattern, path):
+                rate_limit = limit
                 break
-        else:
-            window_size = self.default_window_size
-            max_requests = self.default_max_requests
         
-        # بررسی جریمه‌های قبلی
-        penalty = cache.get(penalty_key, 0)
-        
-        # محاسبه حداکثر درخواست‌های مجاز با در نظر گرفتن جریمه
-        adjusted_max_requests = max(5, max_requests - penalty)  # حداقل ۵ درخواست مجاز است
-        
-        # دریافت تاریخچه درخواست‌ها
-        requests_data = cache.get(rate_key, {'history': [], 'patterns': {}})
-        requests_history = requests_data['history']
-        request_patterns = requests_data['patterns']
-        
-        now = time.time()
-        
-        # تمیز کردن تاریخچه درخواست‌های قدیمی
-        requests_history = [t for t in requests_history if t > now - window_size]
-        
-        # افزودن الگوی درخواست فعلی
+        # کلید کش برای محدودیت نرخ
         path_pattern = self._get_path_pattern(path)
-        method = request.method
-        pattern_key = f"{method}:{path_pattern}"
+        is_login = '/accounts/login/' in path
         
-        # بررسی الگوهای مشکوک
-        if pattern_key in request_patterns:
-            request_patterns[pattern_key]['count'] += 1
-            request_patterns[pattern_key]['last_seen'] = now
-        else:
-            request_patterns[pattern_key] = {'count': 1, 'last_seen': now}
+        # کلیدهای مختلف برای انواع مختلف محدودیت
+        minute_key = f"rate:min:{client_ip}:{path_pattern}"
+        burst_key = f"rate:burst:{client_ip}:{path_pattern}"
+        global_key = f"rate:global:{client_ip}"
         
-        # تمیز کردن الگوهای قدیمی
-        for key in list(request_patterns.keys()):
-            if request_patterns[key]['last_seen'] < now - window_size:
-                del request_patterns[key]
+        # بررسی محدودیت‌های مختلف
         
-        # تشخیص رفتار مشکوک - تعداد زیاد درخواست‌های مشابه در زمان کوتاه
-        current_pattern_count = request_patterns.get(pattern_key, {}).get('count', 0)
-        is_suspicious = current_pattern_count > adjusted_max_requests * 0.7
-        
-        # تشخیص رفتار مشکوک - تکرار سریع درخواست‌ها
-        if len(requests_history) >= 3:
-            recent_requests = requests_history[-3:]
-            time_diffs = [recent_requests[i] - recent_requests[i-1] for i in range(1, len(recent_requests))]
-            is_rapid_fire = all(diff < 0.5 for diff in time_diffs)  # درخواست‌های با فاصله کمتر از ۰.۵ ثانیه
-            is_suspicious = is_suspicious or is_rapid_fire
-        
-        # بررسی محدودیت با در نظر گرفتن جریمه‌ها
-        if len(requests_history) >= adjusted_max_requests:
-            # اعمال جریمه بیشتر برای درخواست‌های بیش از حد
-            if penalty < 100:  # محدودیت جریمه
-                cache.set(penalty_key, penalty + self.burst_penalty, window_size * 2)
-            
-            # ثبت در لاگ امنیتی
+        # 1. محدودیت در دقیقه برای یک مسیر خاص
+        minute_count = cache.get(minute_key, 0)
+        if minute_count >= rate_limit:
             security_logger.warning(
-                f"Rate limit exceeded: {client_ip} ({len(requests_history)} requests in {window_size/60:.1f} minutes)" +
-                f" for path pattern {path_pattern}"
+                f"Rate limit exceeded for IP {client_ip} on path {path}",
+                extra={'ip': client_ip, 'path': path, 'rate': minute_count}
             )
             
-            # اضافه کردن به لیست سیاه در صورت تخلف مکرر و سنگین
-            if len(requests_history) > adjusted_max_requests * 2:
-                cache.set(blacklist_key, True, 60 * 60 * 3)  # 3 ساعت بلاک
-                return HttpResponseForbidden(
-                    _('دسترسی شما به دلیل تخلف از محدودیت درخواست‌ها مسدود شده است.')
-                )
+            response_data = {
+                'error': 'درخواست‌های شما بیش از حد مجاز است. لطفاً کمی صبر کنید و دوباره تلاش کنید.',
+                'retry_after': 60
+            }
             
-            return HttpResponse(
-                _('تعداد درخواست‌های شما از حد مجاز بیشتر شده است. لطفاً کمی صبر کنید.'),
-                status=429
+            if is_login:
+                # برای صفحه لاگین، نمایش صفحه خطا به جای پاسخ JSON
+                return render(request, 'security/error.html', {
+                    'message': 'تعداد تلاش‌های شما برای ورود بیش از حد مجاز است. لطفاً 5 دقیقه صبر کنید.',
+                    'status_code': 429,
+                    'error_code': 'RATE_LIMIT_EXCEEDED',
+                    'security_tip': 'این محدودیت برای حفاظت از حساب کاربری شما در برابر حملات رمزگشایی اعمال می‌شود.'
+                }, status=429)
+            
+            return JsonResponse(response_data, status=429)
+        
+        # 2. محدودیت لحظه‌ای (burst)
+        burst_count = cache.get(burst_key, 0)
+        burst_limit = rate_limit * self.burst_multiplier / 60  # تقسیم بر 60 برای تبدیل به ثانیه
+        if burst_count >= burst_limit:
+            security_logger.warning(
+                f"Burst rate limit exceeded for IP {client_ip} on path {path}",
+                extra={'ip': client_ip, 'path': path, 'rate': burst_count}
             )
+            
+            response_data = {
+                'error': 'سرعت درخواست‌های شما بیش از حد مجاز است. لطفاً کمی آهسته‌تر درخواست ارسال کنید.',
+                'retry_after': 5
+            }
+            
+            return JsonResponse(response_data, status=429)
         
-        # افزایش جریمه برای رفتار مشکوک
-        if is_suspicious and penalty < 100:
-            new_penalty = min(100, penalty + self.suspicious_penalty_multiplier)
-            cache.set(penalty_key, new_penalty, window_size * 2)
-            security_logger.info(f"Applied suspicious activity penalty to {client_ip} - New penalty: {new_penalty}")
+        # 3. محدودیت کلی برای تمام مسیرها
+        global_count = cache.get(global_key, 0)
+        global_limit = getattr(settings, 'GLOBAL_RATE_LIMIT', 1000)  # محدودیت کلی در دقیقه
+        if global_count >= global_limit:
+            security_logger.warning(
+                f"Global rate limit exceeded for IP {client_ip}",
+                extra={'ip': client_ip, 'rate': global_count}
+            )
+            
+            response_data = {
+                'error': 'تعداد کل درخواست‌های شما بیش از حد مجاز است. لطفاً کمی صبر کنید و دوباره تلاش کنید.',
+                'retry_after': 60
+            }
+            
+            return JsonResponse(response_data, status=429)
         
-        # ثبت درخواست جدید
-        requests_history.append(now)
-        requests_data = {'history': requests_history, 'patterns': request_patterns}
-        cache.set(rate_key, requests_data, window_size)
+        # افزایش شمارنده‌ها
+        cache.set(minute_key, minute_count + 1, 60)  # منقضی شدن پس از 60 ثانیه
+        cache.set(burst_key, burst_count + 1, 1)    # منقضی شدن پس از 1 ثانیه
+        cache.set(global_key, global_count + 1, 60)  # منقضی شدن پس از 60 ثانیه
         
-        # افزودن هدرهای امنیتی به پاسخ
+        # بررسی الگوهای مشکوک حمله DDoS
+        if self._is_ddos_pattern(request, client_ip, path_pattern):
+            security_logger.error(
+                f"Potential DDoS pattern detected from IP {client_ip}",
+                extra={'ip': client_ip, 'path': path, 'user_agent': request.META.get('HTTP_USER_AGENT', '')}
+            )
+            
+            # در یک سیستم واقعی، اینجا حتی می‌توان IP را مسدود کرد
+            # یا به ابزار حفاظت در برابر DDoS هشدار داد
+        
         response = self.get_response(request)
-        response['X-Rate-Limit-Limit'] = str(adjusted_max_requests)
-        response['X-Rate-Limit-Remaining'] = str(max(0, adjusted_max_requests - len(requests_history)))
-        response['X-Rate-Limit-Reset'] = str(int(now + window_size))
         
         return response
     
     def _get_client_ip(self, request):
         """دریافت IP واقعی کاربر با در نظر گرفتن پروکسی‌ها"""
-        # تلاش برای شناسایی IP اصلی از هدرهای متداول پروکسی
-        headers = [
-            'HTTP_CF_CONNECTING_IP',  # Cloudflare
-            'HTTP_X_REAL_IP',         # Nginx
-            'HTTP_X_FORWARDED_FOR',   # معمول
-            'HTTP_X_CLIENT_IP',       # معمول
-            'HTTP_X_CLUSTER_CLIENT_IP', # معمول
-            'HTTP_FORWARDED_FOR',      # RFC 7239
-            'HTTP_FORWARDED',          # RFC 7239
-            'REMOTE_ADDR',             # پشتیبان
-        ]
-        
-        for header in headers:
-            ip = request.META.get(header, '')
-            if ip:
-                # جدا کردن اولین IP در صورت وجود چند آدرس
-                if ',' in ip:
-                    ip = ip.split(',')[0].strip()
-                # اعتبارسنجی ساده آدرس IP
-                if self._is_valid_ip(ip):
-                    return ip
-                    
-        return request.META.get('REMOTE_ADDR', '0.0.0.0')
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
+        return ip
     
     def _is_valid_ip(self, ip):
         """بررسی اعتبار ساختاری آدرس IP"""
-        # الگوی IPv4
-        ipv4_pattern = r'^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
-        # الگوی ساده IPv6
-        ipv6_pattern = r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$'
-        
-        return bool(re.match(ipv4_pattern, ip) or re.match(ipv6_pattern, ip))
-
+        try:
+            ipaddress.ip_address(ip)
+            return True
+        except ValueError:
+            return False
+    
+    def _ip_in_network(self, ip, network):
+        """بررسی اینکه آیا IP در یک شبکه مشخص قرار دارد"""
+        try:
+            ip_obj = ipaddress.ip_address(ip)
+            network_obj = ipaddress.ip_network(network)
+            return ip_obj in network_obj
+        except ValueError:
+            return False
+    
     def _get_path_pattern(self, path):
         """تبدیل مسیر به الگوی عمومی برای تشخیص الگوهای مشکوک"""
-        # حذف پارامترهای عددی از URL برای تشخیص الگوها
-        # مثلا: /products/123/ و /products/456/ به /products/{id}/ تبدیل می‌شوند
-        path_pattern = re.sub(r'/\d+/', '/{id}/', path)
-        path_pattern = re.sub(r'/\d+$', '/{id}', path_pattern)
-        return path_pattern
-
+        # مثال: تبدیل /product/123 به /product/ID
+        pattern = re.sub(r'/\d+/', '/ID/', path)
+        pattern = re.sub(r'/\d+$', '/ID', pattern)
+        return pattern
+    
+    def _is_ddos_pattern(self, request, ip, path_pattern):
+        """تشخیص الگوهای احتمالی حمله DDoS"""
+        # در جانگو، cache.keys موجود نیست، بنابراین از روش دیگری استفاده می‌کنیم
+        # این قسمت را به گونه‌ای بازنویسی می‌کنیم که از ویژگی‌های cache جانگو استفاده کند
+        
+        # بررسی از طریق متغیرهای دیگر
+        request_count = 0
+        for i in range(20):  # بررسی 20 مسیر متفاوت
+            test_key = f"rate:min:{ip}:path{i}"
+            if cache.get(test_key, None) is not None:
+                request_count += 1
+        
+        if request_count > 10:  # اگر به بیش از 10 مسیر متفاوت درخواست داده شده
+            return True
+        
+        # 2. بررسی تعداد درخواست‌های با User-Agent های مختلف از یک IP
+        agent_key = f"ua:{ip}"
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        agents = cache.get(agent_key, set())
+        
+        if user_agent and user_agent not in agents:
+            agents.add(user_agent)
+            cache.set(agent_key, agents, 600)  # 10 دقیقه
+            
+            if len(agents) > 5:  # بیش از 5 User-Agent مختلف از یک IP
+                return True
+        
+        # 3. بررسی درخواست‌های همزمان به منابع حساس
+        sensitive_paths = ['/admin/', '/accounts/login/', '/api/']
+        for s_path in sensitive_paths:
+            if s_path in path_pattern:
+                concurrent_key = f"concurrent:{ip}:{s_path}"
+                concurrent = cache.get(concurrent_key, 0)
+                cache.set(concurrent_key, concurrent + 1, 5)  # 5 ثانیه
+                
+                if concurrent > 10:  # بیش از 10 درخواست همزمان
+                    return True
+        
+        return False
 
 class EnhancedSecurityMiddleware:
     """
@@ -229,139 +257,241 @@ class EnhancedSecurityMiddleware:
     
     def __init__(self, get_response):
         self.get_response = get_response
-        # الگوهای مشکوک SQL Injection
+        
+        # الگوهای خطرناک SQL Injection
         self.sql_patterns = [
-            r"(\%27)|(\')|(\-\-)|(\%23)|(#)",
-            r"((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))",
-            r"\w*((\%27)|(\'))((\%6F)|o|(\%4F))((\%72)|r|(\%52))",
-            r"((\%27)|(\'))union",
-            r"exec(\s|\+)+(s|x)p",
-            r"UNION(\s+)ALL(\s+)SELECT",
-            r"SELECT.*FROM",
-            r"INSERT(.*)INTO",
-            r"UPDATE(.*)SET",
-            r"DROP(.*)TABLE",
+            r"('(''|[^'])*')|(;)|(\b(SELECT|UPDATE|INSERT|DELETE|DROP|ALTER|EXEC|TRUNCATE|DECLARE|UNION|CREATE)\b)",
+            r"(\b(OR|AND)\b\s+\w+\s*=\s*\w+\s*($|\s|;))",
+            r"(--\s+)|(/\*.*\*/)",
+            r"(#.*)|(=\s*\d+\s*($|\s|;))"
         ]
         
-        # الگوهای مشکوک XSS
+        # الگوهای خطرناک XSS
         self.xss_patterns = [
-            r"<script.*?>.*?</script>",
-            r"javascript:",
-            r"onerror\s*=",
-            r"onclick\s*=",
-            r"onload\s*=",
-            r"ondblclick\s*=",
-            r"onchange\s*=",
-            r"onmouseover\s*=",
-            r"onsubmit\s*=",
-            r"<iframe.*?>",
-            r"<object.*?>.*?</object>",
-            r"<embed.*?>",
-            r"document\.cookie",
-            r"document\.location",
-            r"eval\s*\(",
-            r"fromdump\s*\(",
-            r"atanh\s*\(",
-            r"atoxl\s*\(",
+            r"(<script.*?>.*?</script>)",
+            r"(javascript:)",
+            r"(vbscript:)",
+            r"(onload=|onerror=|onmouseover=|onfocus=|onclick=)",
+            r"(<img.*?src=.*?onerror=.*?>)",
+            r"(document\.cookie|document\.location|document\.write)"
         ]
         
-        # الگوهای مشکوک Path Traversal
-        self.path_traversal_patterns = [
-            r"\.{2}/",            # ../
-            r"%2e%2e%2f",         # ../
-            r"\.{2}\\",           # ..\
-            r"%2e%2e%5c",         # ..\
-            r"\.{2}%2f",          # ..%2f
-            r"%2e%2e/",           # %2e%2e/
-            r"..%c0%af",          # ..%c0%af
-            r"%c0%ae%c0%ae/",     # ÌžÌê/
-            r"/%c0%ae%c0%ae%c0%af", # /%c0%ae%c0%ae%c0%af
-            r"etc/passwd",
-            r"etc/shadow",
-            r"proc/self/environ",
-            r"ini\s*\.",
-            r"\.htaccess",
+        # الگوهای خطرناک Path Traversal
+        self.path_patterns = [
+            r"(\.\./)",
+            r"(\.\.\\)",
+            r"(%2e%2e%2f)",
+            r"(%252e%252e%252f)",
+            r"(/etc/passwd)",
+            r"(C:[\\/]Windows[\\/])",
+            r"(WEB-INF[\\/]web\.xml)"
         ]
         
-        # مسیرهای استثنا
-        self.exempt_paths = ['/static/', '/media/', '/favicon.ico']
+        # الگوهای خطرناک Command Injection
+        self.cmd_patterns = [
+            r"(\s*\|\s*\w+)",
+            r"(\s*;\s*\w+)",
+            r"(\s*\$\(\w+)",
+            r"(\s*`\w+`)",
+            r"(\s*>\s*\w+)",
+            r"(\b(system|exec|popen|passthru|shell_exec|eval)\b)"
+        ]
+        
+        # مسیرهایی که از بررسی مستثنی هستند (مثلاً برای ادمین‌ها)
+        self.exempt_paths = getattr(settings, 'SECURITY_EXEMPT_PATHS', [
+            r'^/admin/security/',
+        ])
         
     def __call__(self, request):
-        # بررسی مسیرهای استثنا
-        path = request.path_info
-        for exempt_path in self.exempt_paths:
-            if path.startswith(exempt_path):
-                return self.get_response(request)
+        # بررسی مسیرهای مستثنی
+        path = request.path_info.lstrip('/')
+        if any(re.match(exempt, path) for exempt in self.exempt_paths):
+            return self.get_response(request)
         
-        # بررسی امنیتی پارامترهای GET
-        if request.GET:
-            for key, value in request.GET.items():
+        # بررسی انواع مختلف حملات در پارامترهای GET
+        for param, value in request.GET.items():
+            if not isinstance(value, str):
+                continue
+                
+            # بررسی SQL Injection
+            if self._check_patterns(value, self.sql_patterns):
+                security_logger.warning(
+                    f"Potential SQL Injection detected in GET param {param}",
+                    extra={
+                        'ip': self._get_client_ip(request),
+                        'param': param,
+                        'value': value[:100],
+                        'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                    }
+                )
+                return self._security_violation_response(request, "درخواست شما حاوی الگوهای مشکوک SQL است.")
+            
+            # بررسی XSS
+            if self._check_patterns(value, self.xss_patterns):
+                security_logger.warning(
+                    f"Potential XSS detected in GET param {param}",
+                    extra={
+                        'ip': self._get_client_ip(request),
+                        'param': param,
+                        'value': value[:100],
+                        'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                    }
+                )
+                return self._security_violation_response(request, "درخواست شما حاوی اسکریپت‌های غیرمجاز است.")
+            
+            # بررسی Path Traversal
+            if self._check_patterns(value, self.path_patterns):
+                security_logger.warning(
+                    f"Potential Path Traversal detected in GET param {param}",
+                    extra={
+                        'ip': self._get_client_ip(request),
+                        'param': param,
+                        'value': value[:100],
+                        'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                    }
+                )
+                return self._security_violation_response(request, "درخواست شما حاوی مسیرهای فایل غیرمجاز است.")
+            
+            # بررسی Command Injection
+            if self._check_patterns(value, self.cmd_patterns):
+                security_logger.warning(
+                    f"Potential Command Injection detected in GET param {param}",
+                    extra={
+                        'ip': self._get_client_ip(request),
+                        'param': param,
+                        'value': value[:100],
+                        'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                    }
+                )
+                return self._security_violation_response(request, "درخواست شما حاوی دستورات سیستمی غیرمجاز است.")
+        
+        # بررسی انواع مختلف حملات در پارامترهای POST
+        if request.method == 'POST' and hasattr(request, 'POST'):
+            for param, value in request.POST.items():
                 if not isinstance(value, str):
                     continue
                     
-                # بررسی حملات SQL Injection
+                # بررسی SQL Injection
                 if self._check_patterns(value, self.sql_patterns):
-                    security_logger.warning(f"Potential SQL Injection detected in GET param: {key}={value}")
-                    return self._security_violation_response(request, "تلاش غیرمجاز: پارامترهای ورودی نامعتبر")
+                    security_logger.warning(
+                        f"Potential SQL Injection detected in POST param {param}",
+                        extra={
+                            'ip': self._get_client_ip(request),
+                            'param': param,
+                            'value': value[:100],
+                            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                        }
+                    )
+                    return self._security_violation_response(request, "درخواست شما حاوی الگوهای مشکوک SQL است.")
                 
-                # بررسی حملات XSS
+                # بررسی XSS
                 if self._check_patterns(value, self.xss_patterns):
-                    security_logger.warning(f"Potential XSS attack detected in GET param: {key}={value}")
-                    return self._security_violation_response(request, "تلاش غیرمجاز: کدهای مخرب در پارامترها")
+                    security_logger.warning(
+                        f"Potential XSS detected in POST param {param}",
+                        extra={
+                            'ip': self._get_client_ip(request),
+                            'param': param,
+                            'value': value[:100],
+                            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                        }
+                    )
+                    return self._security_violation_response(request, "درخواست شما حاوی اسکریپت‌های غیرمجاز است.")
                 
-                # بررسی حملات Path Traversal
-                if self._check_patterns(value, self.path_traversal_patterns):
-                    security_logger.warning(f"Potential Path Traversal attack detected in GET param: {key}={value}")
-                    return self._security_violation_response(request, "تلاش غیرمجاز: دسترسی به مسیرهای غیرمجاز")
-        
-        # بررسی امنیتی پارامترهای POST
-        if request.method == 'POST' and request.content_type != 'multipart/form-data':
-            post_data = request.POST
-            for key, value in post_data.items():
-                if not isinstance(value, str):
-                    continue
-                    
-                # بررسی حملات SQL Injection در داده‌های POST
-                if self._check_patterns(value, self.sql_patterns):
-                    security_logger.warning(f"Potential SQL Injection detected in POST data: {key}={value}")
-                    return self._security_violation_response(request, "تلاش غیرمجاز: داده‌های ورودی نامعتبر")
+                # بررسی Path Traversal
+                if self._check_patterns(value, self.path_patterns):
+                    security_logger.warning(
+                        f"Potential Path Traversal detected in POST param {param}",
+                        extra={
+                            'ip': self._get_client_ip(request),
+                            'param': param,
+                            'value': value[:100],
+                            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                        }
+                    )
+                    return self._security_violation_response(request, "درخواست شما حاوی مسیرهای فایل غیرمجاز است.")
                 
-                # بررسی حملات XSS در داده‌های POST
-                if self._check_patterns(value, self.xss_patterns):
-                    security_logger.warning(f"Potential XSS attack detected in POST data: {key}={value}")
-                    return self._security_violation_response(request, "تلاش غیرمجاز: کدهای مخرب در داده‌های ارسالی")
-                
-                # بررسی حملات Path Traversal در داده‌های POST
-                if self._check_patterns(value, self.path_traversal_patterns):
-                    security_logger.warning(f"Potential Path Traversal attack detected in POST data: {key}={value}")
-                    return self._security_violation_response(request, "تلاش غیرمجاز: دسترسی به مسیرهای غیرمجاز")
+                # بررسی Command Injection
+                if self._check_patterns(value, self.cmd_patterns):
+                    security_logger.warning(
+                        f"Potential Command Injection detected in POST param {param}",
+                        extra={
+                            'ip': self._get_client_ip(request),
+                            'param': param,
+                            'value': value[:100],
+                            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                        }
+                    )
+                    return self._security_violation_response(request, "درخواست شما حاوی دستورات سیستمی غیرمجاز است.")
         
-        # بررسی امنیتی هدرهای درخواست
-        suspicious_headers = ['User-Agent', 'Referer', 'Cookie']
-        for header in suspicious_headers:
-            value = request.META.get(f'HTTP_{header.upper().replace("-", "_")}', '')
-            if value and isinstance(value, str):
-                # بررسی حملات XSS در هدرها
-                if self._check_patterns(value, self.xss_patterns):
-                    security_logger.warning(f"Potential XSS attack detected in {header} header: {value}")
-                    return self._security_violation_response(request, "تلاش غیرمجاز: کدهای مخرب در هدرهای درخواست")
+        # بررسی هدرهای مشکوک
+        suspicious_headers = {
+            'HTTP_USER_AGENT': r"(sqlmap|nikto|w3af|acunetix|ZAP|burpsuite|nessus)",
+            'HTTP_REFERER': r"(https?://(?!.*\.domain\.com).*)",
+            'HTTP_X_FORWARDED_FOR': r"([\d\.]+\s*,\s*[\d\.]+\s*,\s*[\d\.]+)"
+        }
         
-        # افزودن سربرگ‌های امنیتی به پاسخ
+        for header, pattern in suspicious_headers.items():
+            value = request.META.get(header, '')
+            if value and re.search(pattern, value, re.IGNORECASE):
+                security_logger.warning(
+                    f"Suspicious header detected: {header}",
+                    extra={
+                        'ip': self._get_client_ip(request),
+                        'header': header,
+                        'value': value[:100],
+                        'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                    }
+                )
+                # در حالت تولید، می‌توان این IP را برای بررسی بیشتر ثبت کرد
+                # اما در اینجا فقط هشدار لاگ می‌دهیم و اجازه می‌دهیم درخواست ادامه یابد
+        
+        # بررسی پارامترهای URL حساس
+        sensitive_params = ['password', 'token', 'key', 'secret', 'pass']
+        for param in sensitive_params:
+            if param in request.GET and not request.is_secure():
+                security_logger.warning(
+                    f"Sensitive parameter {param} sent over non-HTTPS connection",
+                    extra={
+                        'ip': self._get_client_ip(request),
+                        'param': param,
+                        'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                    }
+                )
+                # در حالت تولید، می‌توان کاربر را به نسخه HTTPS ریدایرکت کرد
+                # اما در اینجا فقط هشدار لاگ می‌دهیم و اجازه می‌دهیم درخواست ادامه یابد
+        
         response = self.get_response(request)
         
-        # افزودن هدرهای امنیتی استاندارد
-        if not response.get('X-Content-Type-Options'):
+        # افزودن هدرهای امنیتی به پاسخ
+        if not path.startswith('static/') and not path.startswith('media/'):
+            # Content-Security-Policy - اجازه بارگذاری از منابع مورد نیاز
+            response['Content-Security-Policy'] = "default-src 'self' cdn.jsdelivr.net cdn.datatables.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdn.datatables.net cdn.ckeditor.com cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com cdnjs.cloudflare.com; img-src 'self' data: *; font-src 'self' data: fonts.gstatic.com cdn.jsdelivr.net; connect-src 'self' *; frame-src 'self'; worker-src blob: 'self'"
+            
+            # X-Content-Type-Options
             response['X-Content-Type-Options'] = 'nosniff'
-        if not response.get('X-XSS-Protection'):
-            response['X-XSS-Protection'] = '1; mode=block'
-        if not response.get('X-Frame-Options'):
+            
+            # X-Frame-Options
             response['X-Frame-Options'] = 'SAMEORIGIN'
             
-        # اضافه کردن توکن امنیتی تصادفی برای ردیابی
-        security_token = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
-        if not response.get('X-Security-Token'):
-            response['X-Security-Token'] = security_token
+            # X-XSS-Protection
+            response['X-XSS-Protection'] = '1; mode=block'
             
+            # Referrer-Policy
+            response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            
+            # Permissions-Policy
+            response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+            
+            # ثبت هدرهای امنیتی اضافه شده
+            security_logger.debug(
+                f"Security headers added to response for path {path}",
+                extra={
+                    'ip': self._get_client_ip(request),
+                    'path': path,
+                    'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+                }
+            )
+        
         return response
     
     def _check_patterns(self, value, patterns):
@@ -373,16 +503,21 @@ class EnhancedSecurityMiddleware:
     
     def _security_violation_response(self, request, message):
         """پاسخ مناسب به تخلفات امنیتی"""
-        client_ip = self._get_client_ip(request)
-        # افزودن به لیست سیاه موقت
-        cache.set(f"security_violator:{client_ip}", True, 60 * 30)  # 30 دقیقه مسدودیت
-        
-        # در محیط توسعه، جزئیات بیشتری نمایش داده می‌شود
-        if settings.DEBUG:
-            return HttpResponseForbidden(f"Security Violation: {message}".encode('utf-8'))
-        
-        # در محیط تولید، پیام کلی بدون جزئیات برای جلوگیری از افشای اطلاعات
-        return HttpResponseForbidden(_("دسترسی غیرمجاز"))
+        # بررسی نوع درخواست (API یا وب)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return JsonResponse({
+                'error': True,
+                'message': message,
+                'code': 'SECURITY_VIOLATION'
+            }, status=403)
+        else:
+            # استفاده از صفحه خطای سفارشی
+            return render(request, 'security/error.html', {
+                'message': message,
+                'status_code': 403,
+                'error_code': 'SECURITY_VIOLATION',
+                'security_tip': 'فعالیت‌های مشکوک در سیستم ثبت و بررسی می‌شوند.'
+            }, status=403)
     
     def _get_client_ip(self, request):
         """دریافت IP واقعی کاربر"""
@@ -392,7 +527,6 @@ class EnhancedSecurityMiddleware:
         else:
             ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
         return ip
-
 
 class AccountLockoutMiddleware:
     """
@@ -405,228 +539,214 @@ class AccountLockoutMiddleware:
     
     def __init__(self, get_response):
         self.get_response = get_response
-        # تنظیمات پیشرفته قفل حساب
-        self.max_attempts = getattr(settings, 'ACCOUNT_LOCKOUT_ATTEMPTS', 5)
-        self.initial_lockout_time = getattr(settings, 'ACCOUNT_LOCKOUT_TIME', 30 * 60)  # 30 دقیقه پیش‌فرض
         
-        # مکانیزم افزایشی - هر بار قفل شدن، زمان قفل بیشتر می‌شود
-        self.lockout_multipliers = [1, 2, 4, 8, 24]  # ضرایب افزایش زمان قفل (ساعت)
-        self.permanent_lockout_threshold = 5  # تعداد دفعات قفل شدن قبل از قفل دائمی
+        # تنظیمات پیش‌فرض قفل حساب
+        self.max_login_attempts = getattr(settings, 'MAX_LOGIN_ATTEMPTS', 5)
+        self.lockout_duration = getattr(settings, 'LOCKOUT_DURATION', 30)  # دقیقه
+        self.lockout_reset_time = getattr(settings, 'LOCKOUT_RESET_TIME', 24)  # ساعت
         
-        # بازه‌های زمانی برای تشخیص حملات هماهنگ
-        self.coordinated_attack_window = 60 * 60  # یک ساعت
-        self.coordinated_attack_threshold = 10  # تعداد کاربران مختلف برای تشخیص حمله هماهنگ
+        self.progressive_lockout = [
+            {'attempts': 5, 'duration': 30},   # 5 تلاش ناموفق: 30 دقیقه قفل
+            {'attempts': 10, 'duration': 60},  # 10 تلاش ناموفق: 1 ساعت قفل
+            {'attempts': 15, 'duration': 180}, # 15 تلاش ناموفق: 3 ساعت قفل
+            {'attempts': 20, 'duration': 720}, # 20 تلاش ناموفق: 12 ساعت قفل
+            {'attempts': 25, 'duration': 1440} # 25 تلاش ناموفق: 24 ساعت قفل
+        ]
         
-        # کلید رمزنگاری برای داده‌های حساس
-        self.encryption_key = getattr(settings, 'SECRET_KEY', '')[:32].ljust(32, 'x')
-    
+        self.login_path = getattr(settings, 'LOGIN_URL', '/accounts/login/')
+        
     def __call__(self, request):
-        # شناسایی مسیر لاگین
-        login_paths = ['/accounts/login/', '/admin/login/']
-        is_login_attempt = request.method == 'POST' and any(request.path.endswith(path) for path in login_paths)
-        
-        client_ip = self._get_client_ip(request)
-        
-        # اگر یک تلاش ورود است
-        if is_login_attempt:
+        # فقط درخواست‌های به صفحه لاگین را بررسی می‌کنیم
+        if request.path == self.login_path and request.method == 'POST':
             username = request.POST.get('username', '').lower()
             
             if not username:
                 return self.get_response(request)
-                
-            # بررسی قفل کلی سیستم (در صورت تشخیص حمله هماهنگ)
-            system_lockdown_key = "system_login_lockdown"
-            system_lockdown = cache.get(system_lockdown_key)
             
-            if system_lockdown:
-                security_logger.warning(f"Login attempt during system lockdown from {client_ip} for user {username}")
-                return self._get_lockout_response(request, remaining_minutes=system_lockdown.get('remaining_minutes', 30), is_system=True)
+            # بررسی وضعیت قفل حساب
+            lockout_key = f"account_lockout:{self._secure_hash(username)}"
+            lockout_data = cache.get(lockout_key)
             
-            # کلید امن برای ذخیره اطلاعات قفل حساب
-            user_hash = self._secure_hash(username)
-            lockout_key = f"account_lockout:{user_hash}"
-            ip_key = f"ip_login_attempts:{client_ip}"
-            
-            # دریافت اطلاعات قفل حساب
-            lockout_data = cache.get(lockout_key, {
-                'attempts': 0,                # تعداد تلاش‌های ناموفق
-                'locked_until': 0,            # زمان پایان قفل
-                'lockout_count': 0,           # تعداد دفعات قفل شدن
-                'first_attempt': time.time(), # زمان اولین تلاش ناموفق
-                'ips': set(),                 # لیست IP های استفاده شده
-            })
-            
-            # دریافت اطلاعات IP برای تشخیص حمله هماهنگ
-            ip_data = cache.get(ip_key, {
-                'usernames': set(),           # مجموعه کاربران تلاش شده از این IP
-                'first_attempt': time.time(), # زمان اولین تلاش
-                'attempt_count': 0,           # تعداد کل تلاش‌ها
-            })
-            
-            # بررسی قفل بودن حساب
-            current_time = time.time()
-            if lockout_data.get('locked_until', 0) > current_time:
-                # محاسبه زمان باقی‌مانده قفل
-                remaining_seconds = lockout_data['locked_until'] - current_time
-                remaining_minutes = int(remaining_seconds / 60) + 1  # گرد کردن به بالا
-                
-                # ثبت تلاش ناموفق در لاگ
-                security_logger.warning(
-                    f"Login attempt on locked account: {username} from {client_ip}. " +
-                    f"Remaining lockout time: {remaining_minutes} minutes"
-                )
-                
-                # بررسی تلاش‌های مکرر روی حساب قفل شده - افزایش زمان قفل
-                if lockout_data.get('attempts', 0) >= self.max_attempts * 2:
-                    # افزایش زمان قفل
-                    extended_lockout = current_time + (remaining_seconds * 1.5)  # ۵۰٪ افزایش
-                    lockout_data['locked_until'] = extended_lockout
-                    remaining_minutes = int((extended_lockout - current_time) / 60) + 1
+            if lockout_data:
+                # بررسی اینکه آیا زمان قفل به پایان رسیده است
+                current_time = time.time()
+                if current_time < lockout_data.get('expires_at', 0):
+                    # حساب هنوز قفل است
+                    client_ip = self._get_client_ip(request)
                     
+                    # ثبت تلاش ورود در زمان قفل
                     security_logger.warning(
-                        f"Extended lockout for {username} due to persistent attempts. " +
-                        f"New lockout time: {remaining_minutes} minutes"
+                        f"Login attempt during lockout for user: {username}",
+                        extra={
+                            'ip': client_ip,
+                            'username': username,
+                            'lockout_minutes': int((lockout_data.get('expires_at', 0) - current_time) / 60)
+                        }
                     )
                     
-                    cache.set(lockout_key, lockout_data, self.initial_lockout_time * 3)
-                
-                return self._get_lockout_response(request, remaining_minutes=remaining_minutes)
-            
-            # پاسخ معمول را دریافت کرده و بررسی می‌کنیم آیا لاگین موفق بوده یا خیر
-            response = self.get_response(request)
-            
-            # شناسایی تلاش‌های ناموفق بر اساس کد وضعیت و پیام‌های خطا
-            is_failed_login = (
-                response.status_code == 200 and  # معمولاً صفحه لاگین مجدداً با پیام خطا نمایش داده می‌شود
-                hasattr(request, '_messages') and
-                any('نام کاربری یا رمز عبور' in str(msg) for msg in request._messages._loaded_messages)
-            )
-
-            # تلاش ناموفق برای ورود
-            if is_failed_login:
-                # به‌روزرسانی اطلاعات تلاش‌های ناموفق
-                lockout_data['attempts'] = lockout_data.get('attempts', 0) + 1
-                lockout_data['ips'] = list(set(lockout_data.get('ips', [])).union({client_ip}))
-                
-                # به‌روزرسانی اطلاعات IP
-                ip_data['usernames'] = list(set(ip_data.get('usernames', [])).union({username}))
-                ip_data['attempt_count'] = ip_data.get('attempt_count', 0) + 1
-                
-                # بررسی اگر به حداکثر تلاش‌های مجاز رسیده است
-                if lockout_data['attempts'] >= self.max_attempts:
-                    # تعیین مدت زمان قفل بر اساس تعداد دفعات قفل شدن قبلی
-                    lockout_count = lockout_data.get('lockout_count', 0)
+                    # بررسی حمله هماهنگ
+                    ip_data = cache.get(f"ip_lockout:{client_ip}", {})
+                    ip_data[username] = ip_data.get(username, 0) + 1
+                    cache.set(f"ip_lockout:{client_ip}", ip_data, 3600)
                     
-                    # بررسی قفل دائمی
-                    if lockout_count >= self.permanent_lockout_threshold:
-                        # قفل دائمی (یا بسیار طولانی) - 30 روز
-                        lockout_time = 60 * 60 * 24 * 30
-                        security_logger.critical(
-                            f"PERMANENT ACCOUNT LOCKOUT: {username} due to excessive failed attempts. " +
-                            f"IP: {client_ip}, Total lockout count: {lockout_count}"
-                        )
-                    else:
-                        # قفل موقت با افزایش تدریجی زمان
-                        multiplier_index = min(lockout_count, len(self.lockout_multipliers) - 1)
-                        multiplier = self.lockout_multipliers[multiplier_index]
-                        lockout_time = self.initial_lockout_time * multiplier
-                        
-                        security_logger.warning(
-                            f"Account locked: {username} for {lockout_time/60/60:.1f} hours. " +
-                            f"IP: {client_ip}, Lockout count: {lockout_count+1}"
-                        )
+                    if self._check_coordinated_attack(client_ip, ip_data):
+                        # هشدار به ادمین‌ها در مورد حمله هماهنگ
+                        self._alert_admins_of_attack(client_ip, lockout_data)
                     
-                    # به‌روزرسانی داده‌های قفل
-                    lockout_data['locked_until'] = time.time() + lockout_time
-                    lockout_data['lockout_count'] = lockout_count + 1
-                    lockout_data['attempts'] = 0  # ریست تلاش‌ها برای دوره بعدی
+                    # تعیین زمان باقیمانده قفل
+                    remaining_minutes = int((lockout_data.get('expires_at', 0) - current_time) / 60)
+                    
+                    # نمایش صفحه قفل حساب
+                    return self._get_lockout_response(request, remaining_minutes)
+            
+            # ذخیره اطلاعات کاربر فعلی برای بررسی پس از پاسخ
+            request._account_lockout_username = username
+            request._account_lockout_time = time.time()
+            
+        response = self.get_response(request)
+        
+        # بررسی نتیجه ورود (فقط برای درخواست‌های ورود)
+        if hasattr(request, '_account_lockout_username'):
+            username = request._account_lockout_username
+            
+            # اگر هنوز کاربر لاگین نشده باشد، یعنی تلاش ناموفق بوده
+            if not request.user.is_authenticated:
+                client_ip = self._get_client_ip(request)
+                
+                # افزایش شمارنده تلاش‌های ناموفق
+                lockout_key = f"account_lockout:{self._secure_hash(username)}"
+                lockout_data = cache.get(lockout_key, {
+                    'attempts': 0,
+                    'last_attempt': 0,
+                    'expires_at': 0,
+                    'ips': []
+                })
+                
+                # افزایش شمارنده تلاش‌های ناموفق
+                lockout_data['attempts'] += 1
+                lockout_data['last_attempt'] = time.time()
+                
+                # افزودن IP به لیست
+                if client_ip not in lockout_data['ips']:
+                    lockout_data['ips'].append(client_ip)
+                
+                # بررسی نیاز به قفل حساب
+                for level in self.progressive_lockout:
+                    if lockout_data['attempts'] >= level['attempts']:
+                        lockout_minutes = level['duration']
+                        break
+                else:
+                    # اگر هنوز به آستانه قفل نرسیده باشد
+                    lockout_minutes = 0
+                
+                if lockout_minutes > 0:
+                    # تنظیم زمان انقضای قفل
+                    lockout_data['expires_at'] = time.time() + (lockout_minutes * 60)
+                    
+                    # ثبت قفل شدن حساب
+                    security_logger.warning(
+                        f"Account locked: {username} for {lockout_minutes} minutes after {lockout_data['attempts']} failed attempts",
+                        extra={
+                            'ip': client_ip,
+                            'username': username,
+                            'lockout_minutes': lockout_minutes,
+                            'attempts': lockout_data['attempts'],
+                            'ips': lockout_data['ips']
+                        }
+                    )
+                    
+                    # افزایش آمار قفل حساب‌ها
+                    lockout_count = cache.get('security_stats:account_lockouts', 0)
+                    cache.set('security_stats:account_lockouts', lockout_count + 1, 86400)
                     
                     # ذخیره اطلاعات قفل
-                    cache.set(lockout_key, lockout_data, lockout_time * 2)  # دو برابر زمان قفل نگهداری می‌شود
+                    cache.set(lockout_key, lockout_data, lockout_minutes * 60)
                     
-                    # نمایش پیام قفل حساب
-                    return self._get_lockout_response(request, remaining_minutes=int(lockout_time/60))
+                    # نمایش صفحه قفل حساب
+                    return self._get_lockout_response(request, lockout_minutes)
                 else:
-                    # هنوز به حداکثر تلاش‌ها نرسیده، ذخیره تعداد تلاش‌ها
-                    cache.set(lockout_key, lockout_data, self.initial_lockout_time * 2)
+                    # هنوز به آستانه قفل نرسیده، فقط ذخیره اطلاعات
+                    cache.set(lockout_key, lockout_data, 24 * 3600)  # 24 ساعت
                     
                     # ثبت تلاش ناموفق
                     security_logger.info(
-                        f"Failed login attempt: {username} from {client_ip}. " +
-                        f"Attempt {lockout_data['attempts']} of {self.max_attempts}"
+                        f"Failed login attempt: {username} ({lockout_data['attempts']}/{self.max_login_attempts})",
+                        extra={
+                            'ip': client_ip,
+                            'username': username,
+                            'attempts': lockout_data['attempts']
+                        }
                     )
+            else:
+                # لاگین موفق - پاک کردن شمارنده تلاش‌های ناموفق
+                lockout_key = f"account_lockout:{self._secure_hash(username)}"
+                cache.delete(lockout_key)
                 
-                # به‌روزرسانی اطلاعات IP
-                cache.set(ip_key, ip_data, self.coordinated_attack_window)
+                # ثبت لاگین موفق
+                security_logger.info(
+                    f"Successful login: {username}",
+                    extra={
+                        'ip': self._get_client_ip(request),
+                        'username': username
+                    }
+                )
                 
-                # بررسی حمله هماهنگ
-                if ip_data['attempt_count'] > 10 and len(ip_data['usernames']) >= 5:
-                    self._check_coordinated_attack(client_ip, ip_data)
-            
-            # اگر لاگین موفق بود، پاک کردن سوابق تلاش‌های ناموفق
-            elif request.user.is_authenticated:
-                if lockout_data.get('attempts', 0) > 0:
-                    # پاک کردن سوابق تلاش ناموفق در صورت ورود موفق
-                    cache.delete(lockout_key)
-                    security_logger.info(f"Successful login: {username} from {client_ip}. Cleared failed login attempts.")
-            
-            return response
+                # چرخش کلید نشست برای امنیت بیشتر
+                if hasattr(request, 'session'):
+                    request.session.cycle_key()
+                    security_logger.info(f"Rotated session key for user {username} after login")
         
-        # برای سایر درخواست‌ها، ادامه روال عادی
-        return self.get_response(request)
+        return response
     
     def _check_coordinated_attack(self, client_ip, ip_data):
         """بررسی حمله هماهنگ به سیستم (حمله به چندین کاربر)"""
-        # تعداد حداقل کاربران مختلف برای تشخیص حمله
-        if len(ip_data['usernames']) >= self.coordinated_attack_threshold:
-            security_logger.critical(
-                f"COORDINATED ATTACK DETECTED from {client_ip}. " +
-                f"Attempted {len(ip_data['usernames'])} different accounts in {ip_data['attempt_count']} attempts."
-            )
-            
-            # فعال کردن قفل کلی سیستم
-            lockdown_minutes = 30
-            system_lockdown = {
-                'activated_at': time.time(),
-                'expires_at': time.time() + (lockdown_minutes * 60),
-                'remaining_minutes': lockdown_minutes,
-                'source_ip': client_ip,
-                'username_count': len(ip_data['usernames']),
-                'attempt_count': ip_data['attempt_count']
-            }
-            
-            cache.set("system_login_lockdown", system_lockdown, lockdown_minutes * 60)
-            
-            # ایمیل برای ادمین‌ها ارسال شود
-            self._alert_admins_of_attack(client_ip, system_lockdown)
+        # اگر تلاش برای ورود به بیش از 3 حساب کاربری مختلف از یک IP
+        if len(ip_data) >= 3:
+            return True
+        
+        # بررسی تعداد کل تلاش‌های ناموفق
+        total_attempts = sum(ip_data.values())
+        if total_attempts >= 15:
+            return True
+        
+        return False
     
     def _alert_admins_of_attack(self, client_ip, lockdown_data):
         """ارسال هشدار به مدیران سیستم در مورد حمله تشخیص داده شده"""
-        # در اینجا می‌توان با ایمیل یا پیامک به ادمین‌ها اطلاع داد
-        # این قسمت را می‌توان با سامانه‌های اطلاع‌رسانی شما یکپارچه کرد
         security_logger.critical(
-            f"SECURITY ALERT: System lockdown activated due to coordinated attack from {client_ip}. " +
-            f"Lockdown expires in {lockdown_data['remaining_minutes']} minutes."
+            f"Coordinated attack detected from IP: {client_ip}",
+            extra={
+                'ip': client_ip,
+                'attempts': lockdown_data.get('attempts', 0),
+                'timestamp': time.time(),
+                'attack_type': 'credential_stuffing'
+            }
         )
+        
+        # در سیستم واقعی:
+        # 1. ارسال ایمیل به ادمین‌ها
+        # 2. ارسال پیامک هشدار
+        # 3. فعال کردن محافظت‌های بیشتر
     
     def _get_lockout_response(self, request, remaining_minutes=30, is_system=False):
         """نمایش پیام مناسب برای قفل حساب"""
-        if is_system:
-            message = _(f'سیستم به دلیل تشخیص حمله امنیتی به طور موقت قفل شده است. لطفاً {remaining_minutes} دقیقه دیگر تلاش کنید.')
-        else:
-            message = _(f'حساب کاربری به دلیل تلاش‌های ناموفق قفل شده است. لطفاً {remaining_minutes} دقیقه دیگر تلاش کنید.')
+        # برای API درخواست‌ها
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return JsonResponse({
+                'error': True,
+                'message': 'حساب کاربری موقتاً مسدود شده است. لطفاً بعداً تلاش کنید.',
+                'code': 'ACCOUNT_LOCKED',
+                'remaining_minutes': remaining_minutes
+            }, status=403)
         
-        # اگر درخواست AJAX است، پاسخ JSON
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'error': message, 'lockout': True, 'remaining_minutes': remaining_minutes}, status=403)
+        # برای درخواست‌های وب
+        reset_password_url = reverse('password_reset') if is_system else None
         
-        # در غیر این صورت، پاسخ HTML
-        context = {
-            'message': message,
+        return render(request, 'accounts/lockout.html', {
             'remaining_minutes': remaining_minutes,
-            'is_system_lockout': is_system,
-        }
-        return render(request, 'accounts/lockout.html', context)
+            'reset_password_url': reset_password_url,
+            'is_system_lockout': is_system
+        }, status=403)
     
     def _get_client_ip(self, request):
         """دریافت IP واقعی کاربر"""
@@ -639,10 +759,8 @@ class AccountLockoutMiddleware:
     
     def _secure_hash(self, value):
         """هش امن برای ذخیره اطلاعات حساس"""
-        # استفاده از یک salt ساده اما ثابت برای جلوگیری از خطا
-        salt = "hiro_estate_security"
-        return hashlib.sha256((salt + str(value)).encode()).hexdigest()
-
+        salt = getattr(settings, 'SECRET_KEY', '')[:16]
+        return hashlib.sha256((salt + value).encode()).hexdigest()
 
 class ContentSecurityPolicyMiddleware:
     """
@@ -654,37 +772,56 @@ class ContentSecurityPolicyMiddleware:
     
     def __init__(self, get_response):
         self.get_response = get_response
-        self.report_uri = getattr(settings, 'CSP_REPORT_URI', '/security/csp-report/')
-        self.report_only = getattr(settings, 'CSP_REPORT_ONLY', False)
         
-        # تنظیمات امنیتی CSP پیش‌فرض
+        # تنظیمات CSP بازنگری‌شده با پشتیبانی از CDN های خارجی
         self.csp_settings = {
-            'default-src': ["'self'"],
-            'script-src': ["'self'", 'cdn.jsdelivr.net', 'www.google-analytics.com'],
-            'style-src': ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
-            'img-src': ["'self'", 'data:', 'www.google-analytics.com'],
-            'font-src': ["'self'", 'fonts.gstatic.com', 'cdn.jsdelivr.net'],
-            'connect-src': ["'self'", 'www.google-analytics.com'],
+            'default-src': ["'self'", "cdn.jsdelivr.net", "cdn.datatables.net"],
+            'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "cdn.datatables.net", "cdn.ckeditor.com", "cdnjs.cloudflare.com"],
+            'style-src': ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
+            'img-src': ["'self'", "data:", "*"],
+            'font-src': ["'self'", "data:", "fonts.gstatic.com", "cdn.jsdelivr.net"],
+            'connect-src': ["'self'", "*"],
             'frame-src': ["'self'"],
+            'media-src': ["'self'"],
             'object-src': ["'none'"],
             'base-uri': ["'self'"],
             'form-action': ["'self'"],
             'frame-ancestors': ["'self'"],
-            'upgrade-insecure-requests': True,
+            'worker-src': ["blob:", "'self'"],
+            'report-uri': ["/security/csp-report/"]
         }
         
-        # بررسی تنظیمات سفارشی CSP از settings
-        for directive, sources in getattr(settings, 'CSP_DIRECTIVES', {}).items():
-            self.csp_settings[directive] = sources
-    
+        # سفارشی‌سازی از تنظیمات
+        custom_csp = getattr(settings, 'CONTENT_SECURITY_POLICY', {})
+        for directive, sources in custom_csp.items():
+            if directive in self.csp_settings:
+                self.csp_settings[directive] = sources
+        
+        # فعال‌سازی حالت گزارش
+        self.report_only = getattr(settings, 'CSP_REPORT_ONLY', False)
+        
+        # مسیرهای مستثنی (مثلاً پنل ادمین و مسیرهای استاتیک)
+        self.exempt_paths = getattr(settings, 'CSP_EXEMPT_PATHS', [
+            r'^/admin/',
+            r'^/static/',
+            r'^/media/',
+        ])
+        
     def __call__(self, request):
         response = self.get_response(request)
         
-        # افزودن CSP به پاسخ
-        if getattr(settings, 'ENABLE_CSP', True):
-            csp_header = self._build_csp_header()
-            header_name = 'Content-Security-Policy-Report-Only' if self.report_only else 'Content-Security-Policy'
-            response[header_name] = csp_header
+        # بررسی مسیرهای مستثنی
+        path = request.path_info.lstrip('/')
+        if any(re.match(exempt, path) for exempt in self.exempt_paths):
+            return response
+        
+        # اضافه کردن هدرهای CSP
+        csp_header = self._build_csp_header()
+        
+        # تعیین نوع هدر (گزارش یا اجرا)
+        header_name = 'Content-Security-Policy-Report-Only' if self.report_only else 'Content-Security-Policy'
+        
+        response[header_name] = csp_header
         
         return response
     
@@ -693,21 +830,10 @@ class ContentSecurityPolicyMiddleware:
         directives = []
         
         for directive, sources in self.csp_settings.items():
-            if directive == 'upgrade-insecure-requests' and sources:
-                directives.append('upgrade-insecure-requests')
-                continue
-                
             if sources:
-                directive_str = f"{directive} {' '.join(sources)}"
-                directives.append(directive_str)
+                directives.append(f"{directive} {' '.join(sources)}")
         
-        # افزودن آدرس گزارش تخلفات
-        if self.report_uri:
-            directives.append(f"report-uri {self.report_uri}")
-            directives.append(f"report-to default")
-            
-        return '; '.join(directives)
-
+        return "; ".join(directives)
 
 class SessionSecurityMiddleware:
     """
@@ -720,82 +846,102 @@ class SessionSecurityMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         
-        # تنظیمات امنیتی نشست
-        self.session_idle_timeout = getattr(settings, 'SESSION_IDLE_TIMEOUT', 1800)  # 30 دقیقه پیش‌فرض
-        self.rotate_session_on_login = getattr(settings, 'ROTATE_SESSION_ON_LOGIN', True)
-        self.validate_ip = getattr(settings, 'SESSION_VALIDATE_IP', True)
-        self.validate_user_agent = getattr(settings, 'SESSION_VALIDATE_USER_AGENT', True)
-    
+        # تنظیمات پیش‌فرض امنیت نشست
+        self.session_idle_timeout = getattr(settings, 'SESSION_IDLE_TIMEOUT', 30 * 60)  # 30 دقیقه
+        self.session_absolute_timeout = getattr(settings, 'SESSION_ABSOLUTE_TIMEOUT', 24 * 60 * 60)  # 24 ساعت
+        self.session_verify_ip = getattr(settings, 'SESSION_VERIFY_IP', True)
+        self.session_verify_user_agent = getattr(settings, 'SESSION_VERIFY_USER_AGENT', True)
+        
     def __call__(self, request):
-        # بررسی نشست موجود
-        if hasattr(request, 'user') and request.user.is_authenticated:
-            now = time.time()
+        # بررسی و اعتبارسنجی نشست فعلی
+        if hasattr(request, 'session') and not request.session.is_empty():
+            # بررسی زمان ایجاد نشست (منقضی شدن مطلق)
+            session_start_time = request.session.get('_session_start_time', 0)
+            current_time = time.time()
             
-            # بررسی آخرین فعالیت کاربر
-            last_activity = request.session.get('last_activity', now)
-            idle_time = now - last_activity
+            if session_start_time and current_time - session_start_time > self.session_absolute_timeout:
+                # نشست منقضی شده (بیش از حداکثر زمان مجاز فعال بوده)
+                security_logger.info(
+                    f"Session expired (absolute timeout) for user: {request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'}",
+                    extra={'ip': self._get_client_ip(request)}
+                )
+                
+                self._logout_and_clear_session(request)
+                return HttpResponseRedirect(f"{reverse('accounts:login')}?next={request.path}")
             
-            # اگر کاربر بیش از حد مجاز غیرفعال بوده، نشست را منقضی کنیم
-            if idle_time > self.session_idle_timeout:
-                if 'logging_out' not in request.session:
-                    security_logger.info(f"Session timeout for user {request.user.username} after {idle_time/60:.1f} minutes")
-                    request.session['logging_out'] = True
-                    from django.contrib.auth import logout
-                    logout(request)
-                    
-                    response = self.get_response(request)
-                    response['Location'] = f"{reverse('accounts:login')}?timeout=1"
-                    response.status_code = 302
-                    return response
+            # بررسی زمان آخرین فعالیت (منقضی شدن به دلیل عدم فعالیت)
+            last_activity = request.session.get('_session_last_activity', 0)
             
-            # بررسی تغییر IP یا User-Agent
-            if self.validate_ip and 'ip' in request.session:
+            if last_activity and current_time - last_activity > self.session_idle_timeout:
+                # نشست منقضی شده (بیش از حد مجاز غیرفعال بوده)
+                security_logger.info(
+                    f"Session expired (idle timeout) for user: {request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'}",
+                    extra={'ip': self._get_client_ip(request)}
+                )
+                
+                self._logout_and_clear_session(request)
+                return HttpResponseRedirect(f"{reverse('accounts:login')}?next={request.path}&timeout=1")
+            
+            # بررسی IP (برای جلوگیری از Session Hijacking)
+            if self.session_verify_ip:
+                session_ip = request.session.get('_session_ip')
                 current_ip = self._get_client_ip(request)
-                if request.session['ip'] != current_ip:
+                
+                if session_ip and session_ip != current_ip:
+                    # IP نشست تغییر کرده (احتمال Session Hijacking)
                     security_logger.warning(
-                        f"IP mismatch for session: {request.session.session_key}. " +
-                        f"Original: {request.session['ip']}, Current: {current_ip}, User: {request.user.username}"
+                        f"Session IP mismatch: {session_ip} != {current_ip} for user: {request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'}",
+                        extra={'ip': current_ip, 'session_ip': session_ip}
                     )
-                    # اقدامات امنیتی - خروج کاربر
-                    from django.contrib.auth import logout
-                    logout(request)
-                    return self._get_security_violation_response(request, "نشست منقضی شده است. لطفاً مجدداً وارد شوید.")
                     
-            if self.validate_user_agent and 'user_agent' in request.session:
+                    self._logout_and_clear_session(request)
+                    return self._get_security_violation_response(request, "نشست شما به دلایل امنیتی باطل شده است. لطفاً دوباره وارد شوید.")
+            
+            # بررسی User-Agent (برای جلوگیری از Session Hijacking)
+            if self.session_verify_user_agent:
+                session_ua = request.session.get('_session_user_agent')
                 current_ua = request.META.get('HTTP_USER_AGENT', '')
-                if request.session['user_agent'] != current_ua:
+                
+                if session_ua and session_ua != current_ua:
+                    # User-Agent نشست تغییر کرده (احتمال Session Hijacking)
                     security_logger.warning(
-                        f"User-Agent change detected for session: {request.session.session_key}. " +
-                        f"User: {request.user.username}"
+                        f"Session User-Agent mismatch for user: {request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'}",
+                        extra={'ip': self._get_client_ip(request)}
                     )
-                    # اقدامات امنیتی - خروج کاربر
-                    from django.contrib.auth import logout
-                    logout(request)
-                    return self._get_security_violation_response(request, "نشست منقضی شده است. لطفاً مجدداً وارد شوید.")
+                    
+                    self._logout_and_clear_session(request)
+                    return self._get_security_violation_response(request, "نشست شما به دلایل امنیتی باطل شده است. لطفاً دوباره وارد شوید.")
             
             # به‌روزرسانی زمان آخرین فعالیت
-            request.session['last_activity'] = now
+            request.session['_session_last_activity'] = current_time
         
-        # پردازش درخواست
         response = self.get_response(request)
         
-        # بررسی لاگین موفق
-        if (not hasattr(request, '_login_successful')) and request.user.is_authenticated:
-            if request.method == 'POST' and any(request.path.endswith(path) for path in ['/accounts/login/', '/admin/login/']):
-                # لاگین موفق، چرخش نشست
-                if self.rotate_session_on_login:
-                    request.session.cycle_key()
-                    security_logger.info(f"Rotated session key for user {request.user.username} after login")
-                
-                # ذخیره اطلاعات امنیتی
-                request.session['ip'] = self._get_client_ip(request)
-                request.session['user_agent'] = request.META.get('HTTP_USER_AGENT', '')
-                request.session['login_time'] = time.time()
-                request.session['last_activity'] = time.time()
-                
-                setattr(request, '_login_successful', True)
+        # اضافه کردن اطلاعات امنیتی به نشست جدید
+        if hasattr(request, 'session') and not request.session.is_empty() and request.user.is_authenticated:
+            # تنظیم زمان ایجاد نشست (اگر وجود نداشته باشد)
+            if '_session_start_time' not in request.session:
+                request.session['_session_start_time'] = time.time()
+            
+            # تنظیم زمان آخرین فعالیت
+            request.session['_session_last_activity'] = time.time()
+            
+            # ذخیره IP کاربر
+            if self.session_verify_ip and '_session_ip' not in request.session:
+                request.session['_session_ip'] = self._get_client_ip(request)
+            
+            # ذخیره User-Agent کاربر
+            if self.session_verify_user_agent and '_session_user_agent' not in request.session:
+                request.session['_session_user_agent'] = request.META.get('HTTP_USER_AGENT', '')
         
         return response
+    
+    def _logout_and_clear_session(self, request):
+        """خروج کاربر و پاک‌سازی نشست"""
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            logout(request)
+        if hasattr(request, 'session'):
+            request.session.flush()
     
     def _get_client_ip(self, request):
         """دریافت IP واقعی کاربر"""
@@ -808,10 +954,18 @@ class SessionSecurityMiddleware:
     
     def _get_security_violation_response(self, request, message):
         """پاسخ مناسب به تخلفات امنیتی"""
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'error': message, 'security_violation': True}, status=403)
+        # برای API درخواست‌ها
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return JsonResponse({
+                'error': True,
+                'message': message,
+                'code': 'SESSION_SECURITY_VIOLATION'
+            }, status=403)
         
-        # ریدایرکت به صفحه لاگین با پیام خطا
-        from django.contrib import messages
-        messages.error(request, message)
-        return HttpResponse(f'<script>window.location.href = "{reverse("accounts:login")}";</script>'.encode('utf-8'), status=200)
+        # برای درخواست‌های وب - استفاده از صفحه خطای سفارشی
+        return render(request, 'security/error.html', {
+            'message': message,
+            'status_code': 403,
+            'error_code': 'SESSION_SECURITY_VIOLATION',
+            'security_tip': 'این خطا ممکن است به دلیل تغییر IP یا مرورگر شما رخ داده باشد. برای حفظ امنیت حساب کاربری، لطفاً دوباره وارد شوید.'
+        }, status=403)

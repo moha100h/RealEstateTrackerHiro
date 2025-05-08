@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}داشبورد امنیتی{% endblock %}
+
+{% block extra_css %}
+<style>
+    .security-dashboard {
+        padding: 20px 0;
+    }
+    
+    .security-card {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        background-color: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .security-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-card {
+        text-align: center;
+        border-right: 4px solid;
+    }
+    
+    .stat-card h3 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card p {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    .stat-card.violations {
+        border-color: #dc3545;
+    }
+    
+    .stat-card.blocked {
+        border-color: #fd7e14;
+    }
+    
+    .stat-card.lockouts {
+        border-color: #0d6efd;
+    }
+    
+    .stat-card.attempts {
+        border-color: #6f42c1;
+    }
+    
+    .activity-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .activity-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .activity-time {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .activity-type {
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: white;
+    }
+    
+    .type-csp {
+        background-color: #dc3545;
+    }
+    
+    .type-login {
+        background-color: #0d6efd;
+    }
+    
+    .type-injection {
+        background-color: #6f42c1;
+    }
+    
+    .type-ddos {
+        background-color: #fd7e14;
+    }
+    
+    .banned-ip-list {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .banned-ip-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .banned-ip-item:last-child {
+        border-bottom: none;
+    }
+    
+    .banned-reason {
+        font-size: 0.85rem;
+        color: #dc3545;
+    }
+    
+    .security-actions {
+        margin-top: 30px;
+    }
+    
+    .action-button {
+        margin-bottom: 10px;
+    }
+    
+    /* نمودار */
+    .chart-container {
+        position: relative;
+        height: 280px;
+        margin-top: 20px;
+    }
+    
+    .security-alert {
+        border-right: 4px solid #dc3545;
+        background-color: #f8f9fa;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .security-alert-title {
+        font-weight: bold;
+        color: #dc3545;
+        margin-bottom: 5px;
+    }
+    
+    .refresh-button {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .refresh-button:hover {
+        color: #0d6efd;
+        transform: rotate(180deg);
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container security-dashboard">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">داشبورد امنیتی</h1>
+        <span class="text-muted">آخرین به‌روزرسانی: {% now "H:i:s" %}</span>
+    </div>
+    
+    <!-- هشدار امنیتی -->
+    {% if alerts > 0 %}
+    <div class="security-alert mb-4">
+        <div class="security-alert-title">
+            <i class="fas fa-exclamation-triangle me-2"></i> هشدار امنیتی
+        </div>
+        <div>{{ alerts }} هشدار امنیتی فعال دارید که نیاز به بررسی دارند.</div>
+        <a href="#" class="btn btn-sm btn-outline-danger mt-2">مشاهده هشدارها</a>
+    </div>
+    {% endif %}
+    
+    <!-- آمار کلی -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="security-card stat-card violations">
+                <h3>{{ security_stats.total_violations|intcomma }}</h3>
+                <p>تخلفات امنیتی</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="security-card stat-card blocked">
+                <h3>{{ security_stats.blocked_ips|intcomma }}</h3>
+                <p>IP های مسدود شده</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="security-card stat-card lockouts">
+                <h3>{{ security_stats.account_lockouts|intcomma }}</h3>
+                <p>قفل حساب‌ها</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="security-card stat-card attempts">
+                <h3>{{ security_stats.attack_attempts|intcomma }}</h3>
+                <p>تلاش‌های نفوذ</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- فعالیت‌های اخیر -->
+        <div class="col-md-8">
+            <div class="security-card">
+                <h4 class="mb-4">فعالیت‌های امنیتی اخیر</h4>
+                <div class="refresh-button">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                
+                <div class="activity-list">
+                    {% for violation in recent_violations %}
+                    <div class="activity-item">
+                        <div>
+                            <span class="activity-type type-{{ violation.type|lower }}">{{ violation.type }}</span>
+                            <span class="ms-2">{{ violation.details }}</span>
+                        </div>
+                        <div>
+                            <span class="badge text-bg-secondary me-2">{{ violation.ip }}</span>
+                            <span class="activity-time">{{ violation.timestamp|timesince }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle text-success fa-2x mb-3"></i>
+                        <p>هیچ فعالیت امنیتی مشکوکی ثبت نشده است.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- نمودار -->
+            <div class="security-card">
+                <h4 class="mb-3">نمودار فعالیت‌های امنیتی</h4>
+                <div class="chart-container">
+                    <canvas id="securityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- IP های مسدود شده -->
+        <div class="col-md-4">
+            <div class="security-card">
+                <h4 class="mb-4">IP های مسدود شده</h4>
+                
+                <div class="banned-ip-list">
+                    {% for ip in banned_ips %}
+                    <div class="banned-ip-item">
+                        <div>
+                            <div>{{ ip.ip }}</div>
+                            <div class="banned-reason">{{ ip.reason }}</div>
+                        </div>
+                        <div class="text-muted">
+                            {% if ip.until %}
+                            تا {{ ip.until|date:"Y/m/d H:i" }}
+                            {% else %}
+                            دائمی
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-shield-alt text-success fa-2x mb-3"></i>
+                        <p>در حال حاضر هیچ IP مسدودی وجود ندارد</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- اقدامات امنیتی -->
+            <div class="security-card security-actions">
+                <h4 class="mb-4">اقدامات امنیتی</h4>
+                
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-primary action-button">
+                        <i class="fas fa-shield-alt me-2"></i> بررسی امنیتی سیستم
+                    </a>
+                    <a href="#" class="btn btn-outline-danger action-button">
+                        <i class="fas fa-ban me-2"></i> مدیریت IP های مسدود
+                    </a>
+                    <a href="#" class="btn btn-outline-info action-button">
+                        <i class="fas fa-file-alt me-2"></i> گزارش امنیتی کامل
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary action-button">
+                        <i class="fas fa-cog me-2"></i> تنظیمات امنیتی
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // داده‌های نمودار
+    const ctx = document.getElementById('securityChart').getContext('2d');
+    
+    // اطلاعات فرضی برای نمایش نمودار (در سیستم واقعی باید از سرور بیاید)
+    const chartData = {
+        labels: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور'],
+        datasets: [
+            {
+                label: 'تخلفات CSP',
+                data: [12, 19, 3, 5, 2, 3],
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                tension: 0.4
+            },
+            {
+                label: 'تلاش‌های ورود ناموفق',
+                data: [7, 11, 5, 8, 3, 7],
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                tension: 0.4
+            },
+            {
+                label: 'حملات تزریق',
+                data: [3, 5, 2, 6, 1, 0],
+                borderColor: '#6f42c1',
+                backgroundColor: 'rgba(111, 66, 193, 0.2)',
+                tension: 0.4
+            }
+        ]
+    };
+    
+    // تنظیمات نمودار
+    const chartConfig = {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false,
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            family: 'Vazir'
+                        }
+                    }
+                },
+                tooltip: {
+                    boxPadding: 5
+                }
+            }
+        }
+    };
+    
+    // ایجاد نمودار
+    const myChart = new Chart(ctx, chartConfig);
+    
+    // به‌روزرسانی صفحه با کلیک روی دکمه رفرش
+    document.querySelector('.refresh-button').addEventListener('click', function() {
+        // در سیستم واقعی اینجا باید درخواست AJAX برای به‌روزرسانی داده‌ها ارسال شود
+        this.classList.add('fa-spin');
+        
+        // شبیه‌سازی درخواست AJAX
+        setTimeout(() => {
+            this.classList.remove('fa-spin');
+            // به‌روزرسانی زمان
+            const now = new Date();
+            const timeString = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            document.querySelector('.text-muted').textContent = `آخرین به‌روزرسانی: ${timeString}`;
+        }, 1000);
+    });
+});
+</script>
+{% endblock %}
