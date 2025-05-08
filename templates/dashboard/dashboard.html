@@ -802,7 +802,7 @@
                                             {{ property.status.name }}
                                         </span>
                                     </td>
-                                    <td>{{ property.created_at|jformat:"%Y/%m/%d" }}</td>
+                                    <td>{{ property.created_at|date:"Y/m/d" }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
