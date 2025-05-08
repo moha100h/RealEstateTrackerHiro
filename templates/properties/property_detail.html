@@ -2,195 +2,304 @@
 {% load humanize %}
 {% load jalali_tags %}
 
-{% block content %}
-<div class="container">
-    <div class="mb-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'home' %}">خانه</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'properties:property_list' %}">املاک</a></li>
-                <li class="breadcrumb-item active">{{ property.title }}</li>
-            </ol>
-        </nav>
-    </div>
-    
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h1 class="mb-0">{{ property.title }}</h1>
-                        {% if user.is_staff %}
-                        <div class="btn-group">
-                            <a href="{% url 'properties:property_update' property.slug %}" class="btn btn-sm btn-outline-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                                ویرایش
-                            </a>
-                            {% if user.is_superuser %}
-                            <a href="{% url 'properties:property_delete' property.slug %}" class="btn btn-sm btn-outline-danger">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                حذف
-                            </a>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-flex align-items-center mb-3">
-                        <span class="badge bg-primary me-2">{{ property.property_code }}</span>
-                        <span class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% else %}bg-warning{% endif %} me-2">
-                            {{ property.status.name }}
-                        </span>
-                        <span class="badge bg-secondary me-2">{{ property.property_type.name }}</span>
-                        <span class="badge bg-info me-2">{{ property.transaction_type.name }}</span>
-                        {% if property.document_type %}
-                        <span class="badge bg-dark">{{ property.document_type.name }}</span>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="property-main-image mb-3">
-                        {% if property.image %}
-                        <img src="{{ property.image.url }}" class="img-fluid rounded" alt="{{ property.title }}" style="width: 100%; height: 400px; object-fit: cover;">
-                        {% elif system_config.default_property_image %}
-                        <img src="{{ system_config.default_property_image.url }}" class="img-fluid rounded" alt="{{ property.title }}" style="width: 100%; height: 400px; object-fit: cover;">
-                        {% else %}
-                        <div class="bg-light text-center py-5 rounded">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home text-secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    {% if property.get_additional_images %}
-                    <div class="property-gallery mb-4">
-                        <h5 class="mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image me-2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                            گالری تصاویر
-                        </h5>
-                        <div class="row g-2">
-                            {% for img in property.get_additional_images %}
-                            <div class="col-md-3 col-6 mb-2">
-                                <a href="{{ img.image.url }}" target="_blank" class="d-block">
-                                    <img src="{{ img.image.url }}" alt="تصویر {{ forloop.counter }}" class="img-thumbnail" style="width: 100%; height: 120px; object-fit: cover;">
-                                </a>
-                                {% if img.title %}
-                                <small class="d-block text-center text-muted mt-1">{{ img.title }}</small>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="row mb-4 g-2">
-                        <div class="col-md-4 col-6 mb-3">
-                            <div class="p-3 border rounded text-center bg-light shadow-sm">
-                                <div class="d-flex justify-content-center mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-maximize-2 text-primary"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-                                </div>
-                                <div class="small text-muted">متراژ</div>
-                                <div class="h5 mb-0">{{ property.area }} متر</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-6 mb-3">
-                            <div class="p-3 border rounded text-center bg-light shadow-sm">
-                                <div class="d-flex justify-content-center mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layout text-primary"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                                </div>
-                                <div class="small text-muted">تعداد اتاق</div>
-                                <div class="h5 mb-0">{{ property.rooms }}</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-6 mb-3">
-                            <div class="p-3 border rounded text-center bg-light shadow-sm">
-                                <div class="d-flex justify-content-center mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar text-primary"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                </div>
-                                <div class="small text-muted">سال ساخت</div>
-                                <div class="h5 mb-0">{{ property.year_built }}</div>
-                            </div>
-                        </div>
-                    </div>
+{% block extra_css %}
+<!-- استایل‌های صفحه جزئیات ملک -->
+<link rel="stylesheet" href="/static/css/property-details.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
 
-                    <div class="row mb-4 g-2">
-                        <div class="col-md-6 col-6 mb-3">
-                            <div class="p-3 border rounded text-center bg-light shadow-sm">
-                                <div class="d-flex justify-content-center mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign text-primary"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                </div>
-                                <div class="small text-muted">قیمت</div>
-                                <div class="h5 mb-0">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-6 mb-3">
-                            <div class="p-3 border rounded text-center bg-light shadow-sm">
-                                <div class="d-flex justify-content-center mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                </div>
-                                <div class="small text-muted">نوع سند</div>
-                                <div class="h5 mb-0">{% if property.document_type %}{{ property.document_type.name }}{% else %}<span class="text-muted">نامشخص</span>{% endif %}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h4 class="mb-3">آدرس</h4>
-                    <p class="mb-4">{{ property.address }}</p>
-                    
-                    <h4 class="mb-3">توضیحات</h4>
-                    <div class="mb-4">
-                        {{ property.description|linebreaks }}
-                    </div>
-                </div>
-                <div class="card-footer bg-light">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">تاریخ ثبت: {{ property.created_at|to_jalali_datetime }}</small>
-                        <small class="text-muted">آخرین بروزرسانی: {{ property.updated_at|to_jalali_datetime }}</small>
-                    </div>
-                </div>
-            </div>
+{% block extra_js %}
+<!-- اسکریپت صفحه جزئیات ملک -->
+<script src="/static/js/property-details.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="property-detail-container">
+    <div class="container">
+        <!-- بردکرامب -->
+        <div class="property-breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">خانه</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'properties:property_list' %}">املاک</a></li>
+                    <li class="breadcrumb-item active">{{ property.title }}</li>
+                </ol>
+            </nav>
         </div>
         
-        <div class="col-lg-4">
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-gradient-primary text-white">
-                    <h5 class="card-title mb-0">اطلاعات تماس</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4 text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user text-primary mb-2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <h5 class="mb-1">مشاور املاک هیرو</h5>
-                        <p class="text-muted mb-0">کارشناس فروش و اجاره</p>
+        <div class="row">
+            <!-- ستون اصلی -->
+            <div class="col-lg-8">
+                <!-- کارت اطلاعات اصلی ملک -->
+                <div class="property-main-card">
+                    <div class="card-body p-4">
+                        <!-- عنوان و دکمه‌های اکشن -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                            <h1 class="property-title mb-0">{{ property.title }}</h1>
+                            
+                            {% if user.is_staff %}
+                            <div class="d-flex mt-2 mt-sm-0">
+                                <a href="{% url 'properties:property_update' property.slug %}" class="btn btn-outline-primary property-action-btn">
+                                    <i class="bi bi-pencil-square"></i>
+                                    ویرایش
+                                </a>
+                                {% if user.is_superuser %}
+                                <a href="{% url 'properties:property_delete' property.slug %}" class="btn btn-outline-danger property-action-btn ms-2">
+                                    <i class="bi bi-trash"></i>
+                                    حذف
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- نشانگرهای وضعیت ملک -->
+                        <div class="d-flex flex-wrap mb-4">
+                            <span class="badge bg-primary property-badge me-2 mb-2">{{ property.property_code }}</span>
+                            <span class="badge property-badge me-2 mb-2 {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% elif property.status.name == 'رزرو شده' %}bg-primary{% elif property.status.name == 'در حال ساخت' %}bg-secondary{% else %}bg-info{% endif %}">
+                                {{ property.status.name }}
+                            </span>
+                            <span class="badge bg-secondary property-badge me-2 mb-2">{{ property.property_type.name }}</span>
+                            <span class="badge bg-info property-badge me-2 mb-2">{{ property.transaction_type.name }}</span>
+                            {% if property.document_type %}
+                            <span class="badge bg-dark property-badge mb-2">{{ property.document_type.name }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- تصویر اصلی -->
+                        <div class="property-main-image mb-4">
+                            {% if property.image %}
+                            <img src="{{ property.image.url }}" class="img-fluid" alt="{{ property.title }}">
+                            {% elif system_config.default_property_image %}
+                            <img src="{{ system_config.default_property_image.url }}" class="img-fluid" alt="{{ property.title }}">
+                            {% else %}
+                            <div class="bg-light text-center py-5 rounded">
+                                <i class="bi bi-building fs-1 text-secondary"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- گالری تصاویر -->
+                        {% if property.get_additional_images %}
+                        <div class="mb-5">
+                            <h4 class="property-section-title">گالری تصاویر</h4>
+                            <div class="row g-3">
+                                {% for img in property.get_additional_images %}
+                                <div class="col-md-3 col-6">
+                                    <div class="gallery-thumbnail" data-image="{{ img.image.url }}" data-title="{{ img.title|default:'' }}">
+                                        <img src="{{ img.image.url }}" alt="تصویر {{ forloop.counter }}" class="img-fluid">
+                                        {% if img.title %}
+                                        <div class="gallery-thumbnail-caption">{{ img.title }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- ویژگی‌های اصلی -->
+                        <div class="mb-5">
+                            <h4 class="property-section-title">مشخصات کلیدی</h4>
+                            <div class="row g-3">
+                                <div class="col-md-4 col-6">
+                                    <div class="property-feature-card">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-rulers"></i>
+                                        </div>
+                                        <div class="feature-label">متراژ</div>
+                                        <div class="feature-value">{{ property.area|default:"--" }} متر</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 col-6">
+                                    <div class="property-feature-card">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-grid-3x3"></i>
+                                        </div>
+                                        <div class="feature-label">تعداد اتاق</div>
+                                        <div class="feature-value">{{ property.rooms|default:"--" }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 col-6">
+                                    <div class="property-feature-card">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-calendar-check"></i>
+                                        </div>
+                                        <div class="feature-label">سال ساخت</div>
+                                        <div class="feature-value">{{ property.year_built|default:"--" }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-6">
+                                    <div class="property-feature-card">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-cash-coin"></i>
+                                        </div>
+                                        <div class="feature-label">قیمت</div>
+                                        <div class="feature-value">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-6">
+                                    <div class="property-feature-card">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </div>
+                                        <div class="feature-label">نوع سند</div>
+                                        <div class="feature-value">{% if property.document_type %}{{ property.document_type.name }}{% else %}نامشخص{% endif %}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- امکانات و ویژگی‌ها -->
+                        <div class="mb-5">
+                            <h4 class="property-section-title">امکانات و ویژگی‌ها</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex align-items-center py-3">
+                                            <i class="bi {% if property.has_elevator %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} me-2"></i>
+                                            <span>آسانسور</span>
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center py-3">
+                                            <i class="bi {% if property.has_parking %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} me-2"></i>
+                                            <span>پارکینگ</span>
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center py-3">
+                                            <i class="bi {% if property.has_warehouse %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} me-2"></i>
+                                            <span>انباری</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex align-items-center py-3">
+                                            <i class="bi {% if property.has_balcony %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} me-2"></i>
+                                            <span>بالکن</span>
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center py-3">
+                                            <i class="bi {% if property.is_renovated %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} me-2"></i>
+                                            <span>بازسازی شده</span>
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center py-3">
+                                            <i class="bi {% if property.has_package %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} me-2"></i>
+                                            <span>سیستم گرمایشی پکیج</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- آدرس و موقعیت -->
+                        <div class="mb-5">
+                            <h4 class="property-section-title">آدرس و موقعیت</h4>
+                            <p class="mb-4">{{ property.address }}</p>
+                            <div id="property-map" class="property-map"></div>
+                        </div>
+                        
+                        <!-- توضیحات -->
+                        <div class="mb-5">
+                            <h4 class="property-section-title">توضیحات</h4>
+                            <div class="property-description">
+                                {{ property.description|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        <!-- اشتراک گذاری -->
+                        <div class="mb-3">
+                            <h4 class="property-section-title">اشتراک گذاری</h4>
+                            <div class="share-buttons">
+                                <button type="button" class="share-button share-telegram" data-share="telegram" title="اشتراک در تلگرام">
+                                    <i class="bi bi-telegram"></i>
+                                </button>
+                                <button type="button" class="share-button share-whatsapp" data-share="whatsapp" title="اشتراک در واتساپ">
+                                    <i class="bi bi-whatsapp"></i>
+                                </button>
+                                <button type="button" class="share-button" data-share="twitter" title="اشتراک در توییتر">
+                                    <i class="bi bi-twitter-x"></i>
+                                </button>
+                                <button type="button" class="share-button" data-share="copy" title="کپی لینک">
+                                    <i class="bi bi-link-45deg"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="mb-2">
-                        <div class="d-flex align-items-center mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone text-primary me-2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                            <span>021-12345678</span>
-                        </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-smartphone text-primary me-2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                            <span>0912-3456789</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail text-primary me-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                            <span>info@hiroestate.com</span>
+                    <!-- فوتر کارت -->
+                    <div class="card-footer bg-light py-3">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <small class="text-muted mb-1 mb-md-0">تاریخ ثبت: {{ property.created_at|to_jalali_datetime }}</small>
+                            <small class="text-muted">آخرین بروزرسانی: {{ property.updated_at|to_jalali_datetime }}</small>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer text-center">
-                    <button class="btn btn-primary w-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone-call me-1"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                        تماس با مشاور
-                    </button>
                 </div>
             </div>
             
-            <div class="card shadow-sm">
-                <div class="card-header bg-gradient-primary text-white">
-                    <h5 class="card-title mb-0">املاک مشابه</h5>
+            <!-- ستون کناری -->
+            <div class="col-lg-4">
+                <!-- کارت اطلاعات تماس -->
+                <div class="contact-card mb-4">
+                    <div class="contact-header">
+                        <h5 class="mb-0">اطلاعات تماس</h5>
+                    </div>
+                    <div class="contact-body">
+                        <div class="text-center mb-4">
+                            <div class="contact-icon">
+                                <i class="bi bi-person fs-1"></i>
+                            </div>
+                            <h5 class="mt-3 mb-1">مشاور املاک هیرو</h5>
+                            <p class="text-muted">کارشناس فروش و اجاره</p>
+                        </div>
+                        
+                        <div>
+                            <div class="contact-info-item">
+                                <div class="contact-info-icon">
+                                    <i class="bi bi-telephone"></i>
+                                </div>
+                                <span>021-12345678</span>
+                            </div>
+                            
+                            <div class="contact-info-item">
+                                <div class="contact-info-icon">
+                                    <i class="bi bi-phone"></i>
+                                </div>
+                                <span>0912-3456789</span>
+                            </div>
+                            
+                            <div class="contact-info-item">
+                                <div class="contact-info-icon">
+                                    <i class="bi bi-envelope"></i>
+                                </div>
+                                <span>info@hiroestate.com</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer p-3">
+                        <button type="button" class="contact-button">
+                            <i class="bi bi-telephone-plus me-2"></i>
+                            تماس با مشاور
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <small>این قسمت در نسخه بعدی سیستم فعال خواهد شد.</small>
+                
+                <!-- کارت املاک مشابه -->
+                <div class="similar-properties-card">
+                    <div class="contact-header">
+                        <h5 class="mb-0">املاک مشابه</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- در نسخه بعدی این لیست پر خواهد شد -->
+                        <div class="p-4 text-center">
+                            <i class="bi bi-buildings fs-1 text-muted mb-3"></i>
+                            <p class="mb-0 text-muted">در حال حاضر ملک مشابهی یافت نشد.</p>
+                            <a href="{% url 'properties:property_list' %}" class="btn btn-sm btn-outline-primary mt-3">
+                                <i class="bi bi-search me-1"></i>
+                                مشاهده همه املاک
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
