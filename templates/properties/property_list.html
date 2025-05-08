@@ -2,6 +2,520 @@
 {% load humanize %}
 {% load jalali_tags %}
 
+{% block extra_css %}
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    /* استایل‌های صفحه لیست املاک */
+    .property-list-container {
+        padding-top: 2rem;
+        padding-bottom: 4rem;
+    }
+    
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .add-property-btn {
+        background: linear-gradient(to left, #4481eb, #04befe);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        color: white;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .add-property-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(0, 0, 0, 0.15);
+        color: white;
+    }
+    
+    .add-property-btn:active {
+        transform: translateY(-1px);
+    }
+    
+    .search-btn {
+        background: #f8f9fa;
+        color: #333;
+        border: 1px solid #e2e2e2;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover {
+        background: #e9ecef;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .property-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        background-color: white;
+    }
+    
+    .property-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .property-image-container {
+        position: relative;
+        padding-top: 65%;
+        overflow: hidden;
+    }
+    
+    .property-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .property-card:hover .property-image {
+        transform: scale(1.05);
+    }
+    
+    .property-code {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2;
+        background-color: rgba(13, 110, 253, 0.85);
+        color: white;
+        font-weight: 600;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        backdrop-filter: blur(4px);
+    }
+    
+    .status-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 2;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        backdrop-filter: blur(4px);
+    }
+    
+    .property-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .property-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #333;
+        line-height: 1.4;
+    }
+    
+    .property-location {
+        display: flex;
+        align-items: center;
+        color: #666;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .property-location i {
+        margin-left: 0.5rem;
+        color: #4481eb;
+    }
+    
+    .property-meta {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 1rem;
+    }
+    
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .meta-value {
+        font-weight: 600;
+        color: #333;
+        font-size: 1rem;
+    }
+    
+    .meta-label {
+        font-size: 0.8rem;
+        color: #777;
+    }
+    
+    .property-price {
+        font-size: 1.25rem;
+        color: #4481eb;
+        font-weight: 700;
+        margin-top: auto;
+    }
+    
+    .property-links {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+    
+    .property-link-btn {
+        color: #4481eb;
+        font-weight: 500;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
+    
+    .property-link-btn:hover {
+        color: #0d6efd;
+    }
+    
+    .property-link-btn i {
+        margin-left: 0.5rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        color: #4481eb;
+    }
+    
+    .action-btn:hover {
+        background-color: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    .primary-action {
+        background-color: #4481eb;
+        color: white;
+        border: none;
+    }
+    
+    .primary-action:hover {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .property-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .property-overlay-button {
+        background-color: white;
+        color: #333;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        transform: translateY(20px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .property-image-container:hover .property-overlay {
+        opacity: 1;
+    }
+    
+    .property-image-container:hover .property-overlay-button {
+        transform: translateY(0);
+    }
+    
+    .transaction-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .price-wrapper {
+        display: flex;
+        align-items: center;
+    }
+    
+    .pagination-section {
+        margin-top: 2.5rem;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .pagination-number {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 5px;
+        border-radius: 50%;
+        border: 1px solid #dee2e6;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .pagination-number:hover {
+        background-color: #e9ecef;
+        border-color: #e9ecef;
+        color: #333;
+    }
+    
+    .pagination-number.active {
+        background-color: #4481eb;
+        border-color: #4481eb;
+        color: white;
+    }
+    
+    .pagination-control {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+    }
+    
+    /* برای موبایل */
+    @media (max-width: 576px) {
+        .property-grid {
+            display: block;
+        }
+        
+        .property-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        .mobile-property-card {
+            display: flex;
+            margin-bottom: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        .mobile-property-image {
+            width: 120px;
+            min-width: 120px;
+            height: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mobile-property-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .mobile-property-content {
+            flex: 1;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mobile-property-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .mobile-property-address {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .mobile-property-meta {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mobile-meta-item {
+            font-size: 0.75rem;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 0.1rem 0.5rem;
+            border-radius: 3px;
+        }
+        
+        .mobile-property-price {
+            margin-top: auto;
+            font-weight: 700;
+            color: #4481eb;
+            font-size: 0.9rem;
+        }
+        
+        .mobile-property-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+        }
+        
+        .mobile-action-link {
+            font-size: 0.8rem;
+            color: #4481eb;
+            text-decoration: none;
+        }
+    }
+    
+    /* اعلان‌ها */
+    .notification-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1050;
+    }
+    
+    .notification {
+        min-width: 300px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        background-color: white;
+        color: #333;
+        animation: slideInRight 0.3s, fadeOut 0.3s 2.7s;
+        display: flex;
+        align-items: center;
+    }
+    
+    .notification-icon {
+        margin-left: 0.75rem;
+        font-size: 1.5rem;
+    }
+    
+    .notification-success {
+        border-right: 4px solid #198754;
+    }
+    
+    .notification-success .notification-icon {
+        color: #198754;
+    }
+    
+    .notification-warning {
+        border-right: 4px solid #ffc107;
+    }
+    
+    .notification-warning .notification-icon {
+        color: #ffc107;
+    }
+    
+    .notification-error {
+        border-right: 4px solid #dc3545;
+    }
+    
+    .notification-error .notification-icon {
+        color: #dc3545;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <!-- استفاده از اسکریپت مدیریت وضعیت املاک -->
 <script src="/static/js/status-manager.js"></script>
@@ -10,31 +524,34 @@
 {% block title %}لیست املاک | سیستم مدیریت املاک هیرو{% endblock %}
 
 {% block content %}
-
-<div class="container py-5">
-    <div class="property-header">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-            <h1 class="mb-3 mb-md-0">لیست املاک</h1>
-            {% if user.is_staff %}
-            <a href="{% url 'properties:property_create' %}" class="btn btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle me-1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                افزودن ملک جدید
-            </a>
-            {% endif %}
-        </div>
-        
-        <div class="advanced-search">
-            <div class="d-flex justify-content-end">
-                <a href="{% url 'properties:property_search' %}" class="btn btn-outline-primary rounded-pill mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter me-1"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                    جستجوی پیشرفته
-                </a>
+<div class="property-list-container">
+    <div class="container">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="page-title">لیست املاک</h1>
+                    <p class="text-muted">مدیریت و مشاهده تمام املاک ثبت‌شده در سیستم</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="header-actions d-flex justify-content-md-end mt-3 mt-md-0">
+                        {% if user.is_staff %}
+                        <a href="{% url 'properties:property_create' %}" class="add-property-btn">
+                            <i class="bi bi-plus-circle"></i>
+                            افزودن ملک جدید
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'properties:property_search' %}" class="search-btn">
+                            <i class="bi bi-search"></i>
+                            جستجوی پیشرفته
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="property-content">
-        {% if properties %}
+        
+        <div class="property-content">
+            {% if properties %}
         <!-- نمایش برای دسکتاپ و تبلت -->
         <div class="row g-2 d-none d-sm-flex">
             {% for property in properties %}
