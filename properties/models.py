@@ -129,6 +129,20 @@ class Property(models.Model):
         verbose_name="تصویر اصلی",
         validators=[secure_upload_validator]
     )
+    
+    # امکانات و ویژگی‌های ملک
+    has_elevator = models.BooleanField(default=False, verbose_name="آسانسور")
+    has_parking = models.BooleanField(default=False, verbose_name="پارکینگ")
+    has_warehouse = models.BooleanField(default=False, verbose_name="انباری")
+    has_balcony = models.BooleanField(default=False, verbose_name="بالکن")
+    is_renovated = models.BooleanField(default=False, verbose_name="بازسازی شده")
+    has_package = models.BooleanField(default=False, verbose_name="سیستم گرمایشی پکیج")
+    
+    # موقعیت جغرافیایی (برای استفاده در نقشه)
+    latitude = models.FloatField(null=True, blank=True, verbose_name="عرض جغرافیایی")
+    longitude = models.FloatField(null=True, blank=True, verbose_name="طول جغرافیایی")
+    
+    # اطلاعات زمانی
     created_at = jmodels.jDateTimeField(auto_now_add=True, verbose_name="تاریخ ثبت")
     updated_at = jmodels.jDateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
     slug = models.SlugField(unique=True, blank=True, verbose_name="اسلاگ")
