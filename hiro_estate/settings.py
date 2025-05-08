@@ -53,17 +53,19 @@ MIDDLEWARE = [
     # میدل‌ویرهای سفارشی امنیتی - قبل از همه میدل‌ویرها
     'accounts.middleware.RateLimitMiddleware',           # محدودیت نرخ درخواست‌ها
     'accounts.middleware.EnhancedSecurityMiddleware',    # امنیت پیشرفته
+    'accounts.middleware.ContentSecurityPolicyMiddleware', # سیاست امنیت محتوا (CSP)
     
     # میدل‌ویرهای اصلی Django
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    
+    # میدل‌ویرهای سفارشی امنیتی برای نشست‌ها
+    'accounts.middleware.SessionSecurityMiddleware',     # امنیت پیشرفته نشست‌ها
+    'accounts.middleware.AccountLockoutMiddleware',      # قفل حساب کاربری
+    
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'accounts.middleware.ContentSecurityPolicyMiddleware',  # سیاست امنیت محتوا
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # میدل‌ویرهای سفارشی که به کاربر احراز هویت شده نیاز دارند
-    'accounts.middleware.SessionSecurityMiddleware',     # امنیت نشست‌ها - بعد از AuthenticationMiddleware
-    'accounts.middleware.AccountLockoutMiddleware',      # قفل حساب کاربری
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.http.ConditionalGetMiddleware',   # محافظت در برابر حملات HTTP

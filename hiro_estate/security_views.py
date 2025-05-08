@@ -26,12 +26,17 @@ def csp_report_view(request):
         violated_directive = csp_report.get('csp-report', {}).get('violated-directive', 'unknown')
         original_policy = csp_report.get('csp-report', {}).get('original-policy', 'unknown')
         
+        # Check if user is authenticated before accessing user.username
+        username = 'anonymous'
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            username = request.user.username
+        
         # Log the CSP violation with relevant details
         security_logger.warning(
             f"CSP Violation: {violated_directive} directive violated on {document_uri} by {blocked_uri}",
             extra={
                 'ip': request.META.get('REMOTE_ADDR', 'unknown'),
-                'user': request.user.username if request.user.is_authenticated else 'anonymous',
+                'user': username,
                 'document_uri': document_uri,
                 'blocked_uri': blocked_uri,
                 'violated_directive': violated_directive,

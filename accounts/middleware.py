@@ -727,7 +727,7 @@ class SessionSecurityMiddleware:
     
     def __call__(self, request):
         # بررسی نشست موجود
-        if request.user.is_authenticated:
+        if hasattr(request, 'user') and request.user.is_authenticated:
             now = time.time()
             
             # بررسی آخرین فعالیت کاربر
