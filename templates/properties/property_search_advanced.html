@@ -1,0 +1,884 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load jalali_tags %}
+
+{% block extra_css %}
+<style>
+    /* استایل‌های صفحه جستجوی پیشرفته */
+    .search-container {
+        padding-top: 2rem;
+        padding-bottom: 4rem;
+    }
+    
+    .filter-card {
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: none;
+        overflow: hidden;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .filter-card .card-header {
+        background: linear-gradient(to left, #4481eb, #04befe);
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .filter-card .card-header h5 {
+        color: white;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .filter-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #4481eb;
+        box-shadow: 0 0 0 0.25rem rgba(68, 129, 235, 0.1);
+    }
+    
+    .dual-range-control {
+        padding: 1rem 0;
+    }
+    
+    .range-values {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+    
+    .filter-button {
+        display: inline-block;
+        margin-top: 1rem;
+        padding: 0.75rem 2rem;
+        background: linear-gradient(to left, #4481eb, #04befe);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .filter-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+    }
+    
+    .filter-button:active {
+        transform: translateY(1px);
+    }
+    
+    .reset-button {
+        background: #f8f9fa;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+    
+    .filter-badge {
+        background-color: #e8f0fe;
+        color: #4481eb;
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .filter-badge:hover {
+        background-color: #d4e4fd;
+    }
+    
+    .filter-badge .remove-filter {
+        margin-right: 0.5rem;
+        color: #4481eb;
+        font-size: 1rem;
+    }
+    
+    .search-results {
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background-color: rgba(68, 129, 235, 0.05);
+        border-right: 4px solid #4481eb;
+    }
+    
+    .search-query-highlight {
+        background-color: rgba(68, 129, 235, 0.1);
+        padding: 0.2rem 0.5rem;
+        border-radius: 3px;
+        font-weight: 500;
+        color: #4481eb;
+    }
+    
+    .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .property-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .property-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .property-image-container {
+        position: relative;
+        padding-top: 65%;
+        overflow: hidden;
+    }
+    
+    .property-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .property-card:hover .property-image {
+        transform: scale(1.05);
+    }
+    
+    .property-code {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2;
+    }
+    
+    .status-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 2;
+    }
+    
+    .property-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .property-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #333;
+        line-height: 1.4;
+    }
+    
+    .property-location {
+        display: flex;
+        align-items: center;
+        color: #666;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .property-location i {
+        margin-left: 0.5rem;
+        color: #4481eb;
+    }
+    
+    .property-meta {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 1rem;
+    }
+    
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .meta-value {
+        font-weight: 600;
+        color: #333;
+        font-size: 1rem;
+    }
+    
+    .meta-label {
+        font-size: 0.8rem;
+        color: #777;
+    }
+    
+    .property-price {
+        font-size: 1.25rem;
+        color: #4481eb;
+        font-weight: 700;
+        margin-top: auto;
+    }
+    
+    .property-links {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+    
+    .property-link {
+        color: #4481eb;
+        font-weight: 500;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+    }
+    
+    .property-link i {
+        margin-left: 0.5rem;
+    }
+    
+    .mobile-filters-trigger {
+        display: none;
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        background: linear-gradient(to left, #4481eb, #04befe);
+        color: white;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        box-shadow: 0 4px 20px rgba(68, 129, 235, 0.3);
+        border: none;
+    }
+    
+    .property-pagination {
+        margin-top: 3rem;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .pagination-number {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 5px;
+        border-radius: 50%;
+        border: 1px solid #dee2e6;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .pagination-number:hover {
+        background-color: #e9ecef;
+        border-color: #e9ecef;
+        color: #333;
+    }
+    
+    .pagination-number.active {
+        background-color: #4481eb;
+        border-color: #4481eb;
+        color: white;
+    }
+    
+    .pagination-prev, .pagination-next {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+    }
+    
+    .no-results {
+        padding: 4rem 0;
+        text-align: center;
+    }
+    
+    .no-results-icon {
+        font-size: 4rem;
+        color: #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+    
+    .no-results-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    .no-results-text {
+        color: #6c757d;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    /* برای نمایش موبایل */
+    @media (max-width: 992px) {
+        .filter-card {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1050;
+            margin: 0;
+            border-radius: 0;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .filter-card.show {
+            transform: translateX(0);
+        }
+        
+        .mobile-filters-trigger {
+            display: flex;
+        }
+        
+        .filter-close {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- استفاده از اسکریپت مدیریت وضعیت املاک -->
+<script src="/static/js/status-manager.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تنظیمات نمایش فیلترها در موبایل
+    const filtersTrigger = document.getElementById('mobileFiltersTrigger');
+    const filtersCard = document.getElementById('filtersCard');
+    const filtersClose = document.getElementById('filtersClose');
+    
+    if (filtersTrigger && filtersCard) {
+        filtersTrigger.addEventListener('click', function() {
+            filtersCard.classList.add('show');
+            document.body.style.overflow = 'hidden'; // جلوگیری از اسکرول صفحه اصلی
+        });
+    }
+    
+    if (filtersClose && filtersCard) {
+        filtersClose.addEventListener('click', function() {
+            filtersCard.classList.remove('show');
+            document.body.style.overflow = ''; // بازگرداندن اسکرول
+        });
+    }
+    
+    // حذف فیلترهای انتخاب شده
+    const filterBadges = document.querySelectorAll('.filter-badge');
+    filterBadges.forEach(badge => {
+        badge.addEventListener('click', function() {
+            const filterName = this.dataset.filter;
+            const filterForm = document.getElementById('searchForm');
+            
+            // حذف پارامتر از فرم
+            if (filterForm && filterName) {
+                const filterInput = filterForm.querySelector(`[name="${filterName}"]`);
+                if (filterInput) {
+                    filterInput.value = '';
+                    filterForm.submit();
+                }
+            }
+        });
+    });
+    
+    // اسلایدرهای محدوده قیمت و متراژ
+    const priceRange = document.getElementById('priceRange');
+    const minPriceDisplay = document.getElementById('minPriceDisplay');
+    const maxPriceDisplay = document.getElementById('maxPriceDisplay');
+    const minPriceInput = document.getElementById('minPrice');
+    const maxPriceInput = document.getElementById('maxPrice');
+    
+    const areaRange = document.getElementById('areaRange');
+    const minAreaDisplay = document.getElementById('minAreaDisplay');
+    const maxAreaDisplay = document.getElementById('maxAreaDisplay');
+    const minAreaInput = document.getElementById('minArea');
+    const maxAreaInput = document.getElementById('maxArea');
+    
+    if (priceRange && minPriceDisplay && maxPriceDisplay && minPriceInput && maxPriceInput) {
+        noUiSlider.create(priceRange, {
+            start: [
+                minPriceInput.value ? parseInt(minPriceInput.value) : 0, 
+                maxPriceInput.value ? parseInt(maxPriceInput.value) : 10000000000
+            ],
+            connect: true,
+            step: 100000000,
+            range: {
+                'min': 0,
+                'max': 10000000000
+            },
+            format: {
+                to: function(value) {
+                    return Math.round(value);
+                },
+                from: function(value) {
+                    return Math.round(value);
+                }
+            }
+        });
+        
+        priceRange.noUiSlider.on('update', function(values, handle) {
+            const value = values[handle];
+            const formattedValue = new Intl.NumberFormat('fa-IR').format(value);
+            
+            if (handle === 0) {
+                minPriceDisplay.textContent = formattedValue + ' تومان';
+                minPriceInput.value = value;
+            } else {
+                maxPriceDisplay.textContent = formattedValue + ' تومان';
+                maxPriceInput.value = value;
+            }
+        });
+    }
+    
+    if (areaRange && minAreaDisplay && maxAreaDisplay && minAreaInput && maxAreaInput) {
+        noUiSlider.create(areaRange, {
+            start: [
+                minAreaInput.value ? parseInt(minAreaInput.value) : 0, 
+                maxAreaInput.value ? parseInt(maxAreaInput.value) : 1000
+            ],
+            connect: true,
+            step: 10,
+            range: {
+                'min': 0,
+                'max': 1000
+            },
+            format: {
+                to: function(value) {
+                    return Math.round(value);
+                },
+                from: function(value) {
+                    return Math.round(value);
+                }
+            }
+        });
+        
+        areaRange.noUiSlider.on('update', function(values, handle) {
+            const value = values[handle];
+            const formattedValue = new Intl.NumberFormat('fa-IR').format(value);
+            
+            if (handle === 0) {
+                minAreaDisplay.textContent = formattedValue + ' متر مربع';
+                minAreaInput.value = value;
+            } else {
+                maxAreaDisplay.textContent = formattedValue + ' متر مربع';
+                maxAreaInput.value = value;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block title %}جستجوی پیشرفته املاک | سیستم مدیریت املاک هیرو{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="container">
+        <div class="row">
+            <!-- فیلترهای جستجو -->
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <div class="card filter-card" id="filtersCard">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>
+                                <i class="bi bi-funnel-fill me-2"></i>
+                                فیلترهای جستجو
+                            </h5>
+                            <button type="button" id="filtersClose" class="filter-close d-lg-none">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchForm" method="get" action="{% url 'properties:property_search' %}">
+                            <div class="mb-3">
+                                <label for="query" class="form-label">جستجوی کلیدواژه</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="query" name="query" placeholder="عنوان، آدرس، کد ملک..." value="{{ request.GET.query }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="transaction_type" class="form-label">نوع معامله</label>
+                                <select class="form-select" id="transaction_type" name="transaction_type">
+                                    <option value="">همه موارد</option>
+                                    {% for type in transaction_types %}
+                                    <option value="{{ type.id }}" {% if request.GET.transaction_type == type.id|stringformat:"i" %}selected{% endif %}>{{ type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="property_type" class="form-label">نوع ملک</label>
+                                <select class="form-select" id="property_type" name="property_type">
+                                    <option value="">همه موارد</option>
+                                    {% for type in property_types %}
+                                    <option value="{{ type.id }}" {% if request.GET.property_type == type.id|stringformat:"i" %}selected{% endif %}>{{ type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="status" class="form-label">وضعیت</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">همه موارد</option>
+                                    {% for status in property_statuses %}
+                                    <option value="{{ status.id }}" {% if request.GET.status == status.id|stringformat:"i" %}selected{% endif %}>{{ status.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">محدوده قیمت (تومان)</label>
+                                <div class="dual-range-control">
+                                    <div id="priceRange"></div>
+                                    <div class="range-values">
+                                        <span id="minPriceDisplay">0 تومان</span>
+                                        <span id="maxPriceDisplay">10,000,000,000 تومان</span>
+                                    </div>
+                                    <input type="hidden" id="minPrice" name="min_price" value="{{ request.GET.min_price }}">
+                                    <input type="hidden" id="maxPrice" name="max_price" value="{{ request.GET.max_price }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">متراژ (متر مربع)</label>
+                                <div class="dual-range-control">
+                                    <div id="areaRange"></div>
+                                    <div class="range-values">
+                                        <span id="minAreaDisplay">0 متر مربع</span>
+                                        <span id="maxAreaDisplay">1,000 متر مربع</span>
+                                    </div>
+                                    <input type="hidden" id="minArea" name="min_area" value="{{ request.GET.min_area }}">
+                                    <input type="hidden" id="maxArea" name="max_area" value="{{ request.GET.max_area }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="rooms" class="form-label">حداقل تعداد اتاق</label>
+                                <select class="form-select" id="rooms" name="rooms">
+                                    <option value="">مهم نیست</option>
+                                    <option value="1" {% if request.GET.rooms == '1' %}selected{% endif %}>1</option>
+                                    <option value="2" {% if request.GET.rooms == '2' %}selected{% endif %}>2</option>
+                                    <option value="3" {% if request.GET.rooms == '3' %}selected{% endif %}>3</option>
+                                    <option value="4" {% if request.GET.rooms == '4' %}selected{% endif %}>4</option>
+                                    <option value="5" {% if request.GET.rooms == '5' %}selected{% endif %}>5+</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="has_parking" name="has_parking" value="1" {% if request.GET.has_parking == '1' %}checked{% endif %}>
+                                    <label class="form-check-label" for="has_parking">دارای پارکینگ</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="has_elevator" name="has_elevator" value="1" {% if request.GET.has_elevator == '1' %}checked{% endif %}>
+                                    <label class="form-check-label" for="has_elevator">دارای آسانسور</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="has_storage" name="has_storage" value="1" {% if request.GET.has_storage == '1' %}checked{% endif %}>
+                                    <label class="form-check-label" for="has_storage">دارای انباری</label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn filter-button">
+                                <i class="bi bi-search me-2"></i>
+                                جستجوی املاک
+                            </button>
+                            
+                            <a href="{% url 'properties:property_search' %}" class="btn filter-button reset-button">
+                                <i class="bi bi-arrow-counterclockwise me-2"></i>
+                                پاک کردن فیلترها
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- نتایج جستجو -->
+            <div class="col-lg-8">
+                <!-- فیلترهای انتخاب شده -->
+                {% if has_filters %}
+                <div class="mb-4">
+                    <div class="d-flex flex-wrap">
+                        {% if request.GET.query %}
+                        <span class="filter-badge" data-filter="query">
+                            <span class="remove-filter">&times;</span>
+                            عبارت: {{ request.GET.query }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.transaction_type %}
+                        <span class="filter-badge" data-filter="transaction_type">
+                            <span class="remove-filter">&times;</span>
+                            نوع معامله: {{ transaction_type_name }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.property_type %}
+                        <span class="filter-badge" data-filter="property_type">
+                            <span class="remove-filter">&times;</span>
+                            نوع ملک: {{ property_type_name }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.status %}
+                        <span class="filter-badge" data-filter="status">
+                            <span class="remove-filter">&times;</span>
+                            وضعیت: {{ status_name }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.min_price or request.GET.max_price %}
+                        <span class="filter-badge" data-filter="min_price">
+                            <span class="remove-filter">&times;</span>
+                            قیمت: {{ price_range }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.min_area or request.GET.max_area %}
+                        <span class="filter-badge" data-filter="min_area">
+                            <span class="remove-filter">&times;</span>
+                            متراژ: {{ area_range }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.rooms %}
+                        <span class="filter-badge" data-filter="rooms">
+                            <span class="remove-filter">&times;</span>
+                            حداقل {{ request.GET.rooms }} اتاق
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.has_parking %}
+                        <span class="filter-badge" data-filter="has_parking">
+                            <span class="remove-filter">&times;</span>
+                            دارای پارکینگ
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.has_elevator %}
+                        <span class="filter-badge" data-filter="has_elevator">
+                            <span class="remove-filter">&times;</span>
+                            دارای آسانسور
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.has_storage %}
+                        <span class="filter-badge" data-filter="has_storage">
+                            <span class="remove-filter">&times;</span>
+                            دارای انباری
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- اطلاعات نتایج جستجو -->
+                <div class="search-results mb-4">
+                    {% if request.GET.query %}
+                    <h4 class="mb-3">نتایج جستجو برای: <span class="search-query-highlight">{{ request.GET.query }}</span></h4>
+                    {% else %}
+                    <h4 class="mb-3">همه املاک</h4>
+                    {% endif %}
+                    
+                    <p class="mb-0">
+                        <strong>{{ properties.count }}</strong> ملک پیدا شد.
+                        {% if properties.count > 0 %}
+                        <span class="text-muted">مرتب سازی بر اساس: جدیدترین</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                {% if properties %}
+                <!-- نمایش املاک -->
+                <div class="property-grid">
+                    {% for property in properties %}
+                    <div class="property-card">
+                        <div class="property-image-container">
+                            {% if property.image %}
+                            <img src="{{ property.image.url }}" class="property-image" alt="{{ property.title }}">
+                            {% elif system_config.default_property_image %}
+                            <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                <i class="bi bi-building fs-1 text-muted"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <span class="badge bg-primary property-code">{{ property.property_code }}</span>
+                            
+                            <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% elif property.status.name == 'رزرو شده' %}bg-primary{% elif property.status.name == 'در حال ساخت' %}bg-secondary{% else %}bg-info{% endif %} status-badge">
+                                {{ property.status.name }}
+                            </span>
+                        </div>
+                        
+                        <div class="property-content">
+                            <h3 class="property-title">{{ property.title }}</h3>
+                            
+                            <div class="property-location">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span>{{ property.address|truncatechars:50 }}</span>
+                            </div>
+                            
+                            <div class="property-meta">
+                                <div class="meta-item">
+                                    <span class="meta-value">{{ property.area }}</span>
+                                    <span class="meta-label">متر مربع</span>
+                                </div>
+                                
+                                <div class="meta-item">
+                                    <span class="meta-value">{{ property.rooms }}</span>
+                                    <span class="meta-label">اتاق</span>
+                                </div>
+                                
+                                <div class="meta-item">
+                                    <span class="meta-value">{{ property.year_built }}</span>
+                                    <span class="meta-label">سال ساخت</span>
+                                </div>
+                            </div>
+                            
+                            <div class="property-price">
+                                {{ property.price|floatformat:"0"|intcomma }} تومان
+                                <span class="badge bg-primary-soft text-primary ms-1">{{ property.transaction_type.name }}</span>
+                            </div>
+                            
+                            <div class="property-links">
+                                <a href="{% url 'properties:property_detail' property.slug %}" class="property-link">
+                                    <i class="bi bi-eye-fill"></i>
+                                    مشاهده جزئیات
+                                </a>
+                                
+                                {% if user.is_staff %}
+                                <button type="button" class="property-link" onclick="showStatusModal({{ property.id }}, '{{ property.title }}')">
+                                    <i class="bi bi-pencil-square"></i>
+                                    تغییر وضعیت
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- صفحه‌بندی -->
+                {% if is_paginated %}
+                <div class="property-pagination">
+                    <nav aria-label="صفحه‌بندی">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link pagination-prev" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="قبلی">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for i in paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link pagination-number">{{ i }}</span>
+                                </li>
+                                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link pagination-number" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link pagination-next" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="بعدی">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <!-- نمایش عدم وجود نتیجه -->
+                <div class="no-results">
+                    <div class="no-results-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h4 class="no-results-title">نتیجه‌ای یافت نشد</h4>
+                    <p class="no-results-text">
+                        متأسفانه با فیلترهای انتخاب شده هیچ ملکی پیدا نشد. لطفاً فیلترهای جستجو را تغییر دهید و دوباره تلاش کنید.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- دکمه فیلتر برای موبایل -->
+    <button type="button" id="mobileFiltersTrigger" class="mobile-filters-trigger">
+        <i class="bi bi-funnel-fill"></i>
+    </button>
+</div>
+{% endblock %}

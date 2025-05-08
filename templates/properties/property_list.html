@@ -3,64 +3,13 @@
 {% load jalali_tags %}
 
 {% block extra_js %}
-<!-- استفاده از اسکریپت خارجی property-status.js -->
+<!-- استفاده از اسکریپت مدیریت وضعیت املاک -->
+<script src="/static/js/status-manager.js"></script>
 {% endblock %}
 
 {% block title %}لیست املاک | سیستم مدیریت املاک هیرو{% endblock %}
 
 {% block content %}
-<!-- مودال تغییر وضعیت ملک -->
-<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="changeStatusModalLabel">تغییر وضعیت ملک</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body pt-0">
-                <h6 id="property-title-display" class="mb-4 text-muted fs-6">عنوان ملک</h6>
-                
-                {% csrf_token %}
-                
-                <div class="row">
-                    <div class="col-6 col-md-4 status-radio-box">
-                        <input type="radio" name="statusOption" id="status1" value="1">
-                        <label for="status1" class="status-box-label text-success">موجود</label>
-                    </div>
-                    
-                    <div class="col-6 col-md-4 status-radio-box">
-                        <input type="radio" name="statusOption" id="status2" value="2">
-                        <label for="status2" class="status-box-label text-danger">فروخته شده</label>
-                    </div>
-                    
-                    <div class="col-6 col-md-4 status-radio-box">
-                        <input type="radio" name="statusOption" id="status3" value="3">
-                        <label for="status3" class="status-box-label text-danger">اجاره داده شده</label>
-                    </div>
-                    
-                    <div class="col-6 col-md-4 status-radio-box">
-                        <input type="radio" name="statusOption" id="status4" value="4">
-                        <label for="status4" class="status-box-label text-warning">رزرو شده</label>
-                    </div>
-                    
-                    <div class="col-6 col-md-4 status-radio-box">
-                        <input type="radio" name="statusOption" id="status5" value="5">
-                        <label for="status5" class="status-box-label text-warning">در حال ساخت</label>
-                    </div>
-                    
-                    <div class="col-6 col-md-4 status-radio-box">
-                        <input type="radio" name="statusOption" id="status6" value="6">
-                        <label for="status6" class="status-box-label text-primary">آماده تحویل</label>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">انصراف</button>
-                <button type="button" id="saveStatusBtn" class="btn btn-primary">ذخیره تغییرات</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="container py-5">
     <div class="property-header">
