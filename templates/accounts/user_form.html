@@ -1,7 +1,321 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    .user-form-container {
+        padding: 2rem 0;
+    }
+    
+    .user-form-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .user-form-header {
+        background-image: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        padding: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .user-form-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(30deg);
+        pointer-events: none;
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.8rem;
+        margin-left: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .user-avatar-new {
+        background: white;
+        color: #4481eb;
+    }
+    
+    .user-form-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .user-form-subtitle {
+        opacity: 0.85;
+        font-size: 0.9rem;
+    }
+    
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+    }
+    
+    .form-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(to bottom, #4481eb, #04befe);
+        border-radius: 0 15px 15px 0;
+    }
+    
+    .section-header {
+        display: flex;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 1rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .section-title h5 {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #4481eb;
+    }
+    
+    .section-title p {
+        color: #6c757d;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+    
+    .form-field {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #343a40;
+        display: flex;
+        align-items: center;
+    }
+    
+    .required-star {
+        color: #dc3545;
+        margin-right: 0.25rem;
+    }
+    
+    .form-control {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #4481eb;
+        box-shadow: 0 0 0 3px rgba(68, 129, 235, 0.15);
+    }
+    
+    .form-hint {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+    
+    /* Custom Toggle Switch */
+    .form-switch-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+    
+    .form-switch {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        margin-top: 0;
+        margin-right: 0.5rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #4481eb;
+        border-color: #4481eb;
+    }
+    
+    /* Group permissions */
+    .group-permissions {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+    
+    .group-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #343a40;
+    }
+    
+    .groups-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .group-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+    }
+    
+    .group-item:hover {
+        background-color: #edf2fd;
+        transform: translateY(-2px);
+    }
+    
+    .group-item .form-check {
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .group-item .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-left: 0.75rem;
+    }
+    
+    .group-item .form-check-input:checked + .form-check-label {
+        font-weight: 600;
+        color: #4481eb;
+    }
+    
+    /* Form Buttons */
+    .form-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-cancel {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+        border: none;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-cancel:hover {
+        background-color: rgba(108, 117, 125, 0.2);
+        color: #495057;
+        transform: translateY(-2px);
+    }
+    
+    .btn-save {
+        background: linear-gradient(to right, #4481eb, #04befe);
+        border: none;
+        border-radius: 50px;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 5px 15px rgba(68, 129, 235, 0.3);
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(68, 129, 235, 0.4);
+    }
+    
+    /* Error alert */
+    .form-error-alert {
+        background-color: #fff5f5;
+        border-right: 4px solid #dc3545;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.1);
+    }
+    
+    .error-title {
+        display: flex;
+        align-items: center;
+        color: #dc3545;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .error-list {
+        padding-right: 1rem;
+        margin-bottom: 0;
+    }
+    
+    .error-list li {
+        margin-bottom: 0.5rem;
+        color: #6c757d;
+    }
+    
+    .error-list li strong {
+        color: #495057;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="container user-form-container">
     <div class="mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -12,210 +326,186 @@
         </nav>
     </div>
     
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <div class="card border-0 shadow">
-                <div class="card-header d-flex align-items-center py-3">
-                    <div class="d-flex me-3">
-                        {% if object %}
-                        <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px;">
-                            {{ object.username|first|upper }}
+    <div class="user-form-card">
+        <!-- هدر فرم -->
+        <div class="user-form-header d-flex">
+            <div class="user-avatar {% if not object %}user-avatar-new{% endif %}">
+                {% if object %}
+                {{ object.username|first|upper }}
+                {% else %}
+                <i class="bi bi-person-plus-fill"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h4 class="user-form-title">{% if object %}ویرایش کاربر {{ object.username }}{% else %}افزودن کاربر جدید{% endif %}</h4>
+                <p class="user-form-subtitle">{% if object %}آخرین ورود: {{ object.last_login|default:"بدون سابقه ورود" }}{% else %}تکمیل همه فیلدهای ستاره‌دار الزامی است{% endif %}</p>
+            </div>
+        </div>
+        
+        <div class="card-body p-4">
+            <form method="post" class="user-form">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="form-error-alert">
+                    <div class="error-title">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        خطاهای فرم را برطرف کنید:
+                    </div>
+                    <ul class="error-list">
+                        {% for field, errors in form.errors.items %}
+                        <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <!-- اطلاعات کاربری -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-person-fill fs-4"></i>
                         </div>
-                        {% else %}
-                        <div class="d-flex align-items-center justify-content-center me-3 text-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                        <div class="section-title">
+                            <h5>اطلاعات کاربری</h5>
+                            <p>اطلاعات شناسایی کاربر در سیستم</p>
                         </div>
-                        {% endif %}
-                        <div>
-                            <h5 class="mb-0">{% if object %}ویرایش کاربر {{ object.username }}{% else %}افزودن کاربر جدید{% endif %}</h5>
-                            <small class="text-muted">{% if object %}آخرین ورود: {{ object.last_login|default:"بدون سابقه ورود" }}{% else %}تکمیل همه فیلدهای ستاره‌دار الزامی است{% endif %}</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    <span class="required-star">*</span>
+                                    {{ form.username.label }}
+                                </label>
+                                {{ form.username }}
+                                <div class="form-hint">نام کاربری باید یکتا و بدون فاصله باشد</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    {{ form.email.label }}
+                                </label>
+                                {{ form.email }}
+                                <div class="form-hint">ایمیل برای بازیابی رمز عبور استفاده می‌شود</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    {{ form.first_name.label }}
+                                </label>
+                                {{ form.first_name }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    {{ form.last_name.label }}
+                                </label>
+                                {{ form.last_name }}
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-body p-4">
-                    <form method="post" class="user-form">
-                        {% csrf_token %}
-                        
-                        {% if form.errors %}
-                        <div class="alert alert-danger bg-danger-subtle border-0">
-                            <div class="d-flex align-items-center mb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-circle text-danger me-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                <h5 class="alert-heading mb-0 text-danger">خطاهای فرم را برطرف کنید:</h5>
-                            </div>
-                            <ul class="mb-0 ps-4">
-                                {% for field, errors in form.errors.items %}
-                                <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
-                                {% endfor %}
-                            </ul>
+                
+                <!-- رمز عبور -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-key-fill fs-4"></i>
                         </div>
-                        {% endif %}
-                        
-                        <div class="row mb-4">
-                            <div class="col-lg-3">
-                                <h5 class="mb-3 d-flex align-items-center text-primary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user me-2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                    اطلاعات کاربری
-                                </h5>
-                                <p class="text-muted small">اطلاعات شناسایی کاربر در سیستم</p>
-                            </div>
-                            <div class="col-lg-9">
-                                <div class="bg-light p-4 rounded-3 shadow-sm">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ form.username.id_for_label }}" class="form-label fw-bold">{{ form.username.label }} <span class="text-danger">*</span></label>
-                                            {{ form.username }}
-                                            <div class="form-text">نام کاربری باید یکتا و بدون فاصله باشد.</div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">{{ form.email.label }}</label>
-                                            {{ form.email }}
-                                            <div class="form-text">ایمیل برای بازیابی رمز عبور استفاده می‌شود.</div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ form.first_name.id_for_label }}" class="form-label fw-bold">{{ form.first_name.label }}</label>
-                                            {{ form.first_name }}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ form.last_name.id_for_label }}" class="form-label fw-bold">{{ form.last_name.label }}</label>
-                                            {{ form.last_name }}
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="section-title">
+                            <h5>رمز عبور</h5>
+                            <p>
+                                {% if object %}
+                                برای تغییر رمز عبور، فیلدها را تکمیل کنید
+                                {% else %}
+                                برای ورود به سیستم رمز عبور تعیین کنید
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.password.id_for_label }}" class="form-label">
+                                    {% if not object %}<span class="required-star">*</span>{% endif %}
+                                    {{ form.password.label }}
+                                </label>
+                                {{ form.password }}
+                                {% if object %}
+                                <div class="form-hint">در صورتی که نمی‌خواهید رمز عبور تغییر کند، این فیلد را خالی بگذارید</div>
+                                {% endif %}
                             </div>
                         </div>
-                        
-                        <div class="row mb-4">
-                            <div class="col-lg-3">
-                                <h5 class="mb-3 d-flex align-items-center text-primary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-lock me-2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                    رمز عبور
-                                </h5>
-                                <p class="text-muted small">
-                                    {% if object %}
-                                    برای تغییر رمز عبور، فیلدها را تکمیل کنید.
-                                    {% else %}
-                                    برای ورود به سیستم رمز عبور تعیین کنید.
-                                    {% endif %}
-                                </p>
-                            </div>
-                            <div class="col-lg-9">
-                                <div class="bg-light p-4 rounded-3 shadow-sm">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ form.password.id_for_label }}" class="form-label fw-bold">{{ form.password.label }} {% if not object %}<span class="text-danger">*</span>{% endif %}</label>
-                                            {{ form.password }}
-                                            {% if object %}
-                                            <div class="form-text">در صورتی که نمی‌خواهید رمز عبور تغییر کند، این فیلد را خالی بگذارید.</div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ form.confirm_password.id_for_label }}" class="form-label fw-bold">{{ form.confirm_password.label }} {% if not object %}<span class="text-danger">*</span>{% endif %}</label>
-                                            {{ form.confirm_password }}
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.confirm_password.id_for_label }}" class="form-label">
+                                    {% if not object %}<span class="required-star">*</span>{% endif %}
+                                    {{ form.confirm_password.label }}
+                                </label>
+                                {{ form.confirm_password }}
                             </div>
                         </div>
-                        
-                        <div class="row mb-4">
-                            <div class="col-lg-3">
-                                <h5 class="mb-3 d-flex align-items-center text-primary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield me-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                                    دسترسی‌ها
-                                </h5>
-                                <p class="text-muted small">تعیین سطح دسترسی کاربر در سیستم</p>
-                            </div>
-                            <div class="col-lg-9">
-                                <div class="bg-light p-4 rounded-3 shadow-sm">
-                                    <div class="mb-4">
-                                        <div class="form-check form-switch">
-                                            {{ form.is_active }}
-                                            <label class="form-check-label fw-bold" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
-                                        </div>
-                                        <div class="form-text ms-4">کاربران غیرفعال نمی‌توانند وارد سیستم شوند.</div>
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="form-label fw-bold mb-3">{{ form.groups.label }}</label>
-                                        <div class="user-groups p-3 border rounded bg-white">
-                                            {{ form.groups }}
-                                        </div>
-                                        <div class="form-text mt-2">دسترسی‌های کاربر بر اساس گروه‌های انتخاب شده تعیین می‌شود.</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x me-1"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                انصراف
-                            </a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                                ذخیره
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+                
+                <!-- دسترسی‌ها -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-shield-fill fs-4"></i>
+                        </div>
+                        <div class="section-title">
+                            <h5>دسترسی‌ها</h5>
+                            <p>تعیین سطح دسترسی کاربر در سیستم</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-switch-container">
+                        <div class="form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label fw-medium" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                        </div>
+                        <div class="form-hint">کاربران غیرفعال نمی‌توانند وارد سیستم شوند</div>
+                    </div>
+                    
+                    <div class="group-permissions">
+                        <div class="group-title">{{ form.groups.label }}</div>
+                        <div class="form-hint mb-3">دسترسی‌های کاربر بر اساس گروه‌های انتخاب شده تعیین می‌شود</div>
+                        
+                        <div class="groups-container">
+                            {% for checkbox in form.groups %}
+                            <div class="group-item">
+                                <div class="form-check">
+                                    {{ checkbox.tag }}
+                                    <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-buttons">
+                    <a href="{% url 'accounts:user_list' %}" class="btn-cancel">
+                        <i class="bi bi-x-lg"></i>
+                        انصراف
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check2-circle"></i>
+                        ذخیره
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-<style>
-.user-form .form-control {
-    border-width: 1px;
-    transition: all 0.3s ease;
-    background-color: #fff;
-    padding: 10px 15px;
-    border-radius: 6px;
-}
-
-.user-form .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.15);
-}
-
-.user-form .form-check-input:checked {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.user-form .form-label {
-    position: relative;
-    padding-right: 10px;
-    color: var(--gray-700);
-}
-
-.user-form .form-label.fw-bold::before {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 14px;
-    background: var(--primary-color);
-    border-radius: 2px;
-}
-
-.user-groups .form-check {
-    margin-bottom: 8px;
-    padding: 8px 30px 8px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.user-groups .form-check:hover {
-    background-color: rgba(63, 81, 181, 0.05);
-}
-
-.user-groups .form-check-input:checked + .form-check-label {
-    font-weight: 600;
-    color: var(--primary-color);
-}
-</style>
 {% endblock %}
