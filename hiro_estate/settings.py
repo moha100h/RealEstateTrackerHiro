@@ -50,27 +50,108 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # میدل‌ویرهای سفارشی امنیتی - قبل از همه میدل‌ویرها
+    'accounts.middleware.RateLimitMiddleware',           # محدودیت نرخ درخواست‌ها
+    'accounts.middleware.EnhancedSecurityMiddleware',    # امنیت پیشرفته
+    
+    # میدل‌ویرهای اصلی Django
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'accounts.middleware.ContentSecurityPolicyMiddleware',  # سیاست امنیت محتوا
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # میدل‌ویرهای سفارشی که به کاربر احراز هویت شده نیاز دارند
+    'accounts.middleware.SessionSecurityMiddleware',     # امنیت نشست‌ها - بعد از AuthenticationMiddleware
+    'accounts.middleware.AccountLockoutMiddleware',      # قفل حساب کاربری
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # محافظت در برابر حملات HTTP
-    'django.middleware.http.ConditionalGetMiddleware',
-    # میدل‌ویرهای سفارشی امنیتی
-    'accounts.middleware.RateLimitMiddleware',
-    'accounts.middleware.AccountLockoutMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',   # محافظت در برابر حملات HTTP
 ]
 
-# حداکثر تعداد درخواست‌های مجاز 
-# معمولا از سیستم‌های حرفه‌ای محدودیت نرخ مانند nginx استفاده می‌کنیم
-# ولی این تنظیمات برای محافظت اولیه مناسب است
+# تنظیمات لاگ کردن موارد امنیتی
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'security': {
+            'format': '%(asctime)s [%(levelname)s] %(message)s (IP: %(ip)s, User: %(user)s)',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'security_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'security.log'),
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB
+            'backupCount': 10,
+            'formatter': 'security',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['mail_admins', 'file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'security': {
+            'handlers': ['security_file', 'console', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# ایجاد پوشه لاگ‌ها اگر وجود نداشته باشد
+if not os.path.exists(os.path.join(BASE_DIR, 'logs')):
+    os.makedirs(os.path.join(BASE_DIR, 'logs'))
+
+# تنظیمات پیشرفته محدودیت نرخ درخواست‌ها
 RATE_LIMIT_MIDDLEWARE = {
-    'WINDOW_SIZE': 60 * 15,  # در هر 15 دقیقه
-    'MAX_REQUESTS': 300,     # حداکثر 300 درخواست مجاز
-    'EXEMPT_PATHS': ['/static/', '/media/'],
+    'WINDOW_SIZE': 60 * 5,            # پنجره زمانی: 5 دقیقه
+    'MAX_REQUESTS': 200,              # حداکثر 200 درخواست عادی
+    'EXEMPT_PATHS': [
+        '/static/', 
+        '/media/', 
+        '/favicon.ico'
+    ],
 }
 
 # تنظیمات امنیتی
