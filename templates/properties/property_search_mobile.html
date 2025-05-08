@@ -130,6 +130,8 @@
         const mobileCloseFilter = document.getElementById('mobileCloseFilter');
         const mobileApplyFilter = document.getElementById('mobileApplyFilter');
         
+        console.log("وضعیت دکمه بستن:", mobileCloseFilter ? "پیدا شد" : "پیدا نشد");
+        
         if (mobileFilterContainer) {
             // در ابتدا فیلترها را مخفی کن
             mobileFilterContainer.classList.add('hidden');
@@ -138,6 +140,13 @@
             function showFilters() {
                 mobileFilterContainer.classList.remove('hidden');
                 document.body.style.overflow = 'hidden'; // جلوگیری از اسکرول صفحه
+            }
+            
+            // تابع مشترک برای مخفی کردن فیلترها
+            function hideFilters() {
+                mobileFilterContainer.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // فعال کردن اسکرول صفحه
+                console.log("فیلترها مخفی شدند");
             }
             
             // نمایش فیلترها با کلیک روی دکمه شناور
@@ -152,10 +161,8 @@
             
             // مخفی کردن فیلترها با کلیک روی دکمه بستن
             if (mobileCloseFilter) {
-                mobileCloseFilter.addEventListener('click', function() {
-                    mobileFilterContainer.classList.add('hidden');
-                    document.body.style.overflow = 'auto'; // فعال کردن اسکرول صفحه
-                });
+                mobileCloseFilter.addEventListener('click', hideFilters);
+                console.log("رویداد کلیک به دکمه بستن اضافه شد");
             }
             
             // مخفی کردن فیلترها بعد از اعمال فیلترها
@@ -164,6 +171,12 @@
                     document.getElementById('mobileFilterForm').submit();
                 });
             }
+            
+            // اضافه کردن رویداد کلیک به صورت دستی (به عنوان راه‌حل پشتیبان)
+            document.querySelectorAll('#mobileCloseFilter, .filter-close, .close-filter-btn').forEach(btn => {
+                btn.addEventListener('click', hideFilters);
+                console.log("رویداد کلیک اضافی به دکمه با آیدی/کلاس اضافه شد:", btn.id || btn.className);
+            });
         }
     });
 </script>

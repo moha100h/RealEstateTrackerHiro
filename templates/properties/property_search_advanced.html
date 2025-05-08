@@ -448,6 +448,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const filtersCard = document.getElementById('filtersCard');
     const filtersClose = document.getElementById('filtersClose');
     
+    console.log("وضعیت دکمه بستن فیلترها:", filtersClose ? "پیدا شد" : "پیدا نشد");
+    
+    // تابع مشترک برای مخفی کردن فیلترها
+    function hideFilters() {
+        if (filtersCard) {
+            filtersCard.classList.remove('show');
+            document.body.style.overflow = ''; // بازگرداندن اسکرول
+            console.log("فیلترها مخفی شدند");
+        }
+    }
+    
     // عملکرد دکمه فیلتر پایین صفحه
     if (filtersTrigger && filtersCard) {
         filtersTrigger.addEventListener('click', function() {
@@ -465,12 +476,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // عملکرد دکمه بستن فیلترها
-    if (filtersClose && filtersCard) {
-        filtersClose.addEventListener('click', function() {
-            filtersCard.classList.remove('show');
-            document.body.style.overflow = ''; // بازگرداندن اسکرول
-        });
+    if (filtersClose) {
+        filtersClose.addEventListener('click', hideFilters);
+        console.log("رویداد کلیک به دکمه بستن فیلترها اضافه شد");
+    } else {
+        console.error("دکمه بستن فیلترها پیدا نشد!");
     }
+    
+    // اضافه کردن رویداد کلیک به تمام دکمه‌های بستن موجود (به عنوان راه‌حل پشتیبان)
+    document.querySelectorAll('.filter-close, #filtersClose, .close-filter-btn').forEach(btn => {
+        btn.addEventListener('click', hideFilters);
+        console.log("رویداد کلیک به دکمه بستن اضافه شد:", btn.id || btn.className);
+    });
     
     // حذف فیلترهای انتخاب شده
     const filterBadges = document.querySelectorAll('.filter-badge');
@@ -600,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 فیلترهای جستجو
                             </h5>
                             <button type="button" id="filtersClose" class="filter-close d-lg-none">
-                                <i class="bi bi-x"></i>
+                                <i class="bi bi-x-lg"></i>
                             </button>
                         </div>
                     </div>
