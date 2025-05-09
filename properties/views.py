@@ -235,36 +235,46 @@ def search_properties(request):
 @login_required
 @require_POST
 def change_property_status(request, pk):
-    """تغییر وضعیت ملک"""
+    """تغییر وضعیت ملک با استفاده از AJAX"""
     # بررسی دسترسی کاربر
     if not request.user.is_staff:
-        messages.error(request, 'شما دسترسی لازم برای این عملیات را ندارید.')
-        return redirect('dashboard:home')
+        return JsonResponse({
+            'success': False,
+            'message': 'شما دسترسی لازم برای این عملیات را ندارید.'
+        }, status=403)
     
     # دریافت آیدی وضعیت جدید
     try:
         status_id = int(request.POST.get('status_id', 0))
     except ValueError:
-        messages.error(request, 'کد وضعیت نامعتبر است.')
-        return redirect('dashboard:home')
+        return JsonResponse({
+            'success': False,
+            'message': 'کد وضعیت نامعتبر است.'
+        }, status=400)
     
     if status_id <= 0:
-        messages.error(request, 'وضعیت مورد نظر انتخاب نشده است.')
-        return redirect('dashboard:home')
+        return JsonResponse({
+            'success': False,
+            'message': 'وضعیت مورد نظر انتخاب نشده است.'
+        }, status=400)
     
     # دریافت وضعیت جدید
     try:
         new_status = PropertyStatus.objects.get(id=status_id)
     except PropertyStatus.DoesNotExist:
-        messages.error(request, 'وضعیت مورد نظر در سیستم یافت نشد.')
-        return redirect('dashboard:home')
+        return JsonResponse({
+            'success': False,
+            'message': 'وضعیت مورد نظر در سیستم یافت نشد.'
+        }, status=404)
     
     # پیدا کردن و به‌روزرسانی ملک
     try:
         property_obj = Property.objects.get(pk=pk)
     except Property.DoesNotExist:
-        messages.error(request, 'ملک مورد نظر یافت نشد.')
-        return redirect('dashboard:home')
+        return JsonResponse({
+            'success': False,
+            'message': 'ملک مورد نظر یافت نشد.'
+        }, status=404)
     
     # ذخیره وضعیت قدیمی برای نمایش در پیام
     old_status = property_obj.status.name
@@ -272,9 +282,20 @@ def change_property_status(request, pk):
     
     try:
         property_obj.save()
-        messages.success(request, f'وضعیت ملک «{property_obj.title}» از «{old_status}» به «{new_status.name}» تغییر یافت.')
+        # پاسخ موفقیت‌آمیز با فرمت JSON
+        return JsonResponse({
+            'success': True,
+            'message': f'وضعیت ملک «{property_obj.title}» از «{old_status}» به «{new_status.name}» تغییر یافت.',
+            'property_id': property_obj.id,
+            'status': {
+                'id': new_status.id,
+                'name': new_status.name
+            },
+            'old_status': old_status
+        })
     except Exception as e:
-        messages.error(request, f'خطا در ذخیره تغییرات: {str(e)}')
-        
-    # بازگشت به صفحه اصلی داشبورد
-    return redirect('dashboard:home')
+        # پاسخ خطا با فرمت JSON
+        return JsonResponse({
+            'success': False,
+            'message': f'خطا در ذخیره تغییرات: {str(e)}'
+        }, status=500)
