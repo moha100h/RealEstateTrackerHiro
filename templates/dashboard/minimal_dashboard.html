@@ -1,0 +1,743 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* قالب داشبورد مینیمال */
+    :root {
+        --primary-color: #3f51b5;
+        --primary-light: rgba(63, 81, 181, 0.1);
+        --secondary-color: #ff4081;
+        --success-color: #4caf50;
+        --success-light: rgba(76, 175, 80, 0.1);
+        --warning-color: #ff9800;
+        --warning-light: rgba(255, 152, 0, 0.1);
+        --danger-color: #f44336;
+        --danger-light: rgba(244, 67, 54, 0.1);
+        --info-color: #03a9f4;
+        --info-light: rgba(3, 169, 244, 0.1);
+        --gray-100: #f8f9fa;
+        --gray-200: #e9ecef;
+        --gray-300: #dee2e6;
+        --gray-400: #ced4da;
+        --gray-500: #adb5bd;
+        --gray-600: #6c757d;
+        --gray-700: #495057;
+        --gray-800: #343a40;
+        --gray-900: #212529;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+    }
+
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-title {
+        color: var(--gray-800);
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+        color: var(--gray-600);
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* کارت‌های آمار */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-card-icon {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        font-size: 1.5rem;
+        color: var(--gray-300);
+        z-index: 1;
+    }
+    
+    .stats-card-primary .stats-card-icon {
+        color: var(--primary-color);
+    }
+    
+    .stats-card-success .stats-card-icon {
+        color: var(--success-color);
+    }
+    
+    .stats-card-warning .stats-card-icon {
+        color: var(--warning-color);
+    }
+    
+    .stats-card-danger .stats-card-icon {
+        color: var(--danger-color);
+    }
+    
+    .stats-card-info .stats-card-icon {
+        color: var(--info-color);
+    }
+
+    .stats-number {
+        font-size: 2.25rem;
+        font-weight: 700;
+        line-height: 1;
+        margin: 1.5rem 0 0.75rem;
+    }
+    
+    .stats-card-primary .stats-number {
+        color: var(--primary-color);
+    }
+    
+    .stats-card-success .stats-number {
+        color: var(--success-color);
+    }
+    
+    .stats-card-warning .stats-number {
+        color: var(--warning-color);
+    }
+    
+    .stats-card-danger .stats-number {
+        color: var(--danger-color);
+    }
+    
+    .stats-card-info .stats-number {
+        color: var(--info-color);
+    }
+
+    .stats-label {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-trend {
+        margin-top: auto;
+        font-size: 0.8125rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .stats-trend-up {
+        color: var(--success-color);
+    }
+    
+    .stats-trend-down {
+        color: var(--danger-color);
+    }
+
+    /* جدول‌ها */
+    .data-section {
+        margin-bottom: 2.5rem;
+    }
+
+    .data-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .data-card-header {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .data-card-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .data-card-icon {
+        margin-left: 0.75rem;
+        font-size: 1.25rem;
+    }
+    
+    .data-card-primary .data-card-icon {
+        color: var(--primary-color);
+    }
+    
+    .data-card-success .data-card-icon {
+        color: var(--success-color);
+    }
+    
+    .data-card-warning .data-card-icon {
+        color: var(--warning-color);
+    }
+    
+    .data-card-info .data-card-icon {
+        color: var(--info-color);
+    }
+
+    .data-table {
+        width: 100%;
+        margin-bottom: 0;
+        text-align: right;
+    }
+
+    .data-table th {
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        padding: 1rem 1.5rem;
+        background-color: var(--gray-100);
+    }
+
+    .data-table td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    /* دکمه‌ها */
+    .btn-dashboard {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-dashboard-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-dashboard-primary:hover {
+        background-color: #303f9f;
+        color: white;
+    }
+
+    .btn-dashboard-outline {
+        background-color: transparent;
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
+    }
+
+    .btn-dashboard-outline:hover {
+        background-color: var(--gray-100);
+        color: var(--gray-800);
+    }
+
+    /* وضعیت‌ها */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .badge-available {
+        background-color: var(--success-light);
+        color: var(--success-color);
+    }
+
+    .badge-sold {
+        background-color: var(--danger-light);
+        color: var(--danger-color);
+    }
+
+    .badge-reserved {
+        background-color: var(--warning-light);
+        color: var(--warning-color);
+    }
+
+    .badge-construction {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+    }
+
+    .badge-ready {
+        background-color: var(--info-light);
+        color: var(--info-color);
+    }
+
+    .badge-rented {
+        background-color: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
+    }
+
+    .badge-other {
+        background-color: var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    /* دایره‌های نمودار */
+    .chart-circle {
+        width: 140px;
+        height: 140px;
+        position: relative;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.05);
+        margin: 0 auto;
+    }
+
+    .chart-circle-inner {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+
+    .chart-number {
+        color: var(--gray-800);
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .chart-label {
+        color: var(--gray-600);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-left: 0.5rem;
+    }
+
+    .legend-label {
+        color: var(--gray-700);
+        font-size: 0.875rem;
+    }
+
+    .legend-value {
+        margin-right: auto;
+        color: var(--gray-800);
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    /* نمودار خطی */
+    .mini-chart {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        opacity: 0.2;
+    }
+
+    /* انیمیشن‌ها */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+
+    /* جدول املاک اخیر */
+    .property-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .property-title {
+        font-weight: 500;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .property-info {
+        color: var(--gray-600);
+        font-size: 0.8125rem;
+    }
+
+    .property-price {
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+    
+    .property-code {
+        font-family: monospace;
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+    }
+
+    /* ریسپانسیو */
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-number {
+            font-size: 1.75rem;
+        }
+        
+        .data-card-header {
+            padding: 1rem;
+        }
+        
+        .data-table th, 
+        .data-table td {
+            padding: 0.75rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">داشبورد مدیریت هوشمند هیرو</h1>
+        <p class="dashboard-subtitle">آمار و گزارش‌های املاک - بروزرسانی شده در: {{ stats_updated_at|date:"Y/m/d - H:i" }}</p>
+    </div>
+    
+    <!-- کارت‌های آمار اصلی -->
+    <div class="stats-grid">
+        <div class="stats-card stats-card-primary fade-in delay-100">
+            <div class="stats-card-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div class="stats-label">کل املاک</div>
+            <div class="stats-number">{{ total_properties }}</div>
+            <div class="stats-trend stats-trend-up">
+                <i class="bi bi-arrow-up-right"></i>
+                {% if monthly_growth_rate > 0 %}
+                {{ monthly_growth_rate|floatformat:1 }}% نسبت به ماه قبل
+                {% else %}
+                بدون تغییر
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="stats-card stats-card-success fade-in delay-200">
+            <div class="stats-card-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stats-label">املاک موجود</div>
+            <div class="stats-number">{{ available_properties }}</div>
+            <div class="stats-trend">
+                <i class="bi bi-circle-fill"></i>
+                {{ available_properties|default:0|pluralize:0 }} ملک آماده معامله
+            </div>
+        </div>
+        
+        <div class="stats-card stats-card-danger fade-in delay-300">
+            <div class="stats-card-icon">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stats-label">املاک فروخته شده</div>
+            <div class="stats-number">{{ sold_properties }}</div>
+            <div class="stats-trend">
+                {% if total_properties > 0 %}
+                <i class="bi bi-graph-up"></i>
+                {{ sold_properties|floatformat:0 }} معامله موفق
+                {% else %}
+                <i class="bi bi-circle"></i>
+                بدون معامله
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="stats-card stats-card-info fade-in delay-400">
+            <div class="stats-card-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="stats-label">افزوده شده در ماه جاری</div>
+            <div class="stats-number">{{ current_month_properties }}</div>
+            <div class="stats-trend">
+                <i class="bi bi-calendar3"></i>
+                {{ current_month_properties|default:0|pluralize:0 }} ملک جدید
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- آمار دسته‌بندی شده -->
+        <div class="col-md-6 mb-4">
+            <div class="data-card data-card-primary fade-in delay-100">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-clipboard-data"></i>
+                    </div>
+                    <h5 class="data-card-title">وضعیت املاک</h5>
+                </div>
+                <div class="p-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-5 mb-4 mb-lg-0 text-center">
+                            <div class="chart-circle">
+                                <div class="chart-circle-inner">
+                                    <div class="chart-number">{{ total_properties }}</div>
+                                    <div class="chart-label">کل املاک</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-7">
+                            {% for stat in property_status_stats|slice:":5" %}
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: 
+                                    {% if stat.status__name == 'موجود' %}var(--success-color)
+                                    {% elif stat.status__name == 'فروخته شده' %}var(--danger-color)
+                                    {% elif stat.status__name == 'اجاره داده شده' %}#0d6efd
+                                    {% elif stat.status__name == 'رزرو شده' %}var(--warning-color)
+                                    {% elif stat.status__name == 'در حال ساخت' %}var(--primary-color)
+                                    {% elif stat.status__name == 'آماده تحویل' %}var(--info-color)
+                                    {% else %}var(--gray-500){% endif %}">
+                                </div>
+                                <div class="legend-label">{{ stat.status__name }}</div>
+                                <div class="legend-value">{{ stat.count }} ({{ stat.percentage|floatformat:0 }}%)</div>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-exclamation-circle text-muted d-block mb-2" style="font-size: 2rem;"></i>
+                                <p class="text-muted">داده‌ای برای نمایش وجود ندارد</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="data-card data-card-info fade-in delay-200">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h5 class="data-card-title">نوع معامله و ملک</h5>
+                </div>
+                <div class="p-4">
+                    <h6 class="text-gray-700 mb-3">نوع معامله</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        {% for stat in transaction_type_stats %}
+                        <div class="status-badge 
+                            {% if forloop.counter == 1 %}badge-available
+                            {% elif forloop.counter == 2 %}badge-sold
+                            {% elif forloop.counter == 3 %}badge-reserved
+                            {% else %}badge-other{% endif %}">
+                            {{ stat.transaction_type__name }}
+                            <span class="ms-1">({{ stat.count }})</span>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted">داده‌ای برای نمایش وجود ندارد</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <h6 class="text-gray-700 mb-3">نوع ملک</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for stat in property_type_stats %}
+                        <div class="status-badge 
+                            {% if forloop.counter == 1 %}badge-construction
+                            {% elif forloop.counter == 2 %}badge-ready
+                            {% elif forloop.counter == 3 %}badge-rented
+                            {% else %}badge-other{% endif %}">
+                            {{ stat.property_type__name }}
+                            <span class="ms-1">({{ stat.count }})</span>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted">داده‌ای برای نمایش وجود ندارد</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- میانگین قیمت بر اساس نوع ملک -->
+        <div class="col-md-5 mb-4">
+            <div class="data-card data-card-success fade-in delay-300">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <h5 class="data-card-title">میانگین قیمت بر اساس نوع ملک</h5>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>نوع ملک</th>
+                                    <th class="text-center">میانگین قیمت (تومان)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in avg_price_by_type %}
+                                <tr>
+                                    <td>
+                                        <div class="status-badge badge-other">
+                                            <i class="bi bi-building"></i>
+                                            {{ stat.property_type__name }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center property-price">{{ stat.avg_price|floatformat:0|intcomma }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-0">داده‌ای موجود نیست</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- املاک اخیراً اضافه شده -->
+        <div class="col-md-7 mb-4">
+            <div class="data-card data-card-warning fade-in delay-400">
+                <div class="data-card-header">
+                    <div class="data-card-icon">
+                        <i class="bi bi-houses"></i>
+                    </div>
+                    <h5 class="data-card-title">املاک اخیراً اضافه شده</h5>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ملک</th>
+                                    <th>قیمت</th>
+                                    <th>وضعیت</th>
+                                    <th>نوع معامله</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for property in recent_properties %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            {% if property.image %}
+                                            <img src="{{ property.image.url }}" class="property-img" alt="{{ property.title }}">
+                                            {% else %}
+                                            <div class="property-img bg-light d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-building text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <a href="{% url 'properties:property_detail' property.id %}" class="property-title">{{ property.title }}</a>
+                                                <div class="property-info">
+                                                    <span>{{ property.area }} متر</span> • 
+                                                    <span>{{ property.rooms }} اتاق</span>
+                                                </div>
+                                                <div class="property-code">{{ property.property_code }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="property-price">{{ property.price|intcomma }}</td>
+                                    <td>
+                                        <span class="status-badge 
+                                        {% if property.status.name == 'موجود' %}badge-available
+                                        {% elif property.status.name == 'فروخته شده' %}badge-sold
+                                        {% elif property.status.name == 'اجاره داده شده' %}badge-rented
+                                        {% elif property.status.name == 'رزرو شده' %}badge-reserved
+                                        {% elif property.status.name == 'در حال ساخت' %}badge-construction
+                                        {% elif property.status.name == 'آماده تحویل' %}badge-ready
+                                        {% else %}badge-other{% endif %}">
+                                            {{ property.status.name }}
+                                        </span>
+                                    </td>
+                                    <td>{{ property.transaction_type.name }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-0">هیچ ملکی اخیراً اضافه نشده است</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

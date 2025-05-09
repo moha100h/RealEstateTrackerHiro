@@ -134,4 +134,4 @@ def dashboard_home(request):
         'title': 'داشبورد مدیریت هوشمند'
     }
     
-    return render(request, 'dashboard/new_dashboard.html', context)
+    return render(request, 'dashboard/minimal_dashboard.html', context)
