@@ -47,8 +47,8 @@ def dashboard_home(request):
     # میانگین قیمت بر اساس نوع ملک
     avg_price_by_type = Property.objects.values('property_type__name').annotate(avg_price=Avg('price')).order_by('-avg_price')
     
-    # املاک اخیراً اضافه شده
-    recent_properties = Property.objects.all().order_by('-created_at')[:5]
+    # املاک اخیراً اضافه شده - با اطلاعات کامل برای نمایش در قالب
+    recent_properties = Property.objects.select_related('transaction_type', 'property_type', 'status').all().order_by('-created_at')[:5]
     
     # تعداد املاک فروخته شده
     sold_properties = Property.objects.filter(status__name__in=['فروخته شده', 'اجاره داده شده']).count()
