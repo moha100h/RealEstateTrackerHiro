@@ -1,148 +1,194 @@
 """
-ویوهای امنیتی برای مدیریت خطاها و صفحات خطای سفارشی
+نمای‌های امنیتی سیستم هیرو املاک
+برای مدیریت خطاهای HTTP و لاگ کردن رویدادهای امنیتی
 """
 
-import logging
 import json
+import logging
 from django.shortcuts import render
-from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError, JsonResponse
-from django.urls import reverse
-from django.conf import settings
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.conf import settings
 
-# تنظیم لاگر امنیتی
+# لاگر امنیتی
 security_logger = logging.getLogger('security')
 
 def custom_permission_denied(request, exception=None):
     """
     صفحه خطای سفارشی 403 (دسترسی غیرمجاز)
     """
-    # ثبت تلاش دسترسی غیرمجاز
     security_logger.warning(
-        f"Access forbidden to path: {request.path}",
+        f"Access denied to {request.path}",
         extra={
+            'user': request.user.username if request.user.is_authenticated else 'anonymous',
             'ip': _get_client_ip(request),
-            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
-            'path': request.path,
-            'method': request.method,
-            'referer': request.META.get('HTTP_REFERER', 'None'),
-            'user_agent': request.META.get('HTTP_USER_AGENT', 'None')
+            'path': request.path
         }
     )
     
-    context = {
-        'title': 'خطای دسترسی',
-        'message': 'شما مجوز لازم برای دسترسی به این صفحه را ندارید.',
-        'code': 403,
-        'login_url': f"{reverse('accounts:login')}?next={request.path}" if not request.user.is_authenticated else None
-    }
+    # در حالت API، پاسخ JSON برمی‌گرداند
+    if request.headers.get('Content-Type') == 'application/json' or \
+       request.headers.get('Accept') == 'application/json':
+        return JsonResponse({
+            'status': 'error',
+            'code': 403,
+            'message': 'دسترسی به این صفحه یا عملیات امکان‌پذیر نیست.'
+        }, status=403)
     
-    response = render(request, 'errors/403.html', context)
-    response.status_code = 403
+    # در حالت معمولی، صفحه HTML برمی‌گرداند
+    context = {
+        'status_code': 403,
+        'error_message': 'شما اجازه دسترسی به این بخش را ندارید',
+    }
+    response = render(request, 'errors/403.html', context, status=403)
     return response
-
 
 def custom_page_not_found(request, exception=None):
     """
     صفحه خطای سفارشی 404 (صفحه یافت نشد)
     """
-    # ثبت درخواست صفحه نامعتبر
-    security_logger.info(
-        f"Page not found: {request.path}",
-        extra={
-            'ip': _get_client_ip(request),
-            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
-            'path': request.path,
-            'method': request.method,
-            'referer': request.META.get('HTTP_REFERER', 'None')
-        }
-    )
+    if settings.DEBUG:
+        security_logger.info(
+            f"Page not found: {request.path}",
+            extra={
+                'user': request.user.username if request.user.is_authenticated else 'anonymous',
+                'ip': _get_client_ip(request),
+                'path': request.path
+            }
+        )
     
+    # در حالت API، پاسخ JSON برمی‌گرداند
+    if request.headers.get('Content-Type') == 'application/json' or \
+       request.headers.get('Accept') == 'application/json':
+        return JsonResponse({
+            'status': 'error',
+            'code': 404,
+            'message': 'صفحه یا منبع درخواستی یافت نشد.'
+        }, status=404)
+    
+    # در حالت معمولی، صفحه HTML برمی‌گرداند
     context = {
-        'title': 'صفحه یافت نشد',
-        'message': 'صفحه مورد نظر شما در سیستم وجود ندارد.',
-        'code': 404
+        'status_code': 404,
+        'error_message': 'صفحه مورد نظر یافت نشد',
     }
-    
-    response = render(request, 'errors/404.html', context)
-    response.status_code = 404
+    response = render(request, 'errors/404.html', context, status=404)
     return response
 
-
-def custom_server_error(request, *args, **kwargs):
+def custom_server_error(request, exception=None):
     """
     صفحه خطای سفارشی 500 (خطای سرور)
     """
-    # ثبت خطای سرور
-    security_logger.error(
-        f"Server error for path: {request.path}",
-        extra={
-            'ip': _get_client_ip(request),
-            'user': request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous',
-            'path': request.path,
-            'method': request.method
-        }
-    )
+    if settings.DEBUG and exception:
+        security_logger.error(
+            f"Server error at {request.path}: {str(exception)}",
+            exc_info=True,
+            extra={
+                'user': request.user.username if request.user.is_authenticated else 'anonymous',
+                'ip': _get_client_ip(request),
+                'path': request.path
+            }
+        )
+    else:
+        security_logger.error(
+            f"Server error at {request.path}",
+            exc_info=True,
+            extra={
+                'user': request.user.username if request.user.is_authenticated else 'anonymous',
+                'ip': _get_client_ip(request),
+                'path': request.path
+            }
+        )
     
+    # در حالت API، پاسخ JSON برمی‌گرداند
+    if request.headers.get('Content-Type') == 'application/json' or \
+       request.headers.get('Accept') == 'application/json':
+        return JsonResponse({
+            'status': 'error',
+            'code': 500,
+            'message': 'خطایی در سرور رخ داده است. لطفاً بعداً دوباره تلاش کنید.'
+        }, status=500)
+    
+    # در حالت معمولی، صفحه HTML برمی‌گرداند
     context = {
-        'title': 'خطای سرور',
-        'message': 'متأسفانه خطایی در سرور رخ داده است. لطفاً بعداً مجدداً تلاش کنید.',
-        'code': 500
+        'status_code': 500,
+        'error_message': 'خطایی در سرور رخ داده است',
     }
-    
     response = render(request, 'errors/500.html', context, status=500)
     return response
 
+def security_error_handler(request):
+    """
+    هدایت‌کننده خطاهای امنیتی به صفحات مناسب
+    """
+    error_type = request.GET.get('type', 'forbidden')
+    
+    if error_type == 'forbidden':
+        return custom_permission_denied(request)
+    elif error_type == 'not_found':
+        return custom_page_not_found(request)
+    else:
+        return custom_server_error(request)
 
 @csrf_exempt
 @require_POST
 def csp_report_view(request):
     """
-    دریافت گزارش‌های نقض سیاست امنیت محتوا (CSP)
+    دریافت گزارش‌های نقض CSP (Content Security Policy)
     """
     try:
         csp_report = json.loads(request.body.decode('utf-8'))
         security_logger.warning(
-            "CSP Violation Report",
+            "CSP Violation",
             extra={
-                'ip': _get_client_ip(request),
-                'user_agent': request.META.get('HTTP_USER_AGENT', 'Unknown'),
-                'report': csp_report
+                'report': csp_report.get('csp-report', {}),
+                'user': request.user.username if request.user.is_authenticated else 'anonymous',
+                'ip': _get_client_ip(request)
             }
         )
-    except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        security_logger.error(f"Error processing CSP report: {e}", exc_info=True)
     
-    return JsonResponse({'status': 'success'})
-
+    return HttpResponse()
 
 def security_headers_test_view(request):
     """
-    صفحه تست هدرهای امنیتی (فقط در محیط توسعه)
+    نمایش هدرهای امنیتی سرور (فقط برای محیط توسعه)
     """
-    return render(request, 'security/headers_test.html', {
-        'title': 'تست هدرهای امنیتی',
-        'headers': dict(request.headers)
-    })
-
-
-def security_error_handler(request, **kwargs):
-    """
-    هندلر خطاهای امنیتی
-    بر اساس استاتوس کد، مسیردهی به صفحه خطای مناسب
-    """
-    status_code = kwargs.get('status_code', 500)
-    exception = kwargs.get('exception', None)
+    if not settings.DEBUG:
+        return HttpResponseForbidden(b"This page is only available in DEBUG mode")
     
-    # بررسی نوع خطا
-    if status_code == 403:
-        return custom_permission_denied(request, exception)
-    elif status_code == 404:
-        return custom_page_not_found(request, exception)
-    else:  # 500 و غیره
-        return custom_server_error(request)
+    response = HttpResponse(b"""
+    <html>
+    <head><title>Security Headers Test</title></head>
+    <body>
+        <h1>Security Headers Test</h1>
+        <p>Check the response headers to see the security headers configured on this server.</p>
+        <h2>Common Security Headers</h2>
+        <ul>
+            <li>Content-Security-Policy</li>
+            <li>X-Content-Type-Options</li>
+            <li>X-Frame-Options</li>
+            <li>X-XSS-Protection</li>
+            <li>Strict-Transport-Security</li>
+            <li>Referrer-Policy</li>
+            <li>Feature-Policy</li>
+        </ul>
+    </body>
+    </html>
+    """)
+    
+    # هدرهای امنیتی استاندارد
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['X-Frame-Options'] = 'SAMEORIGIN'
+    response['X-XSS-Protection'] = '1; mode=block'
+    response['Referrer-Policy'] = 'same-origin'
+    
+    # فقط در HTTPS اضافه می‌شود
+    if settings.USE_HTTPS:
+        response['Strict-Transport-Security'] = f'max-age={settings.SECURE_HSTS_SECONDS}; includeSubDomains; preload'
 
+    return response
 
 def _get_client_ip(request):
     """دریافت IP واقعی کاربر"""
