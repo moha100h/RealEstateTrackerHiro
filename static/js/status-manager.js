@@ -31,16 +31,17 @@ class PropertyStatusManager {
             return;
         }
         
+        // تهیه داده‌های مورد نیاز برای ارسال
+        const formData = new FormData();
+        formData.append('status_id', statusId);
+        
         // ارسال درخواست AJAX
         fetch(`/properties/change-status/${propertyId}/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify({
-                status_id: statusId
-            })
+            body: formData
         })
         .then(response => {
             if (!response.ok) {
@@ -56,27 +57,45 @@ class PropertyStatusManager {
                 statusBadges.forEach(statusBadge => {
                     // حذف کلاس‌های قبلی مرتبط با وضعیت
                     statusBadge.classList.remove(
-                        'bg-success', 'bg-danger', 'bg-warning', 
-                        'bg-info', 'bg-primary', 'bg-secondary'
+                        'badge-available', 'badge-sold', 'badge-rented', 
+                        'badge-reserved', 'badge-construction', 'badge-ready', 'badge-other'
                     );
                     
                     // اضافه کردن کلاس مناسب بر اساس وضعیت جدید
                     if (statusName === 'موجود') {
-                        statusBadge.classList.add('bg-success');
-                    } else if (statusName === 'فروخته شده' || statusName === 'اجاره داده شده') {
-                        statusBadge.classList.add('bg-danger');
+                        statusBadge.classList.add('badge-available');
+                    } else if (statusName === 'فروخته شده') {
+                        statusBadge.classList.add('badge-sold');
+                    } else if (statusName === 'اجاره داده شده') {
+                        statusBadge.classList.add('badge-rented');
                     } else if (statusName === 'رزرو شده') {
-                        statusBadge.classList.add('bg-warning');
+                        statusBadge.classList.add('badge-reserved');
                     } else if (statusName === 'در حال ساخت') {
-                        statusBadge.classList.add('bg-info');
+                        statusBadge.classList.add('badge-construction');
                     } else if (statusName === 'آماده تحویل') {
-                        statusBadge.classList.add('bg-primary');
+                        statusBadge.classList.add('badge-ready');
                     } else {
-                        statusBadge.classList.add('bg-secondary');
+                        statusBadge.classList.add('badge-other');
                     }
                     
-                    // بروزرسانی متن
-                    statusBadge.textContent = statusName;
+                    // بروزرسانی متن و آیکون
+                    let iconHTML = '';
+                    if (statusName === 'موجود') {
+                        iconHTML = '<i class="bi bi-check-circle-fill"></i>';
+                    } else if (statusName === 'فروخته شده') {
+                        iconHTML = '<i class="bi bi-currency-dollar"></i>';
+                    } else if (statusName === 'اجاره داده شده') {
+                        iconHTML = '<i class="bi bi-house-check-fill"></i>';
+                    } else if (statusName === 'رزرو شده') {
+                        iconHTML = '<i class="bi bi-bookmark-fill"></i>';
+                    } else if (statusName === 'در حال ساخت') {
+                        iconHTML = '<i class="bi bi-tools"></i>';
+                    } else if (statusName === 'آماده تحویل') {
+                        iconHTML = '<i class="bi bi-check2-all"></i>';
+                    } else {
+                        iconHTML = '<i class="bi bi-question-circle-fill"></i>';
+                    }
+                    statusBadge.innerHTML = iconHTML + ' ' + statusName;
                 });
                 
                 // بروزرسانی کلاس فعال در تمام منوهای کشویی وضعیت این ملک

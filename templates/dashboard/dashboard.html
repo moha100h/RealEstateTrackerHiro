@@ -800,7 +800,7 @@
                                     </td>
                                     <td class="price-value">{{ property.price|intcomma }}</td>
                                     <td>
-                                        <span class="status-badge 
+                                        <span id="property-status-{{ property.id }}" class="status-badge 
                                         {% if property.status.name == 'موجود' %}badge-available
                                         {% elif property.status.name == 'فروخته شده' %}badge-sold
                                         {% elif property.status.name == 'اجاره داده شده' %}badge-rented
