@@ -9,8 +9,9 @@
         top: 70px;
         z-index: 100;
         transition: all 0.3s ease;
-        max-height: 85vh;
-        overflow-y: auto;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto !important;
+        display: block;
     }
     
     .filter-toggle-btn {
@@ -50,12 +51,19 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             z-index: 1000;
             max-height: 80vh;
-            overflow-y: auto;
+            overflow-y: auto !important;
         }
         
         .filter-card.collapsed {
             transform: translateY(-100%);
         }
+    }
+    
+    /* اضافه کردن اسکریپت برای فعال‌سازی اسکرول در تمام مرورگرها */
+    html body .filter-card {
+        overflow-y: auto !important;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
     }
 </style>
 {% endblock %}
@@ -63,6 +71,14 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // اطمینان از فعال بودن اسکرول برای کارت فیلترها
+        const filterCard = document.getElementById('filterCard');
+        if (filterCard) {
+            // اجبار اسکرول در جاوااسکریپت
+            filterCard.style.overflow = 'auto';
+            filterCard.style.overflowY = 'auto';
+            filterCard.style.maxHeight = 'calc(100vh - 100px)';
+        }
         // متغیرهای مودال
         let currentPropertyId = null;
         const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
@@ -221,8 +237,8 @@
     
     <div class="row">
         <div class="col-lg-3 mb-4">
-            <div id="filterCard" class="card shadow-sm filter-card">
-                <div class="card-header bg-primary text-white sticky-top" style="top: 0;">
+            <div id="filterCard" class="card shadow-sm filter-card" style="height: 100%; max-height: calc(100vh - 100px); overflow-y: auto;">
+                <div class="card-header bg-primary text-white sticky-top" style="top: 0; z-index: 1030;">
                     <h5 class="card-title mb-0 d-flex align-items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter me-2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                         فیلترهای جستجو
