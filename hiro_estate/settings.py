@@ -20,6 +20,16 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 # در محیط تولید، میزبان‌های مجاز را محدود کنید
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,.replit.app,.replit.dev,.repl.co').split(',')
 
+# تنظیمات هدایت به صفحه خطا
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'dashboard:index'
+LOGOUT_REDIRECT_URL = 'home'
+
+# تنظیمات صفحات خطای سفارشی
+HANDLER403 = 'hiro_estate.security_views.custom_permission_denied'
+HANDLER404 = 'hiro_estate.security_views.custom_page_not_found'
+HANDLER500 = 'hiro_estate.security_views.custom_server_error'
+
 # CSRF settings for Replit
 CSRF_TRUSTED_ORIGINS = [
     'https://*.replit.dev',

@@ -75,9 +75,19 @@ def access_control_middleware(get_response):
         # بررسی صفحات عمومی (استثناها)
         is_public_page = any(path.startswith(public_page) for public_page in settings.PUBLIC_PAGES)
         
-        # اگر صفحه عمومی نیست و کاربر لاگین نشده است، هدایت به صفحه لاگین
+        # اگر صفحه عمومی نیست و کاربر لاگین نشده است، هدایت به صفحه خطای 403
         if not is_public_page and not request.user.is_authenticated:
-            return redirect(f"{reverse('accounts:login')}?next={path}")
+            from django.core.exceptions import PermissionDenied
+            security_logger.warning(
+                f"Unauthorized access attempt to restricted page: {path}",
+                extra={
+                    'user': 'anonymous',
+                    'ip': _get_client_ip(request),
+                    'path': path
+                }
+            )
+            from hiro_estate.security_views import custom_permission_denied
+            return custom_permission_denied(request)
         
         response = get_response(request)
         return response
