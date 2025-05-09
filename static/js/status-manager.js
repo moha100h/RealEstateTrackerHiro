@@ -5,148 +5,122 @@
 
 class PropertyStatusManager {
     constructor() {
-        // اطلاعات اصلی
-        this.csrfToken = this.getCSRFToken();
-        this.statusColors = {
-            'موجود': 'success',
-            'فروخته شده': 'danger',
-            'اجاره داده شده': 'danger',
-            'رزرو شده': 'warning',
-            'در حال ساخت': 'info',
-            'آماده تحویل': 'primary'
-        };
-        
-        // مقداردهی اولیه
         this.init();
     }
     
-    // دریافت توکن CSRF
     getCSRFToken() {
+        // دریافت توکن CSRF از صفحه
         return document.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';
     }
     
-    // نمایش خطا
     showError(message) {
-        const alertElement = document.createElement('div');
-        alertElement.className = 'alert alert-danger alert-dismissible fade show';
-        alertElement.innerHTML = `
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="بستن"></button>
-        `;
-        
-        // نمایش خطا در بالای صفحه
-        const mainContainer = document.querySelector('main > .container');
-        if (mainContainer) {
-            mainContainer.insertBefore(alertElement, mainContainer.firstChild);
-            
-            // حذف خودکار بعد از 5 ثانیه
-            setTimeout(() => {
-                alertElement.remove();
-            }, 5000);
-        }
+        // نمایش پیام خطا به کاربر
+        alert(message || 'خطایی در سیستم رخ داده است. لطفاً مجدداً تلاش کنید.');
     }
     
-    // نمایش پیام موفقیت
     showSuccess(message) {
-        const alertElement = document.createElement('div');
-        alertElement.className = 'alert alert-success alert-dismissible fade show';
-        alertElement.innerHTML = `
-            <i class="bi bi-check-circle-fill me-2"></i> ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="بستن"></button>
-        `;
-        
-        // نمایش پیام در بالای صفحه
-        const mainContainer = document.querySelector('main > .container');
-        if (mainContainer) {
-            mainContainer.insertBefore(alertElement, mainContainer.firstChild);
-            
-            // حذف خودکار بعد از 5 ثانیه
-            setTimeout(() => {
-                alertElement.remove();
-            }, 5000);
-        }
+        // نمایش پیام موفقیت به کاربر
+        alert(message || 'عملیات با موفقیت انجام شد.');
     }
     
-    // تغییر وضعیت با AJAX
     changeStatus(propertyId, statusId, statusName) {
-        // نمایش وضعیت در حال بارگذاری
-        const statusBadge = document.querySelector(`#property-status-${propertyId}`);
-        const statusCell = statusBadge.closest('td');
-        const originalContent = statusCell.innerHTML;
+        // گرفتن توکن CSRF
+        const csrfToken = this.getCSRFToken();
+        if (!csrfToken) {
+            this.showError('خطا در احراز هویت. لطفاً صفحه را مجدداً بارگذاری کنید.');
+            return;
+        }
         
-        statusCell.innerHTML = `<div class="spinner-border spinner-border-sm text-primary" role="status">
-                                    <span class="visually-hidden">در حال بارگذاری...</span>
-                                </div>`;
-        
-        // ارسال درخواست به سرور
-        fetch(`/properties/change-status/${propertyId}/`, {
+        // ارسال درخواست AJAX
+        fetch(`/properties/${propertyId}/change-status/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': this.csrfToken
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
             },
-            body: `status_id=${statusId}`
+            body: JSON.stringify({
+                status_id: statusId
+            })
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('خطا در ارتباط با سرور');
+                throw new Error(`خطای سرور: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
             if (data.success) {
-                // بروزرسانی وضعیت در UI
-                const colorClass = `bg-${this.statusColors[statusName] || 'secondary'}`;
-                statusCell.innerHTML = `<span id="property-status-${propertyId}" class="badge ${colorClass}">${statusName}</span>`;
+                // بروزرسانی نمایش وضعیت
+                const statusBadges = document.querySelectorAll(`[id^="property-status-${propertyId}"]`);
+                
+                statusBadges.forEach(statusBadge => {
+                    // حذف کلاس‌های قبلی مرتبط با وضعیت
+                    statusBadge.classList.remove(
+                        'bg-success', 'bg-danger', 'bg-warning', 
+                        'bg-info', 'bg-primary', 'bg-secondary'
+                    );
+                    
+                    // اضافه کردن کلاس مناسب بر اساس وضعیت جدید
+                    if (statusName === 'موجود') {
+                        statusBadge.classList.add('bg-success');
+                    } else if (statusName === 'فروخته شده' || statusName === 'اجاره داده شده') {
+                        statusBadge.classList.add('bg-danger');
+                    } else if (statusName === 'رزرو شده') {
+                        statusBadge.classList.add('bg-warning');
+                    } else if (statusName === 'در حال ساخت') {
+                        statusBadge.classList.add('bg-info');
+                    } else if (statusName === 'آماده تحویل') {
+                        statusBadge.classList.add('bg-primary');
+                    } else {
+                        statusBadge.classList.add('bg-secondary');
+                    }
+                    
+                    // بروزرسانی متن
+                    statusBadge.textContent = statusName;
+                });
+                
+                // بروزرسانی کلاس فعال در تمام منوهای کشویی وضعیت این ملک
+                document.querySelectorAll(`[id^="statusDropdown${propertyId}"] .status-option`).forEach(option => {
+                    option.classList.remove('active');
+                    if (option.getAttribute('data-status-id') === statusId) {
+                        option.classList.add('active');
+                    }
+                });
                 
                 // نمایش پیام موفقیت
-                this.showSuccess(data.message);
-                
-                // بروزرسانی منوی وضعیت
-                const statusDropdown = document.querySelector(`#statusDropdown${propertyId}`);
-                if (statusDropdown) {
-                    const activeItems = statusDropdown.querySelectorAll('.status-option.active');
-                    activeItems.forEach(item => item.classList.remove('active'));
-                    
-                    const newActiveItem = statusDropdown.querySelector(`[data-status-id="${statusId}"]`);
-                    if (newActiveItem) {
-                        newActiveItem.classList.add('active');
-                    }
-                }
+                this.showSuccess(`وضعیت ملک با موفقیت به «${statusName}» تغییر یافت.`);
             } else {
-                // نمایش خطا
-                statusCell.innerHTML = originalContent;
-                this.showError(data.message || 'خطا در تغییر وضعیت');
+                // نمایش پیام خطا
+                this.showError(data.message || 'خطای نامشخص در تغییر وضعیت ملک.');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            statusCell.innerHTML = originalContent;
-            this.showError(error.message);
+            console.error('Error changing property status:', error);
+            this.showError('خطا در برقراری ارتباط با سرور. لطفاً مجدداً تلاش کنید.');
         });
     }
     
-    // مقداردهی اولیه و اتصال رویدادها
     init() {
-        // اضافه کردن رویداد برای دکمه‌های تغییر وضعیت
+        // راه‌اندازی گوش‌دهنده برای تغییر وضعیت‌ها
         document.addEventListener('DOMContentLoaded', () => {
-            // جستجوی همه منوهای تغییر وضعیت
-            const statusItems = document.querySelectorAll('.status-option');
-            statusItems.forEach(item => {
-                item.addEventListener('click', (e) => {
+            // بررسی همه گزینه‌های تغییر وضعیت در صفحه
+            document.querySelectorAll('.status-option').forEach(option => {
+                option.addEventListener('click', (e) => {
                     e.preventDefault();
                     
-                    const propertyId = item.dataset.propertyId;
-                    const statusId = item.dataset.statusId;
-                    const statusName = item.dataset.statusName;
+                    const propertyId = option.getAttribute('data-property-id');
+                    const statusId = option.getAttribute('data-status-id');
+                    const statusName = option.getAttribute('data-status-name');
                     
-                    // تغییر وضعیت با AJAX
-                    this.changeStatus(propertyId, statusId, statusName);
+                    // تأیید تغییر وضعیت
+                    if (confirm(`آیا از تغییر وضعیت این ملک به «${statusName}» اطمینان دارید؟`)) {
+                        this.changeStatus(propertyId, statusId, statusName);
+                    }
                 });
             });
         });
     }
 }
 
-// ایجاد نمونه از کلاس مدیریت وضعیت
-const statusManager = new PropertyStatusManager();
+// راه‌اندازی مدیریت وضعیت‌ها
+new PropertyStatusManager();

@@ -520,9 +520,27 @@
                                         <a href="{% url 'properties:property_update' property.id %}" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip" title="ویرایش ملک">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#statusModal{{ property.id }}" title="تغییر وضعیت">
-                                            <i class="bi bi-arrow-repeat"></i>
-                                        </button>
+                                        <div class="dropdown d-inline-block">
+                                            <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="statusButton{{ property.id }}" data-bs-toggle="dropdown" aria-expanded="false" title="تغییر وضعیت">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end status-dropdown-menu" id="statusDropdown{{ property.id }}" aria-labelledby="statusButton{{ property.id }}">
+                                                <li><h6 class="dropdown-header">تغییر به وضعیت جدید:</h6></li>
+                                                {% for status in status_choices %}
+                                                <li>
+                                                    <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
+                                                       href="#" 
+                                                       data-property-id="{{ property.id }}" 
+                                                       data-status-id="{{ status.id }}" 
+                                                       data-status-name="{{ status.name }}">
+                                                        <span class="badge {% if status.name == 'موجود' %}bg-success{% elif status.name == 'فروخته شده' or status.name == 'اجاره داده شده' %}bg-danger{% elif status.name == 'رزرو شده' %}bg-warning{% elif status.name == 'در حال ساخت' %}bg-info{% elif status.name == 'آماده تحویل' %}bg-primary{% else %}bg-secondary{% endif %} me-1">
+                                                            {{ status.name }}
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -589,41 +607,8 @@
     </div>
 </div>
 
-<!-- مدال‌های تغییر وضعیت -->
-{% for property in recent_properties %}
-<div class="modal fade" id="statusModal{{ property.id }}" tabindex="-1" aria-labelledby="statusModalLabel{{ property.id }}" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="statusModalLabel{{ property.id }}">تغییر وضعیت ملک {{ property.title }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
-            </div>
-            <form action="{% url 'properties:change_status' property.id %}" method="post">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <p class="mb-3">وضعیت فعلی: <strong>{{ property.status.name }}</strong></p>
-                        <label for="status{{ property.id }}" class="form-label">وضعیت جدید</label>
-                        <select class="form-select" id="status{{ property.id }}" name="status_id">
-                            <option value="">-- انتخاب وضعیت جدید --</option>
-                            {% for status in status_choices %}
-                            <option value="{{ status.id }}" {% if property.status.id == status.id %}selected{% endif %}>{{ status.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check2-circle me-1"></i>
-                        ذخیره تغییرات
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endfor %}
+<!-- حذف مدال‌های قدیمی - از منوی کشویی AJAX استفاده می‌کنیم -->
+{% csrf_token %}
 {% endblock %}
 
 {% block extra_js %}
@@ -830,6 +815,82 @@ document.addEventListener('DOMContentLoaded', function() {
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
+        
+        // مدیریت تغییر وضعیت با AJAX
+        document.querySelectorAll('.status-option').forEach(function(option) {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const propertyId = this.getAttribute('data-property-id');
+                const statusId = this.getAttribute('data-status-id');
+                const statusName = this.getAttribute('data-status-name');
+                
+                if (!confirm('آیا از تغییر وضعیت این ملک به «' + statusName + '» اطمینان دارید؟')) {
+                    return;
+                }
+                
+                // گرفتن توکن CSRF
+                const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                
+                // ارسال درخواست AJAX
+                fetch('/properties/' + propertyId + '/change-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        status_id: statusId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // بروزرسانی نمایش وضعیت
+                        const statusBadge = document.getElementById('property-status-' + propertyId);
+                        
+                        // حذف کلاس‌های قبلی
+                        statusBadge.className = 'badge';
+                        
+                        // اضافه کردن کلاس مناسب بر اساس وضعیت جدید
+                        if (statusName === 'موجود') {
+                            statusBadge.classList.add('bg-success');
+                        } else if (statusName === 'فروخته شده' || statusName === 'اجاره داده شده') {
+                            statusBadge.classList.add('bg-danger');
+                        } else if (statusName === 'رزرو شده') {
+                            statusBadge.classList.add('bg-warning');
+                        } else if (statusName === 'در حال ساخت') {
+                            statusBadge.classList.add('bg-info');
+                        } else if (statusName === 'آماده تحویل') {
+                            statusBadge.classList.add('bg-primary');
+                        } else {
+                            statusBadge.classList.add('bg-secondary');
+                        }
+                        
+                        // بروزرسانی متن
+                        statusBadge.textContent = statusName;
+                        
+                        // نمایش پیام موفقیت
+                        alert('وضعیت ملک با موفقیت به «' + statusName + '» تغییر یافت.');
+                        
+                        // بروزرسانی کلاس فعال در منوی کشویی
+                        document.querySelectorAll('#statusDropdown' + propertyId + ' .status-option').forEach(function(opt) {
+                            opt.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                    } else {
+                        // نمایش پیام خطا
+                        alert('خطا در تغییر وضعیت: ' + (data.message || 'خطای نامشخص رخ داد.'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('خطا در برقراری ارتباط با سرور. لطفاً مجدداً تلاش کنید.');
+                });
+            });
+        });
     });
 </script>
+<!-- اضافه کردن فایل جاوااسکریپت مدیریت وضعیت -->
+<script src="{% static 'js/status-manager.js' %}"></script>
 {% endblock %}
