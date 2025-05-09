@@ -385,37 +385,42 @@
         color: var(--primary-dark);
     }
     
-    /* شبکه کارت‌های املاک */
+    /* شبکه کارت‌های املاک - کارت‌های کوچکتر و کارآمدتر */
     .property-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.8rem;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
     }
     
     /* کارت‌های املاک */
     .property-card {
         position: relative;
         overflow: hidden;
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         background: white;
         height: 100%;
         display: flex;
         flex-direction: column;
-        transition: var(--transition-normal);
+        transition: all 0.25s ease;
         transform: translateY(0);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        max-height: 320px; /* محدود کردن ارتفاع برای کارآمدی بیشتر */
     }
     
     .property-card:hover {
-        transform: translateY(-7px);
-        box-shadow: var(--shadow-lg);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+        border-color: rgba(74, 108, 247, 0.2);
     }
     
     /* کانتینر تصویر ملک */
     .property-image-container {
         position: relative;
-        padding-top: 40%; /* نسبت کمتر برای ارتفاع کوتاه‌تر */
+        padding-top: 30%; /* نسبت کمتر برای ارتفاع کوتاه‌تر */
         overflow: hidden;
+        max-height: 120px;
     }
     
     .property-image {
@@ -425,58 +430,58 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.7s ease;
+        transition: transform 0.5s ease;
         filter: brightness(1);
     }
     
     .property-card:hover .property-image {
-        transform: scale(1.1);
+        transform: scale(1.05);
         filter: brightness(1.05);
     }
     
-    /* کد ملک */
+    /* کد ملک - کوچکتر با طراحی مینیمال */
     .property-code {
         position: absolute;
-        top: 15px;
-        left: 15px;
+        top: 8px;
+        left: 8px;
         z-index: 2;
-        background-color: rgba(0, 0, 0, 0.6);
+        background-color: rgba(0, 0, 0, 0.5);
         color: white;
-        font-size: 0.75rem;
-        border-radius: var(--border-radius-sm);
-        padding: 0.35rem 0.7rem;
+        font-size: 0.65rem;
+        border-radius: 6px;
+        padding: 0.25rem 0.5rem;
         backdrop-filter: blur(4px);
         font-weight: 500;
-        opacity: 0.9;
+        opacity: 0.85;
         transition: var(--transition-fast);
     }
     
     .property-card:hover .property-code {
         opacity: 1;
-        transform: translateY(-3px);
+        transform: translateY(-2px);
     }
     
-    /* وضعیت ملک */
+    /* وضعیت ملک - کوچکتر و مدرن‌تر */
     .property-status {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 8px;
+        right: 8px;
         z-index: 2;
-        padding: 0.4rem 0.9rem;
-        border-radius: var(--border-radius-round);
-        font-size: 0.8rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.65rem;
         font-weight: 600;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         color: white;
         transition: var(--transition-fast);
     }
     
     .property-card:hover .property-status {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     }
     
     /* رنگ‌های وضعیت */
@@ -504,9 +509,9 @@
         background-color: var(--secondary-color);
     }
     
-    /* محتوای کارت */
+    /* محتوای کارت - کوچک‌تر و فشرده‌تر */
     .property-content {
-        padding: 1.8rem;
+        padding: 0.9rem;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -514,12 +519,15 @@
     }
     
     .property-title {
-        font-size: 1.25rem;
+        font-size: 1rem;
         font-weight: 700;
-        margin-bottom: 1rem;
+        margin-bottom: 0.4rem;
         color: var(--text-primary);
-        line-height: 1.4;
+        line-height: 1.3;
         transition: var(--transition-fast);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .property-card:hover .property-title {
@@ -530,23 +538,27 @@
         display: flex;
         align-items: center;
         color: var(--text-muted);
-        margin-bottom: 1.2rem;
-        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .property-location i {
-        margin-left: 0.5rem;
+        margin-left: 0.3rem;
         color: var(--primary-color);
+        font-size: 0.75rem;
     }
     
     /* ویژگی‌های ملک */
     .property-meta {
         display: flex;
         justify-content: space-between;
-        padding: 1.2rem 0;
+        padding: 0.5rem 0;
         border-top: 1px solid rgba(0, 0, 0, 0.05);
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.5rem;
     }
     
     .meta-item {
@@ -563,18 +575,18 @@
     .meta-value {
         font-weight: 700;
         color: var(--text-primary);
-        font-size: 1.1rem;
+        font-size: 0.85rem;
     }
     
     .meta-label {
-        font-size: 0.8rem;
+        font-size: 0.65rem;
         color: var(--text-muted);
-        margin-top: 0.3rem;
+        margin-top: 0.2rem;
     }
     
     /* قیمت ملک */
     .property-price {
-        font-size: 1.35rem;
+        font-size: 1.1rem;
         color: var(--primary-color);
         font-weight: 800;
         margin-top: auto;
@@ -589,7 +601,7 @@
     .property-links {
         display: flex;
         justify-content: space-between;
-        margin-top: 1.2rem;
+        margin-top: 0.6rem;
     }
     
     .property-link {
@@ -598,10 +610,11 @@
         text-decoration: none;
         display: flex;
         align-items: center;
-        padding: 0.5rem 0.8rem;
+        padding: 0.3rem 0.6rem;
         border-radius: var(--border-radius-md);
         transition: var(--transition-fast);
         background-color: rgba(74, 108, 247, 0.08);
+        font-size: 0.75rem;
     }
     
     .property-link:hover {
@@ -610,8 +623,8 @@
     }
     
     .property-link i {
-        margin-left: 0.5rem;
-        font-size: 1.1rem;
+        margin-left: 0.3rem;
+        font-size: 0.85rem;
     }
     
     /* دکمه فیلتر موبایل */
