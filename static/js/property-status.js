@@ -245,7 +245,67 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPropertyId = id;
         propertyTitle = title;
         
-        // ایجاد یا به‌روزرسانی مودال
+        console.log("نمایش مودال تغییر وضعیت برای ملک:", id, title);
+        
+        // بررسی وجود مودال پیش‌فرض صفحه
+        const staticModal = document.getElementById('statusChangeModal');
+        
+        if (staticModal) {
+            console.log("استفاده از مودال استاتیک موجود");
+            
+            // نمایش عنوان ملک در مودال استاتیک
+            const propertyTitleElem = document.getElementById('propertyTitle');
+            if (propertyTitleElem) {
+                propertyTitleElem.textContent = title;
+            }
+            
+            // پیدا کردن وضعیت فعلی ملک
+            const statusBadge = document.getElementById(`status-badge-${id}`) || 
+                              document.getElementById(`status-badge-mobile-${id}`);
+            
+            if (statusBadge) {
+                const currentStatus = statusBadge.textContent.trim();
+                
+                // انتخاب گزینه مناسب در سلکت باکس
+                const statusSelect = document.getElementById('statusSelect');
+                if (statusSelect) {
+                    for (let i = 0; i < statusSelect.options.length; i++) {
+                        if (statusSelect.options[i].text === currentStatus) {
+                            statusSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // اضافه کردن رویداد به دکمه ذخیره
+            const saveBtn = document.getElementById('saveStatusBtn');
+            if (saveBtn) {
+                // حذف همه رویدادهای قبلی
+                const newSaveBtn = saveBtn.cloneNode(true);
+                saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+                
+                // اضافه کردن رویداد جدید
+                newSaveBtn.addEventListener('click', function() {
+                    const statusSelect = document.getElementById('statusSelect');
+                    const selectedStatusId = statusSelect.value;
+                    changePropertyStatus(id, selectedStatusId);
+                    
+                    // بستن مودال
+                    const modal = bootstrap.Modal.getInstance(staticModal);
+                    modal.hide();
+                });
+            }
+            
+            // ایجاد نمونه مودال با بوتسترپ و نمایش آن
+            const bsModal = new bootstrap.Modal(staticModal);
+            bsModal.show();
+            
+            return;
+        }
+        
+        // اگر مودال استاتیک پیدا نشد، مودال پویا ایجاد می‌کنیم
+        console.log("ایجاد مودال پویا");
         const statusModal = createOrUpdateStatusModal();
         
         // نمایش عنوان ملک در مودال
