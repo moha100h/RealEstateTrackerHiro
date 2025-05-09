@@ -48,12 +48,25 @@ def dashboard_home(request):
     # محاسبه درصد برای نوع ملک
     if total_properties > 0:
         property_type_stats = [
-            {**stat, 'percentage': (stat['count'] / total_properties) * 100} 
+            {
+                'property_type__name': stat['property_type__name'],
+                'count': stat['count'],
+                'percentage': (stat['count'] / total_properties) * 100
+            } 
             for stat in property_type_stats
         ]
     
     # میانگین قیمت بر اساس نوع ملک
-    avg_price_by_type = Property.objects.values('property_type__name').annotate(avg_price=Avg('price')).order_by('-avg_price')
+    avg_price_by_type_raw = Property.objects.values('property_type__name').annotate(avg_price=Avg('price')).order_by('-avg_price')
+    
+    # تبدیل به فرمت مناسب برای نمایش در قالب
+    avg_price_by_type = [
+        {
+            'property_type__name': item['property_type__name'],
+            'avg_price': item['avg_price']
+        }
+        for item in avg_price_by_type_raw
+    ]
     
     # املاک اخیراً اضافه شده - با اطلاعات کامل برای نمایش در قالب
     recent_properties = Property.objects.select_related('transaction_type', 'property_type', 'status').all().order_by('-created_at')[:5]
