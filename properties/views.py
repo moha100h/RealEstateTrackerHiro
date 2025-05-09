@@ -52,6 +52,10 @@ class PropertyDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['system_config'] = SystemConfig.get_config()
+        
+        # اضافه کردن لیست وضعیت‌ها برای منوی کشویی تغییر وضعیت
+        context['status_choices'] = PropertyStatus.objects.all()
+        
         return context
 
 class PropertyCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
