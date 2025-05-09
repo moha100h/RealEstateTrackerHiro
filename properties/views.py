@@ -220,6 +220,7 @@ def search_properties(request):
         'transaction_types': transaction_types,
         'property_types': property_types,
         'property_statuses': property_statuses,
+        'status_choices': property_statuses,  # برای استفاده در منوی کشویی تغییر وضعیت
         'has_filters': has_filters,
         'transaction_type_name': transaction_type_name,
         'property_type_name': property_type_name,
