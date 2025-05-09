@@ -412,7 +412,7 @@
     <!-- محتوای اصلی با تشخیص اتوماتیک پدینگ مناسب برای موبایل -->
     <main class="py-4">
         {% if messages %}
-            <div class="container animate__animated animate__fadeIn">
+            <div class="container animate__animated animate__fadeIn" id="messages-container">
                 {% for message in messages %}
                     <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
                         <div class="d-flex align-items-center">
@@ -431,6 +431,30 @@
                     </div>
                 {% endfor %}
             </div>
+            <script>
+                // اسکریپت برای ناپدید شدن خودکار پیام‌ها پس از 5 ثانیه
+                document.addEventListener('DOMContentLoaded', function() {
+                    const alerts = document.querySelectorAll('#messages-container .alert');
+                    
+                    alerts.forEach(function(alert) {
+                        // تاخیر 5 ثانیه‌ای برای ناپدید شدن اتوماتیک
+                        setTimeout(function() {
+                            // اضافه کردن کلاس fade-out برای انیمیشن
+                            alert.classList.add('animate__animated', 'animate__fadeOut');
+                            
+                            // حذف المان بعد از تکمیل انیمیشن
+                            setTimeout(function() {
+                                alert.remove();
+                                
+                                // بررسی آیا دیگر پیامی باقی مانده است
+                                if (document.querySelectorAll('#messages-container .alert').length === 0) {
+                                    document.getElementById('messages-container').remove();
+                                }
+                            }, 500);
+                        }, 5000);
+                    });
+                });
+            </script>
         {% endif %}
         
         <div class="animate__animated animate__fadeIn animate__faster">

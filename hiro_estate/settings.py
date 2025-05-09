@@ -25,6 +25,16 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'dashboard:index'
 LOGOUT_REDIRECT_URL = 'home'
 
+# تنظیمات سیستم پیام‌رسانی
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.DEBUG: 'info',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}
+
 # تنظیمات صفحات خطای سفارشی
 HANDLER403 = 'hiro_estate.security_views.custom_permission_denied'
 HANDLER404 = 'hiro_estate.security_views.custom_page_not_found'
