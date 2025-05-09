@@ -1,372 +1,336 @@
 /**
- * مدیریت وضعیت املاک - نسخه 2.0.0
- * سیستم املاک هیرو - پیشرفته
+ * مدیریت حرفه‌ای تغییر وضعیت املاک
+ * توسعه داده شده برای سیستم هیرو املاک
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // متغیرهای سراسری
-    let currentPropertyId = null;
-    let propertyTitle = null;
+// متغیرها و اشیاء سراسری
+const StatusManager = {
+    currentPropertyId: null,
+    propertyTitle: null,
+    statusOptions: {},
+    modalElement: null,
+    modalInstance: null,
     
-    // ساخت مودال به صورت پویا
-    function createOrUpdateStatusModal() {
-        // بررسی وجود مودال
-        let statusModal = document.getElementById('statusChangeModal');
+    // مقداردهی اولیه و راه‌اندازی سیستم
+    init: function() {
+        console.log("راه‌اندازی مدیریت وضعیت املاک");
         
-        // اگر مودال وجود ندارد، آن را ایجاد میکنیم
-        if (!statusModal) {
-            statusModal = document.createElement('div');
-            statusModal.id = 'statusChangeModal';
-            statusModal.className = 'modal fade';
-            statusModal.tabIndex = -1;
-            statusModal.setAttribute('aria-labelledby', 'statusChangeModalLabel');
-            statusModal.setAttribute('aria-hidden', 'true');
-            
-            // ساختار داخلی مودال
-            statusModal.innerHTML = `
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header border-0">
-                            <h5 class="modal-title" id="statusChangeModalLabel">تغییر وضعیت ملک</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body pt-0">
-                            <h6 id="property-title-display" class="mb-4 text-muted fs-6"></h6>
-                            
-                            <div class="status-selector mb-4">
-                                <div class="row g-3">
-                                    <div class="col-6 col-md-4">
-                                        <div class="status-option available" data-status-id="1">
-                                            <input type="radio" name="statusOption" id="status1" value="1" class="status-radio visually-hidden">
-                                            <label for="status1" class="status-label p-3 rounded-3 text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                                                <span class="status-icon mb-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                                </span>
-                                                <span class="status-text">موجود</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="status-option sold" data-status-id="2">
-                                            <input type="radio" name="statusOption" id="status2" value="2" class="status-radio visually-hidden">
-                                            <label for="status2" class="status-label p-3 rounded-3 text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                                                <span class="status-icon mb-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                                </span>
-                                                <span class="status-text">فروخته شده</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="status-option rented" data-status-id="3">
-                                            <input type="radio" name="statusOption" id="status3" value="3" class="status-radio visually-hidden">
-                                            <label for="status3" class="status-label p-3 rounded-3 text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                                                <span class="status-icon mb-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-key"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
-                                                </span>
-                                                <span class="status-text">اجاره داده شده</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="status-option reserved" data-status-id="4">
-                                            <input type="radio" name="statusOption" id="status4" value="4" class="status-radio visually-hidden">
-                                            <label for="status4" class="status-label p-3 rounded-3 text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                                                <span class="status-icon mb-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bookmark"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                                                </span>
-                                                <span class="status-text">رزرو شده</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="status-option building" data-status-id="5">
-                                            <input type="radio" name="statusOption" id="status5" value="5" class="status-radio visually-hidden">
-                                            <label for="status5" class="status-label p-3 rounded-3 text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                                                <span class="status-icon mb-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tool"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                                                </span>
-                                                <span class="status-text">در حال ساخت</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="status-option ready" data-status-id="6">
-                                            <input type="radio" name="statusOption" id="status6" value="6" class="status-radio visually-hidden">
-                                            <label for="status6" class="status-label p-3 rounded-3 text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center">
-                                                <span class="status-icon mb-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-package"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                                                </span>
-                                                <span class="status-text">آماده تحویل</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group mb-3" id="description-container">
-                                <label for="status-description" class="form-label">توضیحات (اختیاری):</label>
-                                <textarea id="status-description" class="form-control" rows="2"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-0 pt-0">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">انصراف</button>
-                            <button type="button" id="saveStatusBtn" class="btn btn-primary">
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="statusSpinner"></span>
-                                <span id="saveButtonText">ذخیره تغییرات</span>
-                            </button>
+        // افزودن استایل‌های CSS مورد نیاز
+        this.addRequiredStyles();
+        
+        // بستن مودال با کلیک خارج از آن
+        document.addEventListener('click', function(e) {
+            if (StatusManager.modalElement && 
+                !StatusManager.modalElement.contains(e.target) && 
+                e.target.id !== 'status-badge' &&
+                !e.target.classList.contains('property-link') &&
+                !e.target.closest('.property-link')) {
+                StatusManager.closeModal();
+            }
+        });
+        
+        // جلوگیری از انتشار کلیک درون مودال به بیرون
+        document.addEventListener('click', function(e) {
+            const modal = document.querySelector('.status-modal-container');
+            if (modal && modal.contains(e.target)) {
+                e.stopPropagation();
+            }
+        }, true);
+    },
+    
+    // نمایش مودال تغییر وضعیت
+    showModal: function(propertyId, title) {
+        console.log("نمایش مودال برای ملک:", propertyId, title);
+        
+        // ذخیره اطلاعات ملک فعلی
+        this.currentPropertyId = propertyId;
+        this.propertyTitle = title;
+        
+        // بستن مودال قبلی اگر باز است
+        this.closeModal();
+        
+        // ایجاد مودال جدید
+        this.createModal();
+        
+        // یافتن وضعیت فعلی ملک
+        const statusElement = document.getElementById(`status-badge-${propertyId}`) || 
+                            document.getElementById(`status-badge-mobile-${propertyId}`);
+        
+        let currentStatus = '';
+        if (statusElement) {
+            currentStatus = statusElement.textContent.trim();
+        }
+        
+        // پر کردن اطلاعات مودال
+        const titleElement = document.getElementById('status-property-title');
+        if (titleElement) titleElement.textContent = title;
+        
+        // انتخاب وضعیت فعلی در گزینه‌ها
+        const optionElements = document.querySelectorAll('.status-option');
+        optionElements.forEach(option => {
+            const statusName = option.getAttribute('data-status-name');
+            if (statusName === currentStatus) {
+                option.classList.add('active');
+            }
+        });
+        
+        // نمایش مودال
+        this.showModalElement();
+    },
+    
+    // ایجاد مودال به صورت پویا
+    createModal: function() {
+        // ایجاد کانتینر اصلی
+        const modalContainer = document.createElement('div');
+        modalContainer.className = 'status-modal-container';
+        this.modalElement = modalContainer;
+        
+        // ساختار HTML مودال
+        modalContainer.innerHTML = `
+            <div class="status-modal shadow-lg">
+                <div class="status-modal-header">
+                    <h5>تغییر وضعیت ملک</h5>
+                    <button type="button" class="status-close-btn" id="closeStatusModalBtn">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="status-modal-body">
+                    <div class="status-property-info mb-4">
+                        <div class="status-property-label">عنوان ملک:</div>
+                        <div class="status-property-value" id="status-property-title"></div>
+                    </div>
+                    
+                    <div class="status-options-container">
+                        <div class="status-options-label">انتخاب وضعیت جدید:</div>
+                        <div class="status-options" id="statusOptionsList">
+                            ${this.generateStatusOptions()}
                         </div>
                     </div>
                 </div>
-            `;
-            
-            // افزودن مودال به بدنه صفحه
-            document.body.appendChild(statusModal);
-            
-            // افزودن استایل‌های مودال
-            addModalStyles();
-        }
-        
-        return statusModal;
-    }
-    
-    // افزودن استایل‌های موردنیاز برای مودال
-    function addModalStyles() {
-        if (document.getElementById('status-modal-styles')) return;
-        
-        const styleElement = document.createElement('style');
-        styleElement.id = 'status-modal-styles';
-        styleElement.textContent = `
-            .status-label {
-                cursor: pointer;
-                border: 2px solid #e9ecef;
-                transition: all 0.3s ease;
-                position: relative;
-                overflow: hidden;
-                height: 100%;
-            }
-            
-            .status-label:hover {
-                border-color: #ced4da;
-                transform: translateY(-2px);
-            }
-            
-            .status-radio:checked + .status-label {
-                border-width: 2px;
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            }
-            
-            .available .status-label {
-                color: #198754;
-            }
-            
-            .sold .status-label, .rented .status-label {
-                color: #dc3545;
-            }
-            
-            .reserved .status-label {
-                color: #fd7e14;
-            }
-            
-            .building .status-label {
-                color: #6c757d;
-            }
-            
-            .ready .status-label {
-                color: #0d6efd;
-            }
-            
-            .status-radio:checked + .available .status-label,
-            .available .status-radio:checked + .status-label {
-                background-color: rgba(25, 135, 84, 0.1);
-                border-color: #198754;
-            }
-            
-            .status-radio:checked + .sold .status-label,
-            .sold .status-radio:checked + .status-label,
-            .status-radio:checked + .rented .status-label,
-            .rented .status-radio:checked + .status-label {
-                background-color: rgba(220, 53, 69, 0.1);
-                border-color: #dc3545;
-            }
-            
-            .status-radio:checked + .reserved .status-label,
-            .reserved .status-radio:checked + .status-label {
-                background-color: rgba(253, 126, 20, 0.1);
-                border-color: #fd7e14;
-            }
-            
-            .status-radio:checked + .building .status-label,
-            .building .status-radio:checked + .status-label {
-                background-color: rgba(108, 117, 125, 0.1);
-                border-color: #6c757d;
-            }
-            
-            .status-radio:checked + .ready .status-label,
-            .ready .status-radio:checked + .status-label {
-                background-color: rgba(13, 110, 253, 0.1);
-                border-color: #0d6efd;
-            }
-            
-            .status-icon {
-                font-size: 1.5rem;
-            }
-            
-            .status-text {
-                font-weight: 500;
-            }
-            
-            @media (max-width: 767.98px) {
-                .status-icon {
-                    font-size: 1.25rem;
-                }
-                .status-text {
-                    font-size: 0.875rem;
-                }
-            }
-            
-            .hover-float {
-                transition: transform 0.3s ease;
-            }
-            
-            .hover-float:hover {
-                transform: translateY(-5px);
-            }
+                <div class="status-modal-footer">
+                    <button type="button" class="status-cancel-btn" id="cancelStatusBtn">انصراف</button>
+                    <button type="button" class="status-save-btn" id="saveStatusChangeBtn">
+                        <span class="btn-text">ذخیره تغییرات</span>
+                        <span class="btn-spinner d-none">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        </span>
+                    </button>
+                </div>
+            </div>
         `;
         
-        document.head.appendChild(styleElement);
-    }
+        // افزودن به DOM
+        document.body.appendChild(modalContainer);
+        
+        // اضافه کردن کلاس انیمیشن با تأخیر (برای نمایش انیمیشن)
+        setTimeout(() => {
+            modalContainer.classList.add('show');
+        }, 10);
+        
+        // اضافه کردن رویدادها
+        this.setupEventListeners();
+    },
     
-    // نمایش مودال تغییر وضعیت
-    window.showStatusModal = function(id, title) {
-        // ذخیره اطلاعات ملک فعلی
-        currentPropertyId = id;
-        propertyTitle = title;
+    // تولید گزینه‌های وضعیت
+    generateStatusOptions: function() {
+        // خوانش وضعیت‌ها از فرم‌های موجود در صفحه
+        const statusSelect = document.getElementById('statusSelect');
+        let options = '';
+        this.statusOptions = {};
         
-        // ایجاد یا به‌روزرسانی مودال
-        const statusModal = createOrUpdateStatusModal();
-        
-        // نمایش عنوان ملک در مودال
-        const titleDisplay = document.getElementById('property-title-display');
-        if (titleDisplay) {
-            titleDisplay.textContent = title;
-        }
-        
-        // پیدا کردن وضعیت فعلی ملک
-        const statusBadge = document.getElementById(`status-badge-${id}`) || 
-                          document.getElementById(`status-badge-mobile-${id}`);
-        
-        if (statusBadge) {
-            const currentStatus = statusBadge.textContent.trim();
+        if (statusSelect) {
+            Array.from(statusSelect.options).forEach(option => {
+                const statusId = option.value;
+                const statusName = option.textContent.trim();
+                this.statusOptions[statusName] = statusId;
+                
+                const badgeClass = this.getBadgeClassForStatus(statusName);
+                options += `
+                    <div class="status-option" data-status-id="${statusId}" data-status-name="${statusName}">
+                        <span class="status-badge ${badgeClass}">${statusName}</span>
+                    </div>
+                `;
+            });
+        } else {
+            // وضعیت‌های پیش‌فرض اگر دراپ‌داون در صفحه وجود نداشت
+            const defaultStatuses = [
+                {id: 1, name: 'موجود', class: 'bg-success'},
+                {id: 2, name: 'فروخته شده', class: 'bg-danger'},
+                {id: 3, name: 'اجاره داده شده', class: 'bg-danger'},
+                {id: 4, name: 'رزرو شده', class: 'bg-primary'},
+                {id: 5, name: 'در حال ساخت', class: 'bg-secondary'},
+                {id: 6, name: 'آماده تحویل', class: 'bg-warning'},
+            ];
             
-            // انتخاب گزینه مناسب بر اساس وضعیت فعلی
-            document.querySelectorAll('input[name="statusOption"]').forEach(radio => {
-                radio.checked = false;
-                
-                const label = document.querySelector(`label[for="${radio.id}"]`);
-                const statusText = label.querySelector('.status-text').textContent.trim();
-                
-                if (statusText === currentStatus) {
-                    radio.checked = true;
-                }
+            defaultStatuses.forEach(status => {
+                this.statusOptions[status.name] = status.id;
+                options += `
+                    <div class="status-option" data-status-id="${status.id}" data-status-name="${status.name}">
+                        <span class="status-badge ${status.class}">${status.name}</span>
+                    </div>
+                `;
             });
         }
         
-        // پاک کردن توضیحات قبلی
-        const descriptionInput = document.getElementById('status-description');
-        if (descriptionInput) {
-            descriptionInput.value = '';
+        return options;
+    },
+    
+    // تعیین کلاس CSS برای نشانگر وضعیت
+    getBadgeClassForStatus: function(statusName) {
+        switch (statusName) {
+            case 'موجود':
+                return 'bg-success';
+            case 'فروخته شده':
+            case 'اجاره داده شده':
+                return 'bg-danger';
+            case 'رزرو شده':
+                return 'bg-primary';
+            case 'در حال ساخت':
+                return 'bg-secondary';
+            case 'آماده تحویل':
+                return 'bg-warning';
+            default:
+                return 'bg-secondary';
+        }
+    },
+    
+    // راه‌اندازی رویدادها
+    setupEventListeners: function() {
+        // دکمه بستن
+        const closeBtn = document.getElementById('closeStatusModalBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeModal());
         }
         
-        // پاک کردن وضعیت قبلی دکمه
-        resetSaveButton();
+        // دکمه انصراف
+        const cancelBtn = document.getElementById('cancelStatusBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.closeModal());
+        }
         
-        // ایجاد نمونه مودال با بوتسترپ و نمایش آن
-        const bsModal = new bootstrap.Modal(statusModal);
-        bsModal.show();
+        // دکمه ذخیره
+        const saveBtn = document.getElementById('saveStatusChangeBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.saveStatus());
+        }
         
-        // اضافه کردن رویداد به دکمه ذخیره
-        const saveButton = document.getElementById('saveStatusBtn');
-        if (saveButton) {
-            // حذف رویدادهای قبلی برای جلوگیری از تکرار
-            saveButton.replaceWith(saveButton.cloneNode(true));
+        // انتخاب گزینه‌های وضعیت
+        const options = document.querySelectorAll('.status-option');
+        options.forEach(option => {
+            option.addEventListener('click', (e) => {
+                // حذف کلاس فعال از همه گزینه‌ها
+                options.forEach(opt => opt.classList.remove('active'));
+                // افزودن کلاس فعال به گزینه انتخاب شده
+                option.classList.add('active');
+            });
+        });
+    },
+    
+    // نمایش مودال
+    showModalElement: function() {
+        if (this.modalElement) {
+            this.modalElement.style.display = 'flex';
             
-            // افزودن رویداد جدید
-            document.getElementById('saveStatusBtn').addEventListener('click', handleStatusChange);
+            // اضافه کردن کلاس نمایش با تأخیر (برای نمایش انیمیشن)
+            setTimeout(() => {
+                this.modalElement.classList.add('show');
+            }, 10);
         }
-    };
+    },
     
-    // بازنشانی وضعیت دکمه ذخیره
-    function resetSaveButton() {
-        const saveButton = document.getElementById('saveStatusBtn');
-        const spinner = document.getElementById('statusSpinner');
-        const buttonText = document.getElementById('saveButtonText');
-        
-        if (saveButton && spinner && buttonText) {
-            saveButton.disabled = false;
-            spinner.classList.add('d-none');
-            buttonText.textContent = 'ذخیره تغییرات';
+    // بستن مودال
+    closeModal: function() {
+        const existingModal = document.querySelector('.status-modal-container');
+        if (existingModal) {
+            existingModal.classList.remove('show');
+            
+            // حذف مودال از DOM پس از پایان انیمیشن
+            setTimeout(() => {
+                existingModal.remove();
+                this.modalElement = null;
+            }, 300);
         }
-    }
+    },
     
-    // مدیریت تغییر وضعیت
-    function handleStatusChange() {
-        const selectedOption = document.querySelector('input[name="statusOption"]:checked');
-        
-        if (!selectedOption || !currentPropertyId) {
-            showNotification('warning', 'لطفاً یک وضعیت را انتخاب کنید.');
+    // ذخیره تغییر وضعیت
+    saveStatus: function() {
+        // یافتن گزینه انتخاب شده
+        const selectedOption = document.querySelector('.status-option.active');
+        if (!selectedOption) {
+            this.showNotification('لطفاً یک وضعیت را انتخاب کنید', 'warning');
             return;
         }
         
-        // فعال کردن وضعیت بارگذاری دکمه
-        const saveButton = document.getElementById('saveStatusBtn');
-        const spinner = document.getElementById('statusSpinner');
-        const buttonText = document.getElementById('saveButtonText');
+        const statusId = selectedOption.getAttribute('data-status-id');
+        const statusName = selectedOption.getAttribute('data-status-name');
         
-        if (saveButton && spinner && buttonText) {
-            saveButton.disabled = true;
-            spinner.classList.remove('d-none');
-            buttonText.textContent = 'در حال ذخیره...';
-        }
+        // نمایش وضعیت بارگذاری
+        this.setSaveButtonLoading(true);
         
-        // دریافت توضیحات (اگر وارد شده باشد)
-        const description = document.getElementById('status-description').value.trim();
-        
-        // اعمال تغییر وضعیت
-        changePropertyStatus(currentPropertyId, selectedOption.value, description);
-    }
-    
-    // تغییر وضعیت ملک
-    function changePropertyStatus(propertyId, statusId, description = '') {
-        // دریافت توکن CSRF
-        const csrftoken = getCookie('csrftoken');
-        
-        // ایجاد داده‌های فرم
-        const formData = new FormData();
-        formData.append('status_id', statusId);
-        if (description) {
-            formData.append('description', description);
-        }
-        
-        // نمایش وضعیت بارگذاری در نشانگرهای وضعیت
-        const statusBadge = document.getElementById(`status-badge-${propertyId}`);
-        const mobileBadge = document.getElementById(`status-badge-mobile-${propertyId}`);
+        // ذخیره نشانگرهای وضعیت فعلی برای بازیابی در صورت خطا
+        const statusBadge = document.getElementById(`status-badge-${this.currentPropertyId}`);
+        const mobileBadge = document.getElementById(`status-badge-mobile-${this.currentPropertyId}`);
         
         // ذخیره محتوای اصلی
         const originalContent = statusBadge ? statusBadge.innerHTML : '';
         const originalMobileContent = mobileBadge ? mobileBadge.innerHTML : '';
         
-        // نمایش اسپینر بارگذاری
+        // نمایش اسپینر بارگذاری در نشانگرهای وضعیت
         const loaderHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">در حال بارگذاری...</span></div>';
         if (statusBadge) statusBadge.innerHTML = loaderHTML;
         if (mobileBadge) mobileBadge.innerHTML = loaderHTML;
         
         // ارسال درخواست تغییر وضعیت
-        fetch(`/properties/change-status/${propertyId}/`, {
+        this.sendStatusChangeRequest(this.currentPropertyId, statusId)
+            .then(data => {
+                if (data.success) {
+                    // به‌روزرسانی نشانگرهای وضعیت
+                    this.updateStatusBadges(this.currentPropertyId, data.status_name);
+                    
+                    // بستن مودال
+                    this.closeModal();
+                    
+                    // نمایش اعلان موفقیت
+                    this.showNotification('وضعیت ملک با موفقیت تغییر کرد', 'success');
+                } else {
+                    // بازگرداندن وضعیت قبلی در صورت خطا
+                    if (statusBadge) statusBadge.innerHTML = originalContent;
+                    if (mobileBadge) mobileBadge.innerHTML = originalMobileContent;
+                    
+                    // نمایش اعلان خطا
+                    this.showNotification(data.message || 'خطایی در تغییر وضعیت رخ داد', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // بازگرداندن وضعیت قبلی در صورت خطا
+                if (statusBadge) statusBadge.innerHTML = originalContent;
+                if (mobileBadge) mobileBadge.innerHTML = originalMobileContent;
+                
+                // نمایش اعلان خطا
+                this.showNotification('خطایی در ارتباط با سرور رخ داد', 'danger');
+            })
+            .finally(() => {
+                this.setSaveButtonLoading(false);
+            });
+    },
+    
+    // ارسال درخواست تغییر وضعیت به سرور
+    sendStatusChangeRequest: function(propertyId, statusId) {
+        // دریافت توکن CSRF
+        const csrftoken = this.getCookie('csrftoken');
+        
+        // ایجاد داده‌های فرم
+        const formData = new FormData();
+        formData.append('status_id', statusId);
+        
+        // ارسال درخواست
+        return fetch(`/properties/change-status/${propertyId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': csrftoken
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: formData
         })
@@ -375,49 +339,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`خطای سرور: ${response.status}`);
             }
             return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // به‌روزرسانی نشانگرهای وضعیت
-                updateStatusBadges(propertyId, data.status_name);
-                
-                // بستن مودال
-                const modal = bootstrap.Modal.getInstance(document.getElementById('statusChangeModal'));
-                if (modal) modal.hide();
-                
-                // نمایش اعلان موفقیت
-                showNotification('success', 'وضعیت ملک با موفقیت تغییر کرد.');
-            } else {
-                // بازگرداندن وضعیت قبلی در صورت خطا
-                if (statusBadge) statusBadge.innerHTML = originalContent;
-                if (mobileBadge) mobileBadge.innerHTML = originalMobileContent;
-                
-                // بازنشانی دکمه ذخیره
-                resetSaveButton();
-                
-                // نمایش اعلان خطا
-                showNotification('danger', data.message || 'خطایی در تغییر وضعیت رخ داد.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            
-            // بازگرداندن وضعیت قبلی در صورت خطا
-            if (statusBadge) statusBadge.innerHTML = originalContent;
-            if (mobileBadge) mobileBadge.innerHTML = originalMobileContent;
-            
-            // بازنشانی دکمه ذخیره
-            resetSaveButton();
-            
-            // نمایش اعلان خطا
-            showNotification('danger', 'خطایی در ارتباط با سرور رخ داد.');
         });
-    }
+    },
     
     // به‌روزرسانی نشانگرهای وضعیت
-    function updateStatusBadges(propertyId, statusName) {
+    updateStatusBadges: function(propertyId, statusName) {
         // تعیین کلاس مناسب بر اساس نام وضعیت
-        let badgeClass = getBadgeClassForStatus(statusName);
+        let badgeClass = this.getBadgeClassForStatus(statusName);
         
         // به‌روزرسانی نشانگر وضعیت در نمای دسکتاپ
         const statusBadge = document.getElementById(`status-badge-${propertyId}`);
@@ -432,101 +360,441 @@ document.addEventListener('DOMContentLoaded', function() {
             mobileBadge.innerHTML = statusName;
             mobileBadge.className = `badge ${badgeClass} position-absolute top-0 start-0 m-2`;
         }
-    }
+    },
     
-    // تعیین کلاس CSS برای نشانگر وضعیت
-    function getBadgeClassForStatus(statusName) {
-        switch (statusName) {
-            case 'موجود':
-                return 'bg-success';
-            case 'فروخته شده':
-            case 'اجاره داده شده':
-                return 'bg-danger';
-            case 'رزرو شده':
-                return 'bg-primary';
-            case 'در حال ساخت':
-                return 'bg-secondary';
-            case 'آماده تحویل':
-                return 'bg-info';
-            default:
-                return 'bg-warning';
+    // تغییر وضعیت دکمه ذخیره به حالت بارگذاری
+    setSaveButtonLoading: function(isLoading) {
+        const saveBtn = document.getElementById('saveStatusChangeBtn');
+        if (!saveBtn) return;
+        
+        const btnText = saveBtn.querySelector('.btn-text');
+        const btnSpinner = saveBtn.querySelector('.btn-spinner');
+        
+        if (isLoading) {
+            saveBtn.disabled = true;
+            btnText.textContent = 'در حال ذخیره...';
+            btnSpinner.classList.remove('d-none');
+        } else {
+            saveBtn.disabled = false;
+            btnText.textContent = 'ذخیره تغییرات';
+            btnSpinner.classList.add('d-none');
         }
-    }
+    },
     
     // نمایش اعلان به کاربر
-    function showNotification(type, message) {
-        // بررسی وجود کانتینر برای اعلان‌ها
-        let container = document.querySelector('.notification-container');
-        
-        // اگر کانتینر وجود ندارد، ایجاد می‌کنیم
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'notification-container position-fixed top-0 end-0 p-3';
-            container.style.zIndex = '1050';
-            document.body.appendChild(container);
+    showNotification: function(message, type = 'info') {
+        // بررسی وجود تابع اعلان سراسری
+        if (typeof showNotification === 'function') {
+            showNotification(type, message);
+            return;
         }
         
-        // ایجاد اعلان
-        const notificationId = 'notification-' + Date.now();
-        const notification = document.createElement('div');
-        notification.id = notificationId;
-        notification.className = `toast align-items-center text-white bg-${type} border-0`;
-        notification.setAttribute('role', 'alert');
-        notification.setAttribute('aria-live', 'assertive');
-        notification.setAttribute('aria-atomic', 'true');
+        // ایجاد اعلان جدید اگر تابع سراسری وجود نداشت
+        const notificationId = 'status-notification-' + Date.now();
         
-        notification.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${message}
+        // انتخاب آیکن مناسب بر اساس نوع اعلان
+        let icon = 'info-circle';
+        switch (type) {
+            case 'success':
+                icon = 'check-circle';
+                break;
+            case 'danger':
+            case 'error':
+                icon = 'exclamation-circle';
+                break;
+            case 'warning':
+                icon = 'exclamation-triangle';
+                break;
+        }
+        
+        // ساخت HTML اعلان
+        const notificationHTML = `
+            <div id="${notificationId}" class="status-notification ${type}">
+                <div class="notification-icon">
+                    <i class="bi bi-${icon}"></i>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <div class="notification-message">${message}</div>
+                <button type="button" class="notification-close" onclick="document.getElementById('${notificationId}').remove()">
+                    <i class="bi bi-x"></i>
+                </button>
             </div>
         `;
         
+        // ایجاد کانتینر اعلان‌ها اگر وجود نداشت
+        let container = document.getElementById('status-notifications-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'status-notifications-container';
+            document.body.appendChild(container);
+        }
+        
         // افزودن اعلان به کانتینر
-        container.appendChild(notification);
+        container.insertAdjacentHTML('beforeend', notificationHTML);
         
-        // نمایش اعلان
-        const toast = new bootstrap.Toast(notification, {
-            autohide: true,
-            delay: 4000
-        });
-        toast.show();
+        // نمایش انیمیشن ظاهر شدن
+        setTimeout(() => {
+            const notification = document.getElementById(notificationId);
+            if (notification) {
+                notification.classList.add('show');
+            }
+        }, 10);
         
-        // حذف اعلان پس از بسته شدن
-        notification.addEventListener('hidden.bs.toast', function() {
-            notification.remove();
-        });
-    }
+        // حذف خودکار اعلان پس از چند ثانیه
+        setTimeout(() => {
+            const notification = document.getElementById(notificationId);
+            if (notification) {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 5000);
+    },
     
-    // دریافت توکن CSRF از کوکی
-    function getCookie(name) {
+    // دریافت کوکی CSRF
+    getCookie: function(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
-            for (const cookie of cookies) {
-                const cookieTrim = cookie.trim();
-                if (cookieTrim.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookieTrim.substring(name.length + 1));
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
                 }
             }
         }
         return cookieValue;
-    }
+    },
     
-    // مقداردهی اولیه
-    function initialize() {
-        // آماده سازی مودال - فقط تنظیم استایل‌ها برای آماده بودن
-        addModalStyles();
+    // افزودن استایل‌های CSS مورد نیاز
+    addRequiredStyles: function() {
+        // بررسی وجود استایل‌های قبلی
+        if (document.getElementById('status-manager-styles')) return;
         
-        // اضافه کردن رویداد کلیک به همه دکمه‌های تغییر وضعیت
-        document.querySelectorAll('[onclick*="showStatusModal"]').forEach(button => {
-            button.classList.add('hover-float');
-        });
+        // ایجاد عنصر استایل
+        const styleElement = document.createElement('style');
+        styleElement.id = 'status-manager-styles';
+        
+        // استایل‌های مورد نیاز
+        styleElement.textContent = `
+            /* استایل‌های مودال تغییر وضعیت */
+            .status-modal-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                padding: 1rem;
+            }
+            
+            .status-modal-container.show {
+                opacity: 1;
+            }
+            
+            .status-modal {
+                background-color: white;
+                border-radius: 12px;
+                width: 100%;
+                max-width: 450px;
+                overflow: hidden;
+                transform: translateY(20px);
+                transition: transform 0.3s ease;
+            }
+            
+            .status-modal-container.show .status-modal {
+                transform: translateY(0);
+            }
+            
+            .status-modal-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1.25rem 1.5rem;
+                background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+                color: white;
+            }
+            
+            .status-modal-header h5 {
+                margin: 0;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                color: white;
+            }
+            
+            .status-modal-header h5:before {
+                content: "";
+                display: inline-block;
+                width: 22px;
+                height: 22px;
+                margin-left: 10px;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E");
+                background-size: contain;
+            }
+            
+            .status-close-btn {
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                line-height: 1;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                transition: background-color 0.2s ease;
+            }
+            
+            .status-close-btn:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .status-modal-body {
+                padding: 1.5rem;
+            }
+            
+            .status-property-info {
+                background-color: rgba(var(--primary-rgb), 0.07);
+                padding: 1rem;
+                border-radius: 8px;
+            }
+            
+            .status-property-label {
+                color: var(--gray-600);
+                font-size: 0.9rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .status-property-value {
+                color: var(--primary-color);
+                font-weight: 600;
+                font-size: 1.1rem;
+            }
+            
+            .status-options-label {
+                margin-bottom: 0.75rem;
+                font-weight: 500;
+                color: var(--gray-700);
+            }
+            
+            .status-options {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            
+            .status-option {
+                padding: 0.75rem;
+                border-radius: 8px;
+                text-align: center;
+                cursor: pointer;
+                background-color: var(--gray-100);
+                transition: all 0.2s ease;
+                border: 2px solid transparent;
+            }
+            
+            .status-option:hover {
+                background-color: var(--gray-200);
+            }
+            
+            .status-option.active {
+                background-color: rgba(var(--primary-rgb), 0.1);
+                border-color: var(--primary-color);
+            }
+            
+            .status-badge {
+                display: inline-block;
+                padding: 0.5rem 0.75rem;
+                border-radius: 6px;
+                color: white;
+                font-weight: 500;
+                font-size: 0.9rem;
+                width: 100%;
+            }
+            
+            .status-modal-footer {
+                padding: 1.25rem 1.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 0.75rem;
+                background-color: var(--gray-100);
+                border-top: 1px solid var(--gray-200);
+            }
+            
+            .status-cancel-btn {
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                background-color: transparent;
+                border: 1px solid var(--gray-300);
+                color: var(--gray-700);
+                font-weight: 500;
+                transition: all 0.2s ease;
+            }
+            
+            .status-cancel-btn:hover {
+                background-color: var(--gray-200);
+            }
+            
+            .status-save-btn {
+                padding: 0.5rem 1.25rem;
+                border-radius: 6px;
+                background-color: var(--primary-color);
+                border: 1px solid var(--primary-color);
+                color: white;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                position: relative;
+            }
+            
+            .status-save-btn:hover {
+                background-color: var(--primary-dark);
+            }
+            
+            .status-save-btn:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+            
+            /* اعلان‌ها */
+            #status-notifications-container {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                right: 20px;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                pointer-events: none;
+            }
+            
+            .status-notification {
+                margin-bottom: 10px;
+                padding: 1rem;
+                border-radius: 8px;
+                background-color: white;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+                min-width: 300px;
+                max-width: 450px;
+                transform: translateY(-20px);
+                opacity: 0;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                pointer-events: auto;
+            }
+            
+            .status-notification.show {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            
+            .status-notification.success {
+                border-right: 4px solid var(--success-color);
+            }
+            
+            .status-notification.danger, 
+            .status-notification.error {
+                border-right: 4px solid var(--danger-color);
+            }
+            
+            .status-notification.warning {
+                border-right: 4px solid var(--warning-color);
+            }
+            
+            .status-notification.info {
+                border-right: 4px solid var(--info-color);
+            }
+            
+            .notification-icon {
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                margin-right: 0.75rem;
+            }
+            
+            .status-notification.success .notification-icon {
+                color: var(--success-color);
+            }
+            
+            .status-notification.danger .notification-icon,
+            .status-notification.error .notification-icon {
+                color: var(--danger-color);
+            }
+            
+            .status-notification.warning .notification-icon {
+                color: var(--warning-color);
+            }
+            
+            .status-notification.info .notification-icon {
+                color: var(--info-color);
+            }
+            
+            .notification-message {
+                flex: 1;
+                font-size: 0.95rem;
+            }
+            
+            .notification-close {
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: transparent;
+                border: none;
+                color: var(--gray-500);
+                border-radius: 50%;
+                margin-right: 0.5rem;
+                transition: all 0.2s ease;
+            }
+            
+            .notification-close:hover {
+                background-color: var(--gray-200);
+                color: var(--gray-700);
+            }
+            
+            /* Media Queries */
+            @media (max-width: 576px) {
+                .status-modal {
+                    max-width: 100%;
+                }
+                
+                .status-options {
+                    grid-template-columns: 1fr;
+                }
+                
+                .status-notification {
+                    min-width: calc(100vw - 40px);
+                    max-width: calc(100vw - 40px);
+                }
+            }
+        `;
+        
+        // افزودن به <head>
+        document.head.appendChild(styleElement);
     }
+};
+
+// راه‌اندازی سیستم مدیریت وضعیت پس از بارگذاری صفحه
+document.addEventListener('DOMContentLoaded', function() {
+    StatusManager.init();
     
-    // شروع
-    initialize();
+    // تعریف تابع جهانی برای نمایش مودال تغییر وضعیت
+    window.showStatusModal = function(id, title) {
+        StatusManager.showModal(id, title);
+    };
 });
