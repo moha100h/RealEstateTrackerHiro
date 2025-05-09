@@ -96,9 +96,10 @@ class PropertyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         # فقط ادمین می‌تواند ملک را حذف کند
         return self.request.user.is_superuser
     
-    def delete(self, request, *args, **kwargs):
+    def get_success_url(self):
+        """اضافه کردن پیام موفقیت قبل از هدایت به صفحه لیست املاک"""
         messages.success(self.request, 'ملک با موفقیت حذف شد.')
-        return super().delete(request, *args, **kwargs)
+        return super().get_success_url()
 
 def search_properties(request):
     """جستجوی پیشرفته املاک با فیلترهای متنوع و قالب مدرن"""
