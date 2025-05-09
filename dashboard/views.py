@@ -20,7 +20,11 @@ def dashboard_home(request):
     # محاسبه درصد برای هر آمار
     if total_properties > 0:
         property_status_stats = [
-            {**stat, 'percentage': (stat['count'] / total_properties) * 100} 
+            {
+                'status__name': stat['status__name'],
+                'count': stat['count'],
+                'percentage': (stat['count'] / total_properties) * 100
+            } 
             for stat in property_status_stats
         ]
     
@@ -30,7 +34,11 @@ def dashboard_home(request):
     # محاسبه درصد برای نوع معامله
     if total_properties > 0:
         transaction_type_stats = [
-            {**stat, 'percentage': (stat['count'] / total_properties) * 100} 
+            {
+                'transaction_type__name': stat['transaction_type__name'],
+                'count': stat['count'],
+                'percentage': (stat['count'] / total_properties) * 100
+            } 
             for stat in transaction_type_stats
         ]
     
