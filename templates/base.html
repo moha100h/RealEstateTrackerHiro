@@ -297,7 +297,7 @@
     </div>
     
     <!-- هدر دسکتاپ -->
-    <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm d-none d-lg-flex sticky-top">
+    <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm d-none d-lg-flex sticky-top" style="z-index: 1030;">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
                 {% if system_config.logo %}
@@ -310,7 +310,7 @@
                 <span style="color: var(--primary-color); font-weight: 700;">{{ system_config.website_title }}</span>
             </a>
             
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent" style="position: relative; z-index: 1030;">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="{% url 'home' %}">خانه</a>
