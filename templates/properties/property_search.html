@@ -32,94 +32,140 @@
     
     .filter-card {
         border: none;
-        border-radius: 16px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
         background: #fff;
         overflow: visible;
+        transition: all 0.3s ease;
     }
     
     /* هدر کارت فیلتر */
     .filter-card .card-header {
-        border-radius: 16px 16px 0 0;
+        border-radius: 20px 20px 0 0;
         border: none;
-        padding: 1rem 1.25rem;
+        padding: 1.2rem 1.5rem;
         position: sticky;
         top: 0;
         z-index: 5;
+        background: linear-gradient(135deg, #4a6cf7, #2651e9) !important;
+        box-shadow: 0 4px 15px rgba(38, 81, 233, 0.2);
+    }
+    
+    .filter-card .card-header h5 {
+        font-weight: 700;
+        letter-spacing: 0.5px;
     }
     
     /* بدنه فیلتر */
     .filter-card .card-body {
-        padding: 1.25rem;
+        padding: 1.5rem;
     }
     
     /* گروه‌های فیلتر */
     .filter-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         position: relative;
+        padding: 1rem;
+        border-radius: 15px;
+        background: rgba(248, 249, 250, 0.5);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+    
+    .filter-group:hover {
+        background: rgba(248, 249, 250, 0.9);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     }
     
     .filter-group-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-        color: #495057;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #333;
         display: flex;
         align-items: center;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px dashed rgba(0,0,0,0.08);
     }
     
     .filter-group-title svg {
-        margin-left: 0.5rem;
-        color: var(--primary-color);
+        margin-left: 0.75rem;
+        color: #4a6cf7;
+        background: rgba(74, 108, 247, 0.1);
+        padding: 6px;
+        border-radius: 8px;
     }
     
     /* فیلدهای ورودی */
     .form-control, .form-select {
         border-radius: 10px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        padding: 0.6rem 0.9rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 0.75rem 1rem;
         background-color: rgba(255, 255, 255, 0.95);
-        transition: all 0.25s ease;
+        transition: all 0.3s ease;
         font-size: 0.95rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
     }
     
     .form-control:focus, .form-select:focus {
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-        border-color: rgba(13, 110, 253, 0.4);
+        box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+        border-color: rgba(74, 108, 247, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        color: #444;
     }
     
     /* کانتینر چک‌باکس‌ها */
     .filter-options-container {
-        max-height: 150px;
+        max-height: 160px;
         overflow-y: auto !important;
-        border-radius: 10px;
-        background-color: rgba(248, 249, 250, 0.7);
-        padding: 0.75rem;
+        border-radius: 12px;
+        background-color: white;
+        padding: 1rem;
         border: 1px solid rgba(0, 0, 0, 0.05);
         scrollbar-width: thin;
-        scrollbar-color: rgba(0, 123, 255, 0.3) rgba(0, 0, 0, 0.05);
+        scrollbar-color: rgba(74, 108, 247, 0.3) rgba(0, 0, 0, 0.05);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
     }
     
     .filter-options-container::-webkit-scrollbar {
-        width: 4px;
+        width: 5px;
     }
     
     .filter-options-container::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 10px;
     }
     
     .filter-options-container::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 123, 255, 0.3);
+        background-color: rgba(74, 108, 247, 0.3);
         border-radius: 10px;
     }
     
     /* استایل چک‌باکس‌ها و رادیو‌ها */
     .custom-checkbox {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: background-color 0.2s;
     }
     
     .custom-checkbox:last-child {
         margin-bottom: 0;
+    }
+    
+    .custom-checkbox .form-check-input:checked {
+        background-color: #4a6cf7;
+        border-color: #4a6cf7;
+    }
+    
+    .custom-checkbox:hover {
+        background-color: rgba(74, 108, 247, 0.05);
     }
     
     /* اسلایدر قیمت */
@@ -132,50 +178,72 @@
         position: sticky;
         bottom: 0;
         background: #fff;
-        padding-top: 0.75rem;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 0 0.5rem 0;
+        margin-top: 1rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
         z-index: 5;
     }
     
     .btn-filter {
-        border-radius: 10px;
-        padding: 0.6rem 1.25rem;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
         transition: all 0.3s ease;
-        font-weight: 500;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
     
     .btn-filter svg {
-        margin-left: 0.5rem;
+        margin-left: 0.75rem;
+    }
+    
+    .btn-primary.btn-filter {
+        background: linear-gradient(135deg, #4a6cf7, #2651e9);
+        border: none;
     }
     
     .btn-primary.btn-filter:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 12px rgba(13, 110, 253, 0.25);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(38, 81, 233, 0.25);
+    }
+    
+    .btn-outline-secondary.btn-filter {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        color: #555;
     }
     
     .btn-outline-secondary.btn-filter:hover {
-        background-color: #f2f3f5;
-        border-color: #d8dbe0;
-        color: #6c757d;
-        transform: translateY(-2px);
+        background-color: #f8f9fa;
+        border-color: rgba(0, 0, 0, 0.15);
+        color: #333;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
     }
     
     /* دکمه تاگل فیلتر در موبایل */
     .filter-toggle-btn {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 25px;
+        right: 25px;
         z-index: 999;
-        width: 50px;
-        height: 50px;
+        width: 55px;
+        height: 55px;
         border-radius: 50%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        background: linear-gradient(135deg, #4a6cf7, #2651e9);
+        color: white;
+        box-shadow: 0 5px 15px rgba(38, 81, 233, 0.25);
         display: none;
         align-items: center;
         justify-content: center;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .filter-toggle-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(38, 81, 233, 0.3);
     }
     
     /* معلومات جستجو */
