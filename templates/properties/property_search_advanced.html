@@ -56,14 +56,19 @@
     
     .form-control, .form-select {
         padding: 0.75rem 1rem;
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-        transition: all 0.3s;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        background-color: #f9fbff;
     }
     
     .form-control:focus, .form-select:focus {
-        border-color: #4481eb;
-        box-shadow: 0 0 0 0.25rem rgba(68, 129, 235, 0.1);
+        box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+        border-color: rgba(74, 108, 247, 0.5);
+        transform: translateY(-2px);
+        outline: none;
     }
     
     .dual-range-control {
@@ -79,73 +84,92 @@
     .filter-button {
         display: inline-block;
         margin-top: 1rem;
-        padding: 0.75rem 2rem;
-        background: linear-gradient(to left, #4481eb, #04befe);
+        padding: 0.85rem 2rem;
+        background: linear-gradient(135deg, #4a6cf7, #2651e9);
         color: white;
         border: none;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        font-weight: 500;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        font-weight: 600;
         letter-spacing: 0.5px;
         text-align: center;
         position: relative;
         overflow: hidden;
         width: 100%;
+        box-shadow: 0 4px 10px rgba(38, 81, 233, 0.25);
     }
     
     .filter-button:hover {
         transform: translateY(-3px);
-        box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 8px 16px rgba(38, 81, 233, 0.3);
+        background: linear-gradient(135deg, #5e7df9, #3660fa);
     }
     
     .filter-button:active {
-        transform: translateY(1px);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(38, 81, 233, 0.2);
     }
     
     .reset-button {
-        background: #f8f9fa;
-        color: #6c757d;
-        margin-top: 0.5rem;
+        background: rgba(242, 245, 250, 0.8);
+        color: #6b7280;
+        margin-top: 0.75rem;
+        font-weight: 500;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .reset-button:hover {
+        background: rgba(238, 242, 248, 0.9);
+        color: #4b5563;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     }
     
     .filter-badge {
-        background-color: #e8f0fe;
-        color: #4481eb;
+        background-color: rgba(74, 108, 247, 0.1);
+        color: #2651e9;
         font-size: 0.85rem;
-        padding: 0.5rem 1rem;
+        padding: 0.6rem 1rem;
         border-radius: 50px;
         display: inline-flex;
         align-items: center;
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
+        margin-right: 0.75rem;
+        margin-bottom: 0.75rem;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(74, 108, 247, 0.15);
+        font-weight: 500;
     }
     
     .filter-badge:hover {
-        background-color: #d4e4fd;
+        background-color: rgba(74, 108, 247, 0.15);
+        box-shadow: 0 3px 7px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
     }
     
     .filter-badge .remove-filter {
-        margin-right: 0.5rem;
-        color: #4481eb;
+        margin-right: 0.6rem;
+        color: #2651e9;
         font-size: 1rem;
+        font-weight: bold;
     }
     
     .search-results {
-        border-radius: 15px;
+        border-radius: 18px;
         margin-bottom: 2rem;
-        padding: 1.5rem;
-        background-color: rgba(68, 129, 235, 0.05);
-        border-right: 4px solid #4481eb;
+        padding: 1.75rem;
+        background-color: rgba(74, 108, 247, 0.03);
+        border-right: 5px solid #4a6cf7;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.03);
     }
     
     .search-query-highlight {
-        background-color: rgba(68, 129, 235, 0.1);
-        padding: 0.2rem 0.5rem;
-        border-radius: 3px;
-        font-weight: 500;
-        color: #4481eb;
+        background-color: rgba(74, 108, 247, 0.12);
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        font-weight: 600;
+        color: #2651e9;
     }
     
     .property-grid {
