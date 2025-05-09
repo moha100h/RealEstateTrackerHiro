@@ -1022,8 +1022,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <div class="container">
         <div class="row">
-            <!-- فیلترهای جستجو -->
-            <div class="col-lg-4 mb-4 mb-lg-0">
+            <!-- فیلترهای جستجو - در سمت راست در طراحی RTL -->
+            <div class="col-lg-4 order-lg-1 mb-4 mb-lg-0">
                 <div class="card filter-card animated-item animate__fadeInRight" id="filtersCard">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
@@ -1164,8 +1164,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
             
-            <!-- نتایج جستجو -->
-            <div class="col-lg-8">
+            <!-- نتایج جستجو - در سمت چپ در طراحی RTL -->
+            <div class="col-lg-8 order-lg-2">
                 <!-- فیلترهای انتخاب شده -->
                 {% if has_filters %}
                 <div class="mb-4">
