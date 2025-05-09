@@ -494,256 +494,138 @@
         </div>
     </div>
     
-    <!-- نمودارها و آمار -->
-    <div class="row mb-4">
-        <!-- آمار بر اساس وضعیت -->
-        <div class="col-lg-6 mb-4">
-            <div class="data-card data-card-primary">
+    <!-- بخش نمودارهای پیشرفته -->
+    <div class="row mb-5">
+        <!-- نمودار دونات وضعیت املاک -->
+        <div class="col-xl-6 col-lg-12 mb-4">
+            <div class="data-card dashboard-chart-card">
                 <div class="data-card-header">
-                    <div class="data-card-icon">
+                    <div class="data-card-icon bg-gradient-primary">
                         <i class="bi bi-pie-chart-fill"></i>
                     </div>
-                    <h5 class="data-card-title">آمار بر اساس وضعیت</h5>
+                    <h5 class="data-card-title">وضعیت کلی املاک</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light rounded-pill" type="button" id="statusChartOptions" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="statusChartOptions">
+                            <li><a class="dropdown-item" href="#" id="downloadStatusChart"><i class="bi bi-download me-2"></i>دانلود نمودار</a></li>
+                            <li><a class="dropdown-item" href="#" id="refreshStatusChart"><i class="bi bi-arrow-clockwise me-2"></i>بروزرسانی</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="p-0">
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>وضعیت</th>
-                                    <th class="text-center">تعداد</th>
-                                    <th class="text-center">درصد</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in property_status_stats %}
-                                <tr>
-                                    <td>
-                                        <span class="status-badge 
-                                        {% if stat.status__name == 'موجود' %}badge-available
-                                        {% elif stat.status__name == 'فروخته شده' %}badge-sold
-                                        {% elif stat.status__name == 'اجاره داده شده' %}badge-rented
-                                        {% elif stat.status__name == 'رزرو شده' %}badge-reserved
-                                        {% elif stat.status__name == 'در حال ساخت' %}badge-construction
-                                        {% elif stat.status__name == 'آماده تحویل' %}badge-ready
-                                        {% else %}badge-other{% endif %}">
-                                            {% if stat.status__name == 'موجود' %}
-                                            <i class="bi bi-check-circle-fill"></i>
-                                            {% elif stat.status__name == 'فروخته شده' %}
-                                            <i class="bi bi-currency-dollar"></i>
-                                            {% elif stat.status__name == 'اجاره داده شده' %}
-                                            <i class="bi bi-house-check-fill"></i>
-                                            {% elif stat.status__name == 'رزرو شده' %}
-                                            <i class="bi bi-bookmark-fill"></i>
-                                            {% elif stat.status__name == 'در حال ساخت' %}
-                                            <i class="bi bi-tools"></i>
-                                            {% elif stat.status__name == 'آماده تحویل' %}
-                                            <i class="bi bi-check2-all"></i>
-                                            {% else %}
-                                            <i class="bi bi-question-circle-fill"></i>
-                                            {% endif %}
-                                            {{ stat.status__name }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center fw-bold">{{ stat.count }}</td>
-                                    <td class="text-center">
-                                        {% if total_properties %}
-                                        <div class="d-flex flex-column">
-                                            <span class="mb-1">{{ stat.percentage|floatformat:0 }}%</span>
-                                            <div class="progress-slim">
-                                                <div class="
-                                                {% if stat.status__name == 'موجود' %}progress-bar-success
-                                                {% elif stat.status__name == 'فروخته شده' or stat.status__name == 'اجاره داده شده' %}progress-bar-danger
-                                                {% elif stat.status__name == 'رزرو شده' %}progress-bar-primary
-                                                {% elif stat.status__name == 'در حال ساخت' %}progress-bar-secondary
-                                                {% elif stat.status__name == 'آماده تحویل' %}progress-bar-info
-                                                {% else %}progress-bar-warning{% endif %}" 
-                                                style="width: {{ stat.percentage|floatformat:0 }}%; height: 100%;"></div>
-                                            </div>
-                                        </div>
-                                        {% else %}
-                                        <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="text-center py-4">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
-                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="data-card-body dashboard-chart-container">
+                    <canvas id="propertyStatusChart" height="250"></canvas>
+                </div>
+                <div class="data-card-footer dashboard-chart-legend">
+                    <div class="row justify-content-center" id="statusChartLegend">
+                        {% for stat in property_status_stats %}
+                        <div class="col-auto mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="chart-legend-color 
+                                      {% if stat.status__name == 'موجود' %}bg-success
+                                      {% elif stat.status__name == 'فروخته شده' %}bg-danger
+                                      {% elif stat.status__name == 'اجاره داده شده' %}bg-danger-light
+                                      {% elif stat.status__name == 'رزرو شده' %}bg-primary
+                                      {% elif stat.status__name == 'در حال ساخت' %}bg-secondary
+                                      {% elif stat.status__name == 'آماده تحویل' %}bg-info
+                                      {% else %}bg-warning{% endif %}"></span>
+                                <span class="chart-legend-text">{{ stat.status__name }} ({{ stat.count }})</span>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- آمار بر اساس نوع معامله -->
-        <div class="col-lg-6 mb-4">
-            <div class="data-card data-card-info">
+        <!-- نمودار میله‌ای نوع معامله -->
+        <div class="col-xl-6 col-lg-12 mb-4">
+            <div class="data-card dashboard-chart-card">
                 <div class="data-card-header">
-                    <div class="data-card-icon">
+                    <div class="data-card-icon bg-gradient-info">
                         <i class="bi bi-bar-chart-fill"></i>
                     </div>
-                    <h5 class="data-card-title">آمار بر اساس نوع معامله</h5>
+                    <h5 class="data-card-title">آمار نوع معاملات</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light rounded-pill" type="button" id="transactionChartOptions" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="transactionChartOptions">
+                            <li><a class="dropdown-item" href="#" id="downloadTransactionChart"><i class="bi bi-download me-2"></i>دانلود نمودار</a></li>
+                            <li><a class="dropdown-item" href="#" id="refreshTransactionChart"><i class="bi bi-arrow-clockwise me-2"></i>بروزرسانی</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="p-0">
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>نوع معامله</th>
-                                    <th class="text-center">تعداد</th>
-                                    <th class="text-center">درصد</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in transaction_type_stats %}
-                                <tr>
-                                    <td>
-                                        <span class="status-badge badge-reserved">
-                                            <i class="bi bi-cash-coin"></i>
-                                            {{ stat.transaction_type__name }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center fw-bold">{{ stat.count }}</td>
-                                    <td class="text-center">
-                                        {% if total_properties %}
-                                        <div class="d-flex flex-column">
-                                            <span class="mb-1">{{ stat.percentage|floatformat:0 }}%</span>
-                                            <div class="progress-slim">
-                                                <div class="progress-bar-primary" style="width: {{ stat.percentage|floatformat:0 }}%; height: 100%;"></div>
-                                            </div>
-                                        </div>
-                                        {% else %}
-                                        <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="text-center py-4">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
-                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="data-card-body dashboard-chart-container">
+                    <canvas id="transactionTypeChart" height="250"></canvas>
+                </div>
+                <div class="data-card-footer">
+                    <div class="small text-muted text-center">
+                        <i class="bi bi-info-circle me-1"></i>
+                        نمودار توزیع انواع معاملات در سیستم
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="row mb-4">
-        <!-- آمار بر اساس نوع ملک -->
-        <div class="col-lg-6 mb-4">
-            <div class="data-card data-card-warning">
+    <div class="row mb-5">
+        <!-- نمودار پایه نوع ملک -->
+        <div class="col-xl-8 col-lg-12 mb-4">
+            <div class="data-card dashboard-chart-card">
                 <div class="data-card-header">
-                    <div class="data-card-icon">
+                    <div class="data-card-icon bg-gradient-warning">
                         <i class="bi bi-house-fill"></i>
                     </div>
-                    <h5 class="data-card-title">آمار بر اساس نوع ملک</h5>
+                    <h5 class="data-card-title">توزیع انواع املاک</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light rounded-pill" type="button" id="propertyTypeChartOptions" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="propertyTypeChartOptions">
+                            <li><a class="dropdown-item" href="#" id="downloadPropertyTypeChart"><i class="bi bi-download me-2"></i>دانلود نمودار</a></li>
+                            <li><a class="dropdown-item" href="#" id="refreshPropertyTypeChart"><i class="bi bi-arrow-clockwise me-2"></i>بروزرسانی</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="p-0">
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>نوع ملک</th>
-                                    <th class="text-center">تعداد</th>
-                                    <th class="text-center">درصد</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in property_type_stats %}
-                                <tr>
-                                    <td>
-                                        <span class="status-badge badge-other">
-                                            <i class="bi bi-building"></i>
-                                            {{ stat.property_type__name }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center fw-bold">{{ stat.count }}</td>
-                                    <td class="text-center">
-                                        {% if total_properties %}
-                                        <div class="d-flex flex-column">
-                                            <span class="mb-1">{{ stat.percentage|floatformat:0 }}%</span>
-                                            <div class="progress-slim">
-                                                <div class="progress-bar-warning" style="width: {{ stat.percentage|floatformat:0 }}%; height: 100%;"></div>
-                                            </div>
-                                        </div>
-                                        {% else %}
-                                        <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="text-center py-4">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
-                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="data-card-body dashboard-chart-container">
+                    <canvas id="propertyTypeChart" height="250"></canvas>
+                </div>
+                <div class="data-card-footer">
+                    <div class="small text-muted text-center">
+                        <i class="bi bi-info-circle me-1"></i>
+                        فراوانی انواع مختلف املاک مدیریت شده در سیستم
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- میانگین قیمت بر اساس نوع ملک -->
-        <div class="col-lg-6 mb-4">
-            <div class="data-card data-card-success">
+        <!-- نمودار قیمت میانگین -->
+        <div class="col-xl-4 col-lg-12 mb-4">
+            <div class="data-card dashboard-chart-card">
                 <div class="data-card-header">
-                    <div class="data-card-icon">
+                    <div class="data-card-icon bg-gradient-success">
                         <i class="bi bi-currency-dollar"></i>
                     </div>
-                    <h5 class="data-card-title">میانگین قیمت بر اساس نوع ملک</h5>
+                    <h5 class="data-card-title">میانگین قیمت انواع املاک</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light rounded-pill" type="button" id="priceChartOptions" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="priceChartOptions">
+                            <li><a class="dropdown-item" href="#" id="downloadPriceChart"><i class="bi bi-download me-2"></i>دانلود نمودار</a></li>
+                            <li><a class="dropdown-item" href="#" id="refreshPriceChart"><i class="bi bi-arrow-clockwise me-2"></i>بروزرسانی</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="p-0">
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>نوع ملک</th>
-                                    <th class="text-center">میانگین قیمت (تومان)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in avg_price_by_type %}
-                                <tr>
-                                    <td>
-                                        <span class="status-badge badge-reserved">
-                                            <i class="bi bi-building"></i>
-                                            {{ stat.property_type__name }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center fs-5 fw-bold">{{ stat.avg_price|floatformat:0|intcomma }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="2" class="text-center py-4">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <i class="bi bi-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
-                                            <p class="text-muted mb-0">هیچ داده‌ای موجود نیست</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="data-card-body dashboard-chart-container">
+                    <canvas id="avgPriceChart" height="250"></canvas>
+                </div>
+                <div class="data-card-footer">
+                    <div class="small text-muted text-center">
+                        <i class="bi bi-info-circle me-1"></i>
+                        مقایسه میانگین قیمت انواع مختلف املاک (تومان)
                     </div>
                 </div>
             </div>
