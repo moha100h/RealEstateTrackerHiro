@@ -6,28 +6,43 @@
 <style>
     /* ===== سبک‌بندی پایه و قالب‌بندی صفحه ===== */
     .properties-page {
-        background-color: #f7f9fc;
-        padding: 2rem 0 3rem;
+        background-color: #f5f8ff;
+        padding: 2.5rem 0 4rem;
         min-height: calc(100vh - 70px);
+        position: relative;
+    }
+    
+    .properties-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 280px;
+        background: linear-gradient(165deg, rgba(63, 81, 181, 0.03) 0%, rgba(79, 106, 220, 0) 100%);
+        z-index: 0;
     }
     
     .page-header-container {
-        margin-bottom: 2.5rem;
+        margin-bottom: 3rem;
+        position: relative;
+        z-index: 1;
     }
     
     .page-title {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 800;
-        color: #2d3748;
+        color: #2c3e50;
         position: relative;
         display: inline-block;
         margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
     }
     
     .page-title::after {
         content: '';
         position: absolute;
-        width: 40%;
+        width: 50%;
         height: 8px;
         background: linear-gradient(90deg, rgba(79, 106, 220, 0.2) 0%, rgba(79, 106, 220, 0) 100%);
         bottom: 5px;
@@ -38,40 +53,44 @@
     
     .page-subtitle {
         color: #718096;
-        font-size: 0.95rem;
+        font-size: 1rem;
         margin-bottom: 0;
+        font-weight: 400;
     }
     
-    /* ===== کارت‌های مدرن و مینیمال املاک ===== */
+    /* ===== کارت‌های فوق مدرن و مینیمال املاک ===== */
     .properties-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.5rem;
+        gap: 2rem;
+        position: relative;
+        z-index: 1;
     }
     
     .property-card {
         background-color: #fff;
-        border-radius: 20px;
+        border-radius: 24px;
         overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+        transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
         position: relative;
         height: 100%;
         display: flex;
         flex-direction: column;
-        border: 1px solid rgba(226, 232, 240, 0.7);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        transform: translateY(0);
     }
     
     .property-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 30px rgba(79, 106, 220, 0.1);
-        border-color: rgba(79, 106, 220, 0.2);
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(79, 106, 220, 0.15);
+        border-color: rgba(79, 106, 220, 0.15);
     }
     
     /* بخش تصویر */
     .property-image-wrapper {
         position: relative;
-        padding-top: 65%; /* نسبت تصویر */
+        padding-top: 62%; /* نسبت تصویر */
         overflow: hidden;
     }
     
@@ -83,10 +102,12 @@
         height: 100%;
         object-fit: cover;
         transition: transform 0.7s cubic-bezier(0.165, 0.84, 0.44, 1);
+        filter: brightness(1);
     }
     
     .property-card:hover .property-image {
-        transform: scale(1.1);
+        transform: scale(1.12);
+        filter: brightness(1.05);
     }
     
     /* گرادیان روی تصویر */
@@ -96,7 +117,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6));
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
         z-index: 1;
         transition: opacity 0.3s ease;
     }
@@ -104,21 +125,22 @@
     /* نشان‌گرهای کد و وضعیت */
     .property-code-badge {
         position: absolute;
-        top: 16px;
-        right: 16px;
+        top: 18px;
+        right: 18px;
         z-index: 2;
-        background: linear-gradient(45deg, rgba(79, 106, 220, 0.95), rgba(111, 134, 230, 0.95));
+        background: linear-gradient(45deg, rgba(79, 106, 220, 0.92), rgba(126, 146, 250, 0.92));
         color: white;
-        padding: 0.4rem 0.9rem;
-        border-radius: 8px;
+        padding: 0.45rem 0.95rem;
+        border-radius: 10px;
         font-size: 0.85rem;
         font-weight: 600;
-        letter-spacing: 0.3px;
-        backdrop-filter: blur(4px);
-        box-shadow: 0 3px 10px rgba(79, 106, 220, 0.3);
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 12px rgba(79, 106, 220, 0.3);
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
     }
     
     .property-status-badge {
@@ -128,15 +150,16 @@
         right: 0;
         z-index: 2;
         color: white;
-        padding: 10px 15px;
-        font-size: 0.85rem;
+        padding: 12px 15px;
+        font-size: 0.9rem;
         font-weight: 600;
         letter-spacing: 0.5px;
         text-align: center;
-        background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.6), rgba(0,0,0,0.4));
+        background: linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.7), rgba(0,0,0,0.5));
         backdrop-filter: blur(8px);
-        transition: all 0.4s ease;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         transform: translateY(100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .property-card:hover .property-status-badge {
@@ -146,22 +169,23 @@
     /* دکمه مشاهده جزئیات */
     .property-view-details {
         position: absolute;
-        top: 16px;
-        left: 16px;
+        top: 18px;
+        left: 18px;
         z-index: 4;
         background-color: rgba(255, 255, 255, 0.95);
         color: #4f6adc;
         border-radius: 50px;
-        padding: 0.5rem 1.2rem;
+        padding: 0.6rem 1.3rem;
         font-size: 0.85rem;
         font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.6rem;
         text-decoration: none;
         transform: translateX(-150%);
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.8);
     }
     
     .property-card:hover .property-view-details {
@@ -171,53 +195,77 @@
     .property-view-details:hover {
         background-color: #4f6adc;
         color: white;
+        box-shadow: 0 6px 20px rgba(79, 106, 220, 0.3);
     }
     
     /* بخش محتوا */
     .property-content {
-        padding: 1.8rem;
+        padding: 2rem;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+        position: relative;
+    }
+    
+    .property-content::before {
+        content: '';
+        position: absolute;
+        top: -30px;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0), #ffffff);
+        z-index: 2;
+        border-radius: 24px 24px 0 0;
     }
     
     .property-title {
-        font-size: 1.3rem;
+        font-size: 1.35rem;
         font-weight: 700;
         color: #2d3748;
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
         line-height: 1.4;
-        transition: color 0.3s ease;
+        transition: all 0.3s ease;
+        letter-spacing: -0.3px;
     }
     
     .property-card:hover .property-title {
         color: #4f6adc;
+        transform: translateX(-3px);
     }
     
     .property-location {
         display: flex;
         align-items: flex-start;
-        gap: 0.5rem;
+        gap: 0.6rem;
         color: #718096;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.7rem;
         font-size: 0.9rem;
+        position: relative;
     }
     
     .property-location svg {
-        min-width: 14px;
+        min-width: 16px;
         margin-top: 3px;
         color: #a0aec0;
+        transition: all 0.3s ease;
+    }
+    
+    .property-card:hover .property-location svg {
+        color: #4f6adc;
     }
     
     /* ویژگی‌های ملک */
     .property-features {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-        padding: 1.2rem 0;
-        border-top: 1px solid rgba(226, 232, 240, 0.8);
-        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        gap: 1rem;
+        margin-bottom: 1.8rem;
+        padding: 1.5rem 0;
+        border-top: 1px solid rgba(226, 232, 240, 0.6);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        position: relative;
     }
     
     .feature-item {
@@ -228,32 +276,54 @@
     }
     
     .feature-icon {
-        width: 42px;
-        height: 42px;
+        width: 48px;
+        height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #f1f5fd;
+        background-color: #f0f5ff;
         color: #4f6adc;
-        border-radius: 12px;
-        margin-bottom: 0.7rem;
-        transition: all 0.3s ease;
+        border-radius: 14px;
+        margin-bottom: 0.8rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .feature-icon::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #4f6adc, #6f84e8);
+        border-radius: 14px;
+        opacity: 0;
+        z-index: -1;
+        transition: opacity 0.4s ease;
     }
     
     .property-card:hover .feature-icon {
-        background-color: #4f6adc;
         color: white;
-        transform: scale(1.1) rotate(-5deg);
+        transform: scale(1.15) rotate(-8deg);
+        box-shadow: 0 5px 15px rgba(79, 106, 220, 0.25);
+    }
+    
+    .property-card:hover .feature-icon::before {
+        opacity: 1;
     }
     
     .feature-value {
         font-weight: 700;
         color: #2d3748;
-        font-size: 0.95rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .property-card:hover .feature-value {
+        color: #4f6adc;
     }
     
     .feature-label {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         color: #718096;
         margin-top: 3px;
     }
@@ -267,45 +337,71 @@
     }
     
     .property-price {
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: #4f6adc;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.7rem;
+        transition: all 0.3s ease;
+    }
+    
+    .property-card:hover .property-price {
+        transform: scale(1.05);
     }
     
     .price-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 28px;
-        height: 28px;
-        background-color: rgba(79, 106, 220, 0.1);
-        border-radius: 8px;
-        transition: all 0.3s ease;
+        width: 32px;
+        height: 32px;
+        background-color: rgba(79, 106, 220, 0.08);
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .price-icon::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #4f6adc, #6f84e8);
+        border-radius: 12px;
+        opacity: 0;
+        z-index: -1;
+        transition: opacity 0.4s ease;
     }
     
     .property-card:hover .price-icon {
-        background-color: rgba(79, 106, 220, 0.2);
-        transform: scale(1.1);
+        color: white;
+        transform: scale(1.2) rotate(-5deg);
+        box-shadow: 0 5px 15px rgba(79, 106, 220, 0.25);
+    }
+    
+    .property-card:hover .price-icon::before {
+        opacity: 1;
     }
     
     .transaction-badge {
         background-color: rgba(79, 106, 220, 0.08);
         color: #4f6adc;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        padding: 0.35rem 0.9rem;
+        padding: 0.4rem 1rem;
         border-radius: 50px;
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: 0.5rem;
         transition: all 0.3s ease;
+        border: 1px solid rgba(79, 106, 220, 0.1);
     }
     
     .property-card:hover .transaction-badge {
-        background-color: rgba(79, 106, 220, 0.15);
+        background-color: #4f6adc;
+        color: white;
+        box-shadow: 0 4px 10px rgba(79, 106, 220, 0.25);
     }
     
     /* دکمه‌های بالای صفحه */
