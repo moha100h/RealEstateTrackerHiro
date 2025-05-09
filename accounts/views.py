@@ -12,7 +12,7 @@ from django.conf import settings
 import time
 
 from .models import UserProfile, create_default_groups
-from .forms import CustomAuthenticationForm, UserForm, UserProfileForm
+from .forms import CustomAuthenticationForm, UserForm, UserProfileForm, UserProfileEditForm
 
 class CustomLoginView(LoginView):
     """نمای سفارشی صفحه ورود"""
@@ -90,7 +90,7 @@ def profile_view(request):
         profile = UserProfile.objects.create(user=request.user)
     
     if request.method == 'POST':
-        user_form = UserForm(request.POST, instance=request.user)
+        user_form = UserProfileEditForm(request.POST, instance=request.user)
         profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         
         if user_form.is_valid() and profile_form.is_valid():
@@ -99,7 +99,7 @@ def profile_view(request):
             messages.success(request, 'پروفایل شما با موفقیت بروزرسانی شد.')
             return redirect('accounts:profile')
     else:
-        user_form = UserForm(instance=request.user)
+        user_form = UserProfileEditForm(instance=request.user)
         profile_form = UserProfileForm(instance=profile)
     
     context = {
