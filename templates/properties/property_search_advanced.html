@@ -436,7 +436,7 @@
 
 {% block extra_js %}
 <!-- استفاده از اسکریپت مدیریت وضعیت املاک -->
-<script src="/static/js/status-manager.js"></script>
+<script src="/static/js/property-status.js"></script>
 <!-- Nouislider - برای اسلایدر قیمت و متراژ -->
 <script src="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.js"></script>
 
@@ -959,5 +959,32 @@ document.addEventListener('DOMContentLoaded', function() {
     <button type="button" id="mobileFiltersTrigger" class="mobile-filters-trigger">
         <i class="bi bi-funnel-fill"></i>
     </button>
+</div>
+
+<!-- مودال تغییر وضعیت ملک -->
+<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changeStatusModalLabel">تغییر وضعیت ملک</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 id="propertyTitle" class="mb-3 text-primary"></h6>
+                <div class="form-group">
+                    <label for="statusSelect" class="form-label">وضعیت جدید</label>
+                    <select class="form-select" id="statusSelect">
+                        {% for status in property_statuses %}
+                        <option value="{{ status.id }}">{{ status.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary" id="saveStatusBtn">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
