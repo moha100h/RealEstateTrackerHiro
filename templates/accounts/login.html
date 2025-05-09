@@ -3,529 +3,316 @@
 {% block styles %}
 {{ block.super }}
 <style>
-    /* ریست و استایل‌های پایه */
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
+    /* استایل‌های پایه صفحه */
     body {
-        overflow-x: hidden;
+        background-color: #f5f5f5;
     }
     
-    *, *:before, *:after {
-        box-sizing: inherit;
-    }
-    
-    /* صفحه اصلی */
-    .auth-page {
+    .gov-login-page {
         min-height: 100vh;
-        display: flex;
-        flex-wrap: nowrap;
-        position: relative;
-        overflow: hidden;
-        background-color: #f5f7fb;
-    }
-    
-    /* صفحه چپ (تصویری) */
-    .auth-image-side {
-        flex: 1.3;
-        position: relative;
-        display: none;
-        background: linear-gradient(135deg, #5336ff 0%, #4579ff 100%);
-        overflow: hidden;
-        color: white;
-        z-index: 1;
-    }
-    
-    /* واکنش‌گرا: نمایش صفحه تصویری در صفحات بزرگ */
-    @media (min-width: 1400px) {
-        .auth-image-side {
-            display: flex;
-        }
-    }
-    
-    /* الگوی پس‌زمینه صفحه تصویری */
-    .image-side-pattern {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        opacity: 0.05;
-        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E");
-    }
-    
-    /* محتوای صفحه تصویری */
-    .image-side-content {
+        background-color: #f5f5f5;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        height: 100%;
-        width: 100%;
-        padding: 3rem;
-        z-index: 2;
     }
     
-    /* لوگوی بزرگ در صفحه تصویری */
-    .big-logo {
-        width: 160px;
-        height: 160px;
-        margin-bottom: 2rem;
-        animation: float 6s ease-in-out infinite;
+    /* هدر */
+    .gov-header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 15px 0;
+        border-bottom: 3px solid #1e40af;
     }
     
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
-    }
-    
-    /* خطوط شبکه‌ای در پس‌زمینه صفحه تصویری */
-    .image-side-grid {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                          linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-        background-size: 30px 30px;
-        background-position: center center;
-        z-index: 1;
-    }
-    
-    /* اشکال تزئینی در صفحه تصویری */
-    .image-side-shapes div {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(40px);
-        z-index: 0;
-    }
-    
-    .image-side-shapes .shape-1 {
-        width: 300px;
-        height: 300px;
-        background-color: rgba(147, 197, 253, 0.3);
-        top: 20%;
-        right: -150px;
-    }
-    
-    .image-side-shapes .shape-2 {
-        width: 200px;
-        height: 200px;
-        background-color: rgba(239, 246, 255, 0.2);
-        bottom: 10%;
-        left: -100px;
-    }
-    
-    /* عنوان و متن صفحه تصویری */
-    .image-side-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    .image-side-text {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        max-width: 80%;
+    .header-container {
+        max-width: 1140px;
         margin: 0 auto;
-        line-height: 1.7;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
     
-    /* صفحه فرم */
-    .auth-form-side {
+    .gov-logo {
+        display: flex;
+        align-items: center;
+    }
+    
+    .gov-logo img, .gov-logo svg {
+        height: 50px;
+        width: auto;
+    }
+    
+    .gov-title {
+        margin-right: 15px;
+    }
+    
+    .gov-title h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e3a8a;
+    }
+    
+    .gov-title p {
+        margin: 5px 0 0;
+        font-size: 13px;
+        color: #64748b;
+    }
+    
+    /* محتوای اصلی */
+    .gov-content {
         flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1.5rem;
-        position: relative;
-        background-color: #f5f7fb;
+        padding: 40px 20px;
     }
     
-    /* پس‌زمینه صفحه فرم */
-    .form-side-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-    }
-    
-    /* الگوی ساختمان در پس‌زمینه */
-    .building-pattern {
-        position: absolute;
+    /* بخش لاگین */
+    .login-container {
         width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23000000' opacity='0.02'%3E%3Cpath d='M1,22H23L23,3.38L14.5,3.38L14.5,8.5L12.5,6.5L10.5,8.5L10.5,3.38L1,3.38L1,22Z M3,5H8V7H3V5Z M3,9H8V11H3V9Z M3,13H8V15H3V13Z M3,17H8V19H3V17Z M16,7H21V9H16V7Z M16,11H21V13H16V11Z M16,15H21V17H16V15Z'/%3E%3C/svg%3E");
-        background-repeat: repeat;
-        background-size: 200px;
-        opacity: 0.03;
-        z-index: 0;
-    }
-    
-    /* اشکال تزئینی در پس‌زمینه صفحه فرم */
-    .form-side-shapes div {
-        position: absolute;
-        border-radius: 50%;
-        z-index: 0;
-        opacity: 0.3;
-    }
-    
-    .form-side-shapes .shape-1 {
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 70%);
-        top: -200px;
-        right: -200px;
-    }
-    
-    .form-side-shapes .shape-2 {
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0) 70%);
-        bottom: -150px;
-        left: -150px;
-    }
-    
-    /* کارت فرم لاگین */
-    .login-card {
-        width: 100%;
-        max-width: 400px;
-        background-color: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        max-width: 900px;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         overflow: hidden;
-        position: relative;
-        z-index: 10;
-        border: 1px solid rgba(229, 231, 235, 0.5);
-    }
-    
-    /* هدر کارت با لوگو */
-    .card-logo {
         display: flex;
-        justify-content: center;
-        padding: 2rem 1.5rem 0;
+        flex-direction: row-reverse;
     }
     
-    .logo-container {
-        width: 80px;
-        height: 80px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #5336ff 0%, #4579ff 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.25);
+    /* بخش راست - فرم لاگین */
+    .login-form-side {
+        flex: 1;
+        padding: 30px;
     }
     
-    /* افکت پالس لوگو */
-    .logo-pulse {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 16px;
-        animation: pulse-animation 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        background: linear-gradient(135deg, #5336ff 0%, #4579ff 100%);
+    .login-form-header {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e5e7eb;
     }
     
-    @keyframes pulse-animation {
-        0%, 100% {
-            opacity: 0;
-            transform: scale(1);
-        }
-        50% {
-            opacity: 0.4;
-            transform: scale(1.15);
-        }
+    .login-form-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e3a8a;
     }
     
-    .logo-icon {
-        width: 40px;
-        height: 40px;
-        color: white;
-        position: relative;
-        z-index: 1;
-    }
-    
-    /* بدنه کارت */
-    .card-body {
-        padding: 1.5rem 2rem 2rem;
-    }
-    
-    /* عنوان و توضیحات */
-    .card-title {
-        font-weight: 700;
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-        color: #1e293b;
-        text-align: center;
-    }
-    
-    .card-subtitle {
-        font-size: 0.95rem;
-        color: #64748b;
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-    
-    /* فرم و فیلدها */
+    /* فرم */
     .form-group {
-        margin-bottom: 1.25rem;
+        margin-bottom: 20px;
     }
     
     .form-label {
         display: block;
-        margin-bottom: 0.5rem;
-        color: #475569;
-        font-weight: 600;
-        font-size: 0.9rem;
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
     }
     
-    .input-container {
+    .form-input-wrapper {
         position: relative;
-        transition: all 0.3s ease;
     }
     
-    .input-icon {
+    .form-icon {
         position: absolute;
-        right: 1rem;
+        right: 12px;
         top: 50%;
         transform: translateY(-50%);
-        color: #94a3b8;
-        z-index: 2;
-        transition: all 0.3s ease;
+        color: #6b7280;
     }
     
     .form-control {
         width: 100%;
-        padding: 0.75rem 2.75rem 0.75rem 1rem;
-        font-size: 0.95rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        background-color: #f8fafc;
-        transition: all 0.3s ease;
-        height: auto;
-        line-height: 1.5;
-    }
-    
-    .input-container:hover .form-control {
-        border-color: #cbd5e1;
-        background-color: #f1f5f9;
-    }
-    
-    .input-container:hover .input-icon {
-        color: #64748b;
+        padding: 10px 40px 10px 12px;
+        font-size: 14px;
+        color: #1f2937;
+        background-color: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        transition: all 0.2s ease;
     }
     
     .form-control:focus {
-        border-color: #5336ff;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 3px rgba(83, 54, 255, 0.15);
+        background-color: #fff;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         outline: none;
     }
     
-    .input-container:focus-within .input-icon {
-        color: #5336ff;
+    /* دکمه ورود */
+    .login-button {
+        display: block;
+        width: 100%;
+        padding: 10px 15px;
+        margin-top: 30px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #fff;
+        background-color: #1e3a8a;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
     }
     
-    /* دکمه ورود */
-    .login-btn {
-        display: flex;
-        width: 100%;
-        justify-content: center;
-        align-items: center;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: white;
-        background: linear-gradient(to right, #5336ff, #4579ff);
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
+    .login-button:hover {
+        background-color: #1e4620;
+    }
+    
+    /* بخش چپ - اطلاعات */
+    .login-info-side {
+        flex: 1;
+        padding: 30px;
+        background-color: #f0f6ff;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 10px rgba(83, 54, 255, 0.3);
+        border-right: 1px solid #e5e7eb;
     }
     
-    .login-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(83, 54, 255, 0.4);
+    .info-content {
+        position: relative;
+        z-index: 2;
     }
     
-    .login-btn:active {
-        transform: translateY(0);
+    .info-title {
+        margin: 0 0 15px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e3a8a;
     }
     
-    .button-icon {
-        margin-right: 0.5rem;
+    .info-logo {
+        height: 80px;
+        margin-bottom: 20px;
     }
     
-    /* افکت درخشش دکمه */
-    .login-btn::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 80%;
-        height: 100%;
-        background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
-        transform: skewX(-25deg);
-        animation: shimmer 3s infinite;
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0 0;
     }
     
-    @keyframes shimmer {
-        0% { left: -100%; }
-        100% { left: 120%; }
-    }
-    
-    /* بخش امنیت */
-    .security-note {
+    .feature-item {
         display: flex;
-        align-items: center;
-        margin-top: 1.5rem;
-        color: #475569;
-        font-size: 0.85rem;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        color: #334155;
+        font-size: 14px;
     }
     
-    .security-icon {
-        margin-left: 0.6rem;
+    .feature-icon {
+        color: #1e3a8a;
+        margin-left: 10px;
         flex-shrink: 0;
-        color: #5336ff;
+        margin-top: 3px;
     }
     
     /* هشدارها */
     .alert {
-        padding: 0.75rem 1rem;
-        margin-bottom: 1.25rem;
-        border-radius: 10px;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        font-size: 14px;
         display: flex;
         align-items: flex-start;
-        font-size: 0.9rem;
     }
     
     .alert-danger {
-        background-color: #fef2f2;
-        border: 1px solid #fee2e2;
-        border-right: 3px solid #ef4444;
+        background-color: #fee2e2;
+        border-right: 4px solid #ef4444;
         color: #b91c1c;
     }
     
     .alert-icon {
-        margin-left: 0.75rem;
-        margin-top: 0.1rem;
+        margin-left: 12px;
         flex-shrink: 0;
+        margin-top: 2px;
     }
     
-    .alert-message {
-        flex-grow: 1;
-    }
-    
-    /* فوتر کارت */
-    .card-footer {
-        padding: 1.5rem;
+    /* فوتر */
+    .gov-footer {
+        background-color: #fff;
+        padding: 15px 0;
+        border-top: 1px solid #e5e7eb;
         text-align: center;
-        border-top: 1px solid #f1f5f9;
-        color: #64748b;
-        font-size: 0.85rem;
+        font-size: 13px;
+        color: #6b7280;
     }
     
-    /* ریسپانسیو برای موبایل */
-    @media (max-width: 475px) {
-        .auth-form-side {
-            padding: 1rem;
+    .gov-footer-container {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    /* ریسپانسیو */
+    @media (max-width: 768px) {
+        .login-container {
+            flex-direction: column;
+            max-width: 500px;
         }
         
-        .card-body {
-            padding: 1.5rem 1.5rem 1.75rem;
+        .login-info-side {
+            border-right: none;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px;
         }
         
-        .logo-container {
-            width: 70px;
-            height: 70px;
+        .login-form-side {
+            padding: 20px;
         }
         
-        .logo-icon {
-            width: 35px;
-            height: 35px;
+        .gov-header {
+            padding: 10px 0;
         }
         
-        .card-title {
-            font-size: 1.4rem;
+        .gov-logo img, .gov-logo svg {
+            height: 40px;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <!-- صفحه تصویری (فقط در نمایشگرهای بزرگ نمایش داده می‌شود) -->
-    <div class="auth-image-side">
-        <div class="image-side-pattern"></div>
-        <div class="image-side-grid"></div>
-        <div class="image-side-shapes">
-            <div class="shape-1"></div>
-            <div class="shape-2"></div>
-        </div>
-        <div class="image-side-content">
-            <svg class="big-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M9 22V12H15V22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <h1 class="image-side-title">سیستم هوشمند هیرو املاک</h1>
-            <p class="image-side-text">بهترین راهکار مدیریت املاک با امکانات پیشرفته و رابط کاربری زیبا</p>
-        </div>
-    </div>
-    
-    <!-- صفحه فرم -->
-    <div class="auth-form-side">
-        <div class="form-side-bg">
-            <div class="building-pattern"></div>
-            <div class="form-side-shapes">
-                <div class="shape-1"></div>
-                <div class="shape-2"></div>
-            </div>
-        </div>
-        
-        <!-- کارت لاگین -->
-        <div class="login-card">
-            <!-- لوگو -->
-            <div class="card-logo">
-                <div class="logo-container">
-                    <div class="logo-pulse"></div>
-                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+<div class="gov-login-page">
+    <!-- هدر -->
+    <header class="gov-header">
+        <div class="header-container">
+            <div class="gov-logo">
+                <svg width="50" height="50" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M100 20L20 80V180H80V120H120V180H180V80L100 20Z" stroke="#1e3a8a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="white"/>
+                </svg>
+                <div class="gov-title">
+                    <h1>سامانه هیرو املاک</h1>
+                    <p>سیستم مدیریت جامع املاک و مستغلات</p>
                 </div>
             </div>
-            
-            <!-- محتوای کارت -->
-            <div class="card-body">
-                <h2 class="card-title">سیستم هیرو املاک</h2>
-                <p class="card-subtitle">وارد حساب کاربری خود شوید</p>
+        </div>
+    </header>
+    
+    <!-- محتوای اصلی -->
+    <main class="gov-content">
+        <div class="login-container">
+            <!-- بخش راست - فرم لاگین -->
+            <div class="login-form-side">
+                <div class="login-form-header">
+                    <h2 class="login-form-title">ورود به سامانه</h2>
+                </div>
                 
                 {% if messages %}
                     {% for message in messages %}
                         <div class="alert alert-{{ message.tags }}">
                             <div class="alert-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <line x1="12" y1="8" x2="12" y2="12"></line>
                                     <line x1="12" y1="16" x2="12.01" y2="16"></line>
                                 </svg>
                             </div>
-                            <div class="alert-message">{{ message }}</div>
+                            <div>{{ message }}</div>
                         </div>
                     {% endfor %}
                 {% elif form.errors %}
@@ -537,9 +324,7 @@
                                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
                             </svg>
                         </div>
-                        <div class="alert-message">
-                            <strong>خطا در ورود:</strong> نام کاربری یا رمز عبور اشتباه است.
-                        </div>
+                        <div><strong>خطا در ورود:</strong> نام کاربری یا رمز عبور اشتباه است.</div>
                     </div>
                 {% endif %}
                 
@@ -547,10 +332,10 @@
                     {% csrf_token %}
                     
                     <div class="form-group">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">نام کاربری</label>
-                        <div class="input-container">
-                            <span class="input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">نام کاربری:</label>
+                        <div class="form-input-wrapper">
+                            <span class="form-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="12" cy="7" r="4"></circle>
                                 </svg>
@@ -560,10 +345,10 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">رمز عبور</label>
-                        <div class="input-container">
-                            <span class="input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">رمز عبور:</label>
+                        <div class="form-input-wrapper">
+                            <span class="form-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                 </svg>
@@ -572,35 +357,65 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="login-btn">
-                        <span class="button-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                                <polyline points="10 17 15 12 10 7"></polyline>
-                                <line x1="15" y1="12" x2="3" y2="12"></line>
-                            </svg>
-                        </span>
-                        ورود به سیستم
-                    </button>
+                    <button type="submit" class="login-button">ورود به سامانه</button>
                     
                     <input type="hidden" name="next" value="{{ next }}">
                 </form>
-                
-                <div class="security-note">
-                    <span class="security-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                        </svg>
-                    </span>
-                    <span>سیستم مجهز به قفل هوشمند حساب کاربری است. تلاش‌های ناموفق متعدد منجر به قفل موقت حساب خواهد شد.</span>
-                </div>
             </div>
             
-            <!-- فوتر کارت -->
-            <div class="card-footer">
-                © سیستم هوشمند مدیریت املاک هیرو ۱۴۰۴
+            <!-- بخش چپ - اطلاعات -->
+            <div class="login-info-side">
+                <div class="info-content">
+                    <svg class="info-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 20L20 80V180H80V120H120V180H180V80L100 20Z" stroke="#1e3a8a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="white"/>
+                    </svg>
+                    <h3 class="info-title">سیستم مدیریت هوشمند املاک</h3>
+                    <p>یک سامانه جامع برای مدیریت حرفه‌ای املاک و مستغلات با امکانات پیشرفته و کاربردی.</p>
+                    
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <span class="feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </span>
+                            مدیریت کامل املاک، قراردادها و مشتریان
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </span>
+                            گزارش‌های حرفه‌ای و تحلیل داده‌های املاک
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </span>
+                            امنیت پیشرفته و سطوح دسترسی کاربران
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </span>
+                            پشتیبانی از انواع املاک مسکونی، تجاری و اداری
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+    
+    <!-- فوتر -->
+    <footer class="gov-footer">
+        <div class="gov-footer-container">
+            تمامی حقوق این سامانه متعلق به شرکت هیرو املاک است. © ۱۴۰۴
+        </div>
+    </footer>
 </div>
 {% endblock %}
