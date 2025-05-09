@@ -3,112 +3,203 @@
 {% block styles %}
 {{ block.super }}
 <style>
-    /* تنظیمات اصلی */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%);
+        --secondary-gradient: linear-gradient(135deg, #0072FF 0%, #00C6FF 100%);
+        --light-gradient: linear-gradient(to right, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+        --card-bg: rgba(255, 255, 255, 0.08);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.8);
+        --border-color: rgba(255, 255, 255, 0.12);
+        --shadow-color: rgba(0, 0, 0, 0.25);
+        --input-bg: rgba(255, 255, 255, 0.1);
+        --btn-primary: #5a71e6;
+        --btn-hover: #3f51b5;
+        --accent-color: #00f2fe;
+    }
+
+    /* اصلاح استایل بدنه صفحه */
     html, body {
         height: 100%;
         margin: 0;
         padding: 0;
         overflow: hidden;
-        font-family: 'Tahoma', 'Arial', sans-serif;
         direction: rtl;
     }
     
     body {
-        background-color: #67b7e1;
-        background-image: linear-gradient(180deg, #80caf9 0%, #5d9cec 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        background: #0f2027;
+        background: linear-gradient(to right, #2c5364, #203a43, #0f2027);
+        font-family: 'Tahoma', 'Arial', sans-serif;
         min-height: 100vh;
     }
     
-    /* کانتینر اصلی (بدون هدر) */
-    .login-page {
+    /* محیط اصلی صفحه لاگین */
+    .auth-wrapper {
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    /* پنل تصویر سمت راست */
+    .auth-image-panel {
+        flex: 1.7;
+        background: linear-gradient(45deg, #1a2980 0%, #26d0ce 100%);
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 10px 0px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* افکت سایه روی تصویر */
+    .auth-image-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(15, 32, 39, 0.7) 0%, rgba(44, 83, 100, 0.5) 100%);
+        z-index: 1;
+    }
+    
+    /* پنل محتوای فرم */
+    .auth-content-panel {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        align-items: center;
         justify-content: center;
-        width: 100%;
-        height: 100%;
+        align-items: center;
+        background-color: #0f2027;
+        position: relative;
+        padding: 0 30px;
+        overflow-y: auto;
+    }
+    
+    /* محتوای روی تصویر - شعار و متن */
+    .overlay-content {
+        position: absolute;
+        bottom: 60px;
+        right: 60px;
+        z-index: 2;
+        text-align: right;
+        max-width: 500px;
+    }
+    
+    .overlay-title {
+        font-size: 42px;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 15px;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    
+    .overlay-subtitle {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        margin-bottom: 25px;
+        text-shadow: 0 1px 5px rgba(0,0,0,0.2);
+    }
+    
+    /* لوگو و عنوان فرم لاگین */
+    .logo-container {
+        margin-bottom: 40px;
         text-align: center;
     }
     
-    /* لوگو و عنوان */
-    .logo-container {
-        margin-bottom: 20px;
+    .logo-svg {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 4px 10px rgba(0,242,254,0.3));
     }
     
-    .logo-hexagon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 10px;
-        position: relative;
-    }
-    
-    .title {
-        color: white;
-        font-size: 42px;
-        font-weight: bold;
+    .logo-title {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(to right, #00f2fe, #4facfe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
         margin: 0;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin-bottom: 5px;
+        line-height: 1.2;
     }
     
-    .subtitle {
-        color: #ffffff;
-        font-size: 18px;
-        margin: 0;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    .logo-subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+        margin-top: 5px;
     }
     
-    /* کارت ورود */
+    /* کارت ورود به سیستم */
     .login-card {
-        background-color: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
         width: 100%;
-        max-width: 400px;
-        margin: 30px auto;
-        padding: 30px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        max-width: 420px;
+        padding: 40px;
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 15px 25px var(--shadow-color);
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .login-card-header {
+        margin-bottom: 35px;
+        text-align: center;
     }
     
     .login-title {
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 25px;
-        text-align: center;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 10px;
     }
     
-    /* فرم ورود */
+    .login-subtitle {
+        color: var(--text-secondary);
+        font-size: 15px;
+    }
+    
+    /* استایل فرم */
     .login-form {
-        text-align: center;
+        margin-top: 15px;
     }
     
     .form-group {
-        margin-bottom: 15px;
+        margin-bottom: 24px;
         position: relative;
     }
     
     .form-control {
         width: 100%;
-        padding: 15px 45px 15px 15px;
-        background-color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 16px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        height: 54px;
+        padding: 0 45px 0 15px;
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 15px;
+        transition: all 0.3s ease;
         box-sizing: border-box;
         direction: rtl;
         text-align: right;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
     
     .form-control:focus {
         outline: none;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15);
+    }
+    
+    .form-control::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.7;
     }
     
     .input-icon {
@@ -116,66 +207,250 @@
         right: 15px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9aa0a6;
+        color: var(--text-secondary);
+        pointer-events: none;
     }
     
-    /* دکمه ورود */
+    /* استایل دکمه ورود */
     .btn-login {
+        display: block;
         width: 100%;
-        padding: 15px;
-        background-color: #2196f3;
-        color: white;
+        height: 54px;
+        background: var(--btn-primary);
+        background: var(--primary-gradient);
+        color: var(--text-primary);
         border: none;
-        border-radius: 10px;
-        font-size: 18px;
-        font-weight: bold;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.3s ease;
-        margin-top: 15px;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(90, 113, 230, 0.4);
     }
     
     .btn-login:hover {
-        background-color: #1976d2;
+        transform: translateY(-2px);
+        box-shadow: 0 7px 20px rgba(90, 113, 230, 0.5);
     }
     
-    /* هشدارها */
+    .btn-login:active {
+        transform: translateY(0);
+    }
+    
+    /* استایل پیام‌های خطا */
     .alert {
         padding: 15px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         border-radius: 10px;
-        color: white;
-        text-align: right;
-        background-color: rgba(255, 87, 34, 0.8);
+        background: rgba(240, 52, 52, 0.15);
+        border: 1px solid rgba(240, 52, 52, 0.3);
+        color: #fff;
         display: flex;
         align-items: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
     }
     
     .alert-icon {
-        margin-left: 10px;
+        margin-left: 12px;
+        color: #ff5252;
         flex-shrink: 0;
+    }
+    
+    /* افکت‌های متحرک */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shake {
+        10%, 90% { transform: translateX(-1px); }
+        20%, 80% { transform: translateX(2px); }
+        30%, 50%, 70% { transform: translateX(-4px); }
+        40%, 60% { transform: translateX(4px); }
+    }
+    
+    /* استایل مربوط به چک باکس "مرا به خاطر بسپار" */
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+    
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: var(--input-bg);
+        border: 1px solid var(--border-color);
+        appearance: none;
+        cursor: pointer;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23fff"%3E%3Cpath d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/%3E%3C/svg%3E');
+        background-size: 12px;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+    
+    .form-check-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+        cursor: pointer;
+    }
+    
+    /* استایل حالت ریسپانسیو */
+    @media (max-width: 992px) {
+        .auth-wrapper {
+            flex-direction: column-reverse;
+        }
+        
+        .auth-image-panel {
+            flex: 0 0 35%;
+        }
+        
+        .auth-content-panel {
+            flex: 0 0 65%;
+            padding: 30px 20px;
+        }
+        
+        .overlay-content {
+            bottom: 30px;
+            right: 30px;
+            max-width: 350px;
+        }
+        
+        .overlay-title {
+            font-size: 32px;
+        }
+        
+        .overlay-subtitle {
+            font-size: 16px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .auth-image-panel {
+            display: none;
+        }
+        
+        .auth-content-panel {
+            flex: 1;
+            padding: 25px 15px;
+        }
+        
+        .login-card {
+            padding: 30px 20px;
+        }
+        
+        .login-title {
+            font-size: 22px;
+        }
+    }
+    
+    /* اصلاح استایل سایر بخش‌های صفحه */
+    .info-text {
+        color: var(--text-secondary);
+        font-size: 14px;
+        text-align: center;
+        margin-top: 25px;
+    }
+    
+    /* دایره‌های دکوراتیو */
+    .decoration-circle {
+        position: absolute;
+        background: linear-gradient(to left, #4facfe 0%, #00f2fe 100%);
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.15;
+        z-index: -1;
+    }
+    
+    .circle-1 {
+        width: 300px;
+        height: 300px;
+        top: -150px;
+        right: -100px;
+    }
+    
+    .circle-2 {
+        width: 250px;
+        height: 250px;
+        bottom: -50px;
+        left: -100px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-page">
-    <!-- لوگو و عنوان -->
-    <div class="logo-container">
-        <svg class="logo-hexagon" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M64 0L118.39 32V96L64 128L9.61 96V32L64 0Z" fill="#2962FF"/>
-            <path d="M64 35L88 50V80L64 95L40 80V50L64 35Z" fill="#82B1FF"/>
-            <path d="M64 50L75 57V71L64 78L53 71V57L64 50Z" fill="white"/>
-        </svg>
-        <h1 class="title">هیرو</h1>
-        <p class="subtitle">سیستم املاک</p>
+<div class="auth-wrapper">
+    <!-- پنل تصویر سمت راست -->
+    <div class="auth-image-panel">
+        <div class="overlay-content">
+            <h2 class="overlay-title">مدیریت هوشمند املاک <br>با سیستم پیشرفته هیرو</h2>
+            <p class="overlay-subtitle">سیستم جامع مدیریت املاک با ابزارهای پیشرفته آنالیز، گزارش‌گیری و پیگیری وضعیت املاک</p>
+            <div class="stats-container">
+                <!-- آمار و ارقام کلی سیستم می‌تواند اینجا نمایش داده شود -->
+            </div>
+        </div>
     </div>
     
-    <!-- کارت لاگین -->
-    <div class="login-card">
-        <h2 class="login-title">ورود به حساب</h2>
+    <!-- پنل محتوای فرم لاگین -->
+    <div class="auth-content-panel">
+        <!-- دایره‌های دکوراتیو -->
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
         
-        {% if messages %}
-            {% for message in messages %}
+        <!-- لوگو و عنوان -->
+        <div class="logo-container">
+            <svg class="logo-svg" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M64 0L118.39 32V96L64 128L9.61 96V32L64 0Z" fill="url(#paint0_linear)"/>
+                <path d="M64 35L88 50V80L64 95L40 80V50L64 35Z" fill="url(#paint1_linear)"/>
+                <path d="M64 50L75 57V71L64 78L53 71V57L64 50Z" fill="white"/>
+                <defs>
+                    <linearGradient id="paint0_linear" x1="20" y1="20" x2="108" y2="108" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#4776E6"/>
+                        <stop offset="1" stop-color="#8E54E9"/>
+                    </linearGradient>
+                    <linearGradient id="paint1_linear" x1="40" y1="50" x2="88" y2="80" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#00F2FE"/>
+                        <stop offset="1" stop-color="#4FACFE"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <h1 class="logo-title">هیرو</h1>
+            <p class="logo-subtitle">سیستم هوشمند مدیریت املاک</p>
+        </div>
+        
+        <!-- کارت فرم ورود -->
+        <div class="login-card">
+            <div class="login-card-header">
+                <h2 class="login-title">خوش آمدید</h2>
+                <p class="login-subtitle">برای ورود به سیستم، اطلاعات خود را وارد کنید</p>
+            </div>
+            
+            <!-- پیام‌های خطا -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">
+                        <div class="alert-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </div>
+                        <div>{{ message }}</div>
+                    </div>
+                {% endfor %}
+            {% elif form.errors %}
                 <div class="alert">
                     <div class="alert-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -184,91 +459,114 @@
                             <line x1="12" y1="16" x2="12.01" y2="16"></line>
                         </svg>
                     </div>
-                    <div>{{ message }}</div>
+                    <div><strong>خطا در ورود:</strong> نام کاربری یا رمز عبور اشتباه است.</div>
                 </div>
-            {% endfor %}
-        {% elif form.errors %}
-            <div class="alert">
-                <div class="alert-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
+            {% endif %}
+            
+            <!-- فرم ورود -->
+            <form method="post" action="{% url 'accounts:login' %}" class="login-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <input type="text" class="form-control" placeholder="نام کاربری" id="{{ form.username.id_for_label }}" name="{{ form.username.html_name }}" required>
                 </div>
-                <div><strong>خطا در ورود:</strong> نام کاربری یا رمز عبور اشتباه است.</div>
-            </div>
-        {% endif %}
-        
-        <form method="post" action="{% url 'accounts:login' %}" class="login-form">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <div class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                        <polyline points="22,6 12,13 2,6"></polyline>
-                    </svg>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <input type="password" class="form-control" placeholder="رمز عبور" id="{{ form.password.id_for_label }}" name="{{ form.password.html_name }}" required>
                 </div>
-                <input type="text" class="form-control" placeholder="ایمیل" id="{{ form.username.id_for_label }}" name="{{ form.username.html_name }}" required>
-            </div>
-            
-            <div class="form-group">
-                <div class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
+                
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="id_remember" name="remember">
+                    <label class="form-check-label" for="id_remember">مرا به خاطر بسپار</label>
                 </div>
-                <input type="password" class="form-control" placeholder="رمز عبور" id="{{ form.password.id_for_label }}" name="{{ form.password.html_name }}" required>
-            </div>
+                
+                <button type="submit" class="btn-login" id="loginButton">ورود به سیستم</button>
+                
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
             
-            <button type="submit" class="btn-login">ورود</button>
-            
-            <input type="hidden" name="next" value="{{ next }}">
-        </form>
+            <p class="info-text">با ورود به سیستم، شما تمامی <a href="#" style="color: #4facfe; text-decoration: none;">قوانین و مقررات</a> را پذیرفته‌اید.</p>
+        </div>
     </div>
 </div>
 
 <script>
-    // اضافه کردن افکت‌های ساده
-    document.addEventListener('DOMContentLoaded', function() {
-        // افکت موج برای دکمه ورود
-        const loginButton = document.querySelector('.btn-login');
-        loginButton.addEventListener('click', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    // افکت دکمه ورود
+    const loginButton = document.getElementById('loginButton');
+    loginButton.addEventListener('click', function(e) {
+        if (!this.classList.contains('clicked')) {
+            this.classList.add('clicked');
+            
+            const circle = document.createElement('span');
             const x = e.clientX - e.target.getBoundingClientRect().left;
             const y = e.clientY - e.target.getBoundingClientRect().top;
             
-            const ripple = document.createElement('span');
-            ripple.style.position = 'absolute';
-            ripple.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-            ripple.style.borderRadius = '50%';
-            ripple.style.width = '100px';
-            ripple.style.height = '100px';
-            ripple.style.transform = 'translate(-50%, -50%)';
-            ripple.style.pointerEvents = 'none';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
+            circle.style.position = 'absolute';
+            circle.style.top = y + 'px';
+            circle.style.left = x + 'px';
+            circle.style.width = '5px';
+            circle.style.height = '5px';
+            circle.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+            circle.style.borderRadius = '50%';
+            circle.style.transform = 'translate(-50%, -50%)';
+            circle.style.animation = 'ripple 0.6s linear';
             
-            this.appendChild(ripple);
+            this.appendChild(circle);
             
             setTimeout(() => {
-                this.removeChild(ripple);
+                circle.remove();
+                this.classList.remove('clicked');
             }, 600);
+        }
+    });
+    
+    // تنظیم استایل موقت برای نمایش افکت ripple
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes ripple {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(40);
+                opacity: 0;
+            }
+        }
+        
+        .btn-login.clicked {
+            overflow: hidden;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // افکت فوکوس برای فیلدهای ورودی
+    const inputFields = document.querySelectorAll('.form-control');
+    inputFields.forEach(input => {
+        const formGroup = input.parentElement;
+        
+        input.addEventListener('focus', function() {
+            formGroup.style.transform = 'scale(1.02)';
+            formGroup.style.transition = 'transform 0.3s ease';
         });
         
-        // افکت فوکوس برای فیلدهای ورودی
-        const inputFields = document.querySelectorAll('.form-control');
-        inputFields.forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'scale(1.02)';
-                this.parentElement.style.transition = 'transform 0.3s ease';
-            });
-            
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = 'scale(1)';
-            });
+        input.addEventListener('blur', function() {
+            formGroup.style.transform = 'scale(1)';
         });
     });
+});
 </script>
 {% endblock %}
