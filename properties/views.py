@@ -47,7 +47,7 @@ class PropertyDetailView(DetailView):
     model = Property
     template_name = 'properties/property_detail.html'
     context_object_name = 'property'
-    slug_url_kwarg = 'slug'
+    pk_url_kwarg = 'pk'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -80,7 +80,7 @@ class PropertyUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user.is_staff
     
     def get_success_url(self):
-        return reverse_lazy('properties:property_detail', kwargs={'slug': self.object.slug})
+        return reverse_lazy('properties:property_detail', kwargs={'pk': self.object.pk})
     
     def form_valid(self, form):
         messages.success(self.request, 'ملک با موفقیت بروزرسانی شد.')
@@ -238,43 +238,43 @@ def change_property_status(request, pk):
     """تغییر وضعیت ملک"""
     # بررسی دسترسی کاربر
     if not request.user.is_staff:
-        return JsonResponse({
-            'success': False,
-            'message': 'شما دسترسی لازم برای این عملیات را ندارید.'
-        }, status=403)
+        messages.error(request, 'شما دسترسی لازم برای این عملیات را ندارید.')
+        return redirect('dashboard:home')
     
     # دریافت آیدی وضعیت جدید
     try:
-        status_id = int(request.POST.get('status_id'))
+        status_id = int(request.POST.get('status_id', 0))
+    except ValueError:
+        messages.error(request, 'کد وضعیت نامعتبر است.')
+        return redirect('dashboard:home')
+    
+    if status_id <= 0:
+        messages.error(request, 'وضعیت مورد نظر انتخاب نشده است.')
+        return redirect('dashboard:home')
+    
+    # دریافت وضعیت جدید
+    try:
         new_status = PropertyStatus.objects.get(id=status_id)
-    except (ValueError, PropertyStatus.DoesNotExist):
-        return JsonResponse({
-            'success': False,
-            'message': 'وضعیت مورد نظر یافت نشد.'
-        }, status=400)
+    except PropertyStatus.DoesNotExist:
+        messages.error(request, 'وضعیت مورد نظر در سیستم یافت نشد.')
+        return redirect('dashboard:home')
     
     # پیدا کردن و به‌روزرسانی ملک
     try:
-        property = Property.objects.get(pk=pk)
-        old_status = property.status.name
-        property.status = new_status
-        property.save()
-        
-        # تهیه کلاس CSS برای نمایش وضعیت
-        status_class = 'bg-success'
-        if new_status.name == 'فروخته شده' or new_status.name == 'اجاره داده شده':
-            status_class = 'bg-danger'
-        elif new_status.name == 'رزرو شده':
-            status_class = 'bg-warning'
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'وضعیت ملک از «{old_status}» به «{new_status.name}» تغییر یافت.',
-            'status_name': new_status.name,
-            'status_class': status_class
-        })
+        property_obj = Property.objects.get(pk=pk)
     except Property.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'message': 'ملک مورد نظر یافت نشد.'
-        }, status=404)
+        messages.error(request, 'ملک مورد نظر یافت نشد.')
+        return redirect('dashboard:home')
+    
+    # ذخیره وضعیت قدیمی برای نمایش در پیام
+    old_status = property_obj.status.name
+    property_obj.status = new_status
+    
+    try:
+        property_obj.save()
+        messages.success(request, f'وضعیت ملک «{property_obj.title}» از «{old_status}» به «{new_status.name}» تغییر یافت.')
+    except Exception as e:
+        messages.error(request, f'خطا در ذخیره تغییرات: {str(e)}')
+        
+    # بازگشت به صفحه اصلی داشبورد
+    return redirect('dashboard:home')

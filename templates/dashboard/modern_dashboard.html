@@ -595,15 +595,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="statusModalLabel{{ property.id }}">تغییر وضعیت ملک</h5>
+                <h5 class="modal-title" id="statusModalLabel{{ property.id }}">تغییر وضعیت ملک {{ property.title }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
             </div>
             <form action="{% url 'properties:change_status' property.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
+                        <p class="mb-3">وضعیت فعلی: <strong>{{ property.status.name }}</strong></p>
                         <label for="status{{ property.id }}" class="form-label">وضعیت جدید</label>
                         <select class="form-select" id="status{{ property.id }}" name="status_id">
+                            <option value="">-- انتخاب وضعیت جدید --</option>
                             {% for status in status_choices %}
                             <option value="{{ status.id }}" {% if property.status.id == status.id %}selected{% endif %}>{{ status.name }}</option>
                             {% endfor %}
@@ -612,7 +614,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        ذخیره تغییرات
+                    </button>
                 </div>
             </form>
         </div>
