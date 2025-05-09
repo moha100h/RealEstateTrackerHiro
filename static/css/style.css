@@ -1844,3 +1844,51 @@ footer a:hover {
         border: 1px solid #ddd;
     }
 }
+
+/* استایل‌های منوی کشویی تغییر وضعیت */
+.status-dropdown-menu {
+    min-width: 180px;
+    padding: 0.5rem 0;
+    z-index: 1030;
+    direction: rtl;
+    text-align: right;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium);
+    border: 1px solid var(--gray-200);
+}
+
+.status-dropdown-menu .dropdown-header {
+    font-weight: 600;
+    color: var(--gray-600);
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 0.5rem;
+}
+
+.status-dropdown-menu .dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+}
+
+.status-dropdown-menu .dropdown-item:hover {
+    background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+.status-dropdown-menu .dropdown-item.active {
+    background-color: rgba(var(--primary-rgb), 0.15);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.status-dropdown-menu .dropdown-item:active {
+    background-color: rgba(var(--primary-rgb), 0.2);
+    color: var(--primary-color);
+}
+
+.status-dropdown-menu .badge {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    padding: 0.4rem 0.5rem;
+    transition: all 0.2s;
+}

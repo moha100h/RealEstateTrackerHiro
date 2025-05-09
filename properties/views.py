@@ -235,7 +235,9 @@ def search_properties(request):
 @login_required
 @require_POST
 def change_property_status(request, pk):
-    """تغییر وضعیت ملک با استفاده از AJAX"""
+    """تغییر وضعیت ملک با استفاده از AJAX - پشتیبانی از JSON و فرم عادی"""
+    import json
+    
     # بررسی دسترسی کاربر
     if not request.user.is_staff:
         return JsonResponse({
@@ -243,10 +245,14 @@ def change_property_status(request, pk):
             'message': 'شما دسترسی لازم برای این عملیات را ندارید.'
         }, status=403)
     
-    # دریافت آیدی وضعیت جدید
+    # دریافت آیدی وضعیت جدید - پشتیبانی از هر دو نوع درخواست JSON و فرم معمولی
     try:
-        status_id = int(request.POST.get('status_id', 0))
-    except ValueError:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            status_id = int(data.get('status_id', 0))
+        else:
+            status_id = int(request.POST.get('status_id', 0))
+    except (ValueError, json.JSONDecodeError):
         return JsonResponse({
             'success': False,
             'message': 'کد وضعیت نامعتبر است.'
