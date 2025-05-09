@@ -77,30 +77,32 @@
     
     .property-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
     }
     
     .property-card {
         border: none;
-        border-radius: 15px;
+        border-radius: 16px;
         overflow: hidden;
-        transition: all 0.3s;
-        height: 100%;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+        background-color: #fff;
+        transition: all 0.3s ease;
+        position: relative;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        background-color: white;
+        height: 100%;
+        margin-bottom: 1rem;
     }
     
     .property-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.09);
     }
     
     .property-image-container {
         position: relative;
-        padding-top: 65%;
+        padding-top: 70%;
         overflow: hidden;
     }
     
@@ -115,33 +117,43 @@
     }
     
     .property-card:hover .property-image {
-        transform: scale(1.05);
+        transform: scale(1.08);
+    }
+    
+    .property-badges {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
     
     .property-code {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        z-index: 2;
-        background-color: rgba(13, 110, 253, 0.85);
-        color: white;
-        font-weight: 600;
-        padding: 0.35rem 0.75rem;
+        background: linear-gradient(to right, rgba(41, 114, 250, 0.9), rgba(98, 161, 255, 0.9));
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
         border-radius: 8px;
+        padding: 5px 12px;
+        font-weight: 600;
         font-size: 0.8rem;
-        backdrop-filter: blur(4px);
+        color: white;
+        box-shadow: 0 2px 8px rgba(41, 114, 250, 0.25);
     }
     
     .status-badge {
         position: absolute;
-        top: 1rem;
-        left: 1rem;
+        top: 12px;
+        left: 12px;
         z-index: 2;
-        padding: 0.35rem 0.75rem;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
         border-radius: 8px;
-        font-size: 0.8rem;
+        padding: 5px 12px;
         font-weight: 600;
-        backdrop-filter: blur(4px);
+        font-size: 0.8rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
     .property-content {
@@ -580,6 +592,7 @@
             <div class="property-grid">
                 {% for property in properties %}
                 <div class="property-card">
+                    <!-- بخش تصویر و نشان‌های ملک -->
                     <div class="property-image-container">
                         {% if property.image %}
                         <img src="{{ property.image.url }}" class="property-image" alt="{{ property.title }}">
@@ -587,27 +600,40 @@
                         <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
                         {% else %}
                         <div class="bg-light d-flex align-items-center justify-content-center h-100">
-                            <i class="bi bi-building fs-1 text-muted"></i>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home text-secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         </div>
                         {% endif %}
                         
                         <!-- کد ملک -->
-                        <span class="badge bg-primary property-code">{{ property.property_code }}</span>
+                        <div class="property-badges">
+                            <span class="property-code">{{ property.property_code }}</span>
+                        </div>
                         
                         <!-- وضعیت ملک -->
-                        <span id="status-badge-{{ property.id }}" class="badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% elif property.status.name == 'رزرو شده' %}bg-primary{% elif property.status.name == 'در حال ساخت' %}bg-secondary{% else %}bg-info{% endif %} status-badge">
+                        <span id="status-badge-{{ property.id }}" class="status-badge {% if property.status.name == 'موجود' %}bg-success{% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger{% elif property.status.name == 'رزرو شده' %}bg-primary{% elif property.status.name == 'در حال ساخت' %}bg-secondary{% else %}bg-info{% endif %}">
                             {{ property.status.name }}
                         </span>
+                        
+                        <!-- overlay برای مشاهده جزئیات -->
+                        <div class="property-overlay">
+                            <a href="{% url 'properties:property_detail' property.id %}" class="property-overlay-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                مشاهده جزئیات
+                            </a>
+                        </div>
                     </div>
                     
+                    <!-- مشخصات ملک -->
                     <div class="property-content">
                         <h3 class="property-title">{{ property.title }}</h3>
                         
+                        <!-- آدرس -->
                         <div class="property-location">
-                            <i class="bi bi-geo-alt-fill"></i>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin me-1 text-muted"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             <span>{{ property.address|truncatechars:50 }}</span>
                         </div>
                         
+                        <!-- مشخصات کلیدی ملک -->
                         <div class="property-meta">
                             <div class="meta-item">
                                 <span class="meta-value">{{ property.area|default:"0" }}</span>
@@ -625,22 +651,19 @@
                             </div>
                         </div>
                         
-                        <div class="property-price">
-                            {% if property.total_price %}
-                            {{ property.total_price|intcomma }} تومان
-                            {% elif property.price_per_meter %}
-                            متری {{ property.price_per_meter|intcomma }} تومان
-                            {% endif %}
+                        <!-- قیمت و نوع معامله -->
+                        <div class="price-wrapper">
+                            <div class="property-price">
+                                {% if property.total_price %}
+                                {{ property.total_price|intcomma }} تومان
+                                {% elif property.price_per_meter %}
+                                متری {{ property.price_per_meter|intcomma }} تومان
+                                {% endif %}
+                            </div>
                             {% if property.transaction_type %}
-                            <span class="badge bg-primary-soft text-primary ms-1">{{ property.transaction_type.name }}</span>
+                            <span class="transaction-badge">{{ property.transaction_type.name }}</span>
                             {% endif %}
                         </div>
-                        
-                        <div class="property-links">
-                            <a href="{% url 'properties:property_detail' property.id %}" class="property-link">
-                                <i class="bi bi-eye-fill"></i>
-                                مشاهده جزئیات
-                            </a>
                             
 
                         </div>
