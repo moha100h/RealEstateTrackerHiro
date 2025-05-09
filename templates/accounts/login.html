@@ -26,12 +26,15 @@
         font-display: swap;
     }
 
+    * {
+        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
+    }
+
     html, body {
         height: 100%;
         width: 100%;
         margin: 0;
         padding: 0;
-        font-family: 'Vazir', Tahoma, Arial, sans-serif;
         direction: rtl;
         overflow: hidden;
     }
@@ -154,7 +157,6 @@
         box-sizing: border-box;
         box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02);
         text-align: right;
-        font-family: 'Vazir', Tahoma, sans-serif;
     }
 
     .form-control:focus {
@@ -181,7 +183,6 @@
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: 0 5px 15px rgba(33, 134, 209, 0.3);
-        font-family: 'Vazir', Tahoma, sans-serif;
         position: relative;
         overflow: hidden;
         margin-top: 10px;
@@ -444,10 +445,6 @@
             <button type="submit" class="btn-login" id="loginButton">ورود</button>
             
             <input type="hidden" name="next" value="{{ next }}">
-            
-            <div class="help-links">
-                <a href="#">فراموشی رمز عبور؟</a>
-            </div>
         </form>
     </div>
 </div>
