@@ -4,93 +4,58 @@
 
 {% block extra_css %}
 <style>
-    /* ===== سبک‌بندی پایه و قالب‌بندی صفحه ===== */
+    /* ===== صفحه املاک ===== */
     .properties-page {
-        background-color: #f5f8ff;
-        padding: 2.5rem 0 4rem;
-        min-height: calc(100vh - 70px);
-        position: relative;
+        background-color: #f8fafd;
+        padding: 2rem 0;
+        min-height: 100vh;
     }
     
-    .properties-page::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 280px;
-        background: linear-gradient(165deg, rgba(63, 81, 181, 0.03) 0%, rgba(79, 106, 220, 0) 100%);
-        z-index: 0;
-    }
-    
-    .page-header-container {
-        margin-bottom: 3rem;
-        position: relative;
-        z-index: 1;
+    .page-header {
+        margin-bottom: 2rem;
     }
     
     .page-title {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #2c3e50;
-        position: relative;
-        display: inline-block;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #2d3748;
         margin-bottom: 0.5rem;
-        letter-spacing: -0.5px;
-    }
-    
-    .page-title::after {
-        content: '';
-        position: absolute;
-        width: 50%;
-        height: 8px;
-        background: linear-gradient(90deg, rgba(79, 106, 220, 0.2) 0%, rgba(79, 106, 220, 0) 100%);
-        bottom: 5px;
-        right: 0;
-        z-index: -1;
-        border-radius: 10px;
     }
     
     .page-subtitle {
         color: #718096;
-        font-size: 1rem;
-        margin-bottom: 0;
-        font-weight: 400;
+        font-size: 0.9rem;
     }
-    
-    /* ===== کارت‌های فوق مدرن و مینیمال املاک ===== */
+
+    /* ===== گرید کارت‌های املاک ===== */
     .properties-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 2rem;
-        position: relative;
-        z-index: 1;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
     }
     
+    /* ===== کارت‌های مدرن و جذاب املاک ===== */
     .property-card {
-        background-color: #fff;
-        border-radius: 24px;
-        overflow: hidden;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
-        transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
         position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+        background: white;
         height: 100%;
         display: flex;
         flex-direction: column;
-        border: 1px solid rgba(226, 232, 240, 0.6);
-        transform: translateY(0);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
     .property-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(79, 106, 220, 0.15);
-        border-color: rgba(79, 106, 220, 0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
     
     /* بخش تصویر */
     .property-image-wrapper {
         position: relative;
-        padding-top: 62%; /* نسبت تصویر */
+        padding-top: 56.25%; /* نسبت 16:9 */
         overflow: hidden;
     }
     
@@ -101,171 +66,113 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.7s cubic-bezier(0.165, 0.84, 0.44, 1);
-        filter: brightness(1);
+        transition: transform 0.5s ease;
     }
     
     .property-card:hover .property-image {
-        transform: scale(1.12);
-        filter: brightness(1.05);
+        transform: scale(1.08);
     }
     
-    /* گرادیان روی تصویر */
-    .image-overlay {
+    /* نشانگر وضعیت ملک - همیشه نمایان */
+    .property-status {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
-        z-index: 1;
-        transition: opacity 0.3s ease;
-    }
-    
-    /* نشان‌گرهای کد و وضعیت */
-    .property-code-badge {
-        position: absolute;
-        top: 18px;
-        right: 18px;
+        top: 12px;
+        right: 12px;
         z-index: 2;
-        background: linear-gradient(45deg, rgba(79, 106, 220, 0.92), rgba(126, 146, 250, 0.92));
-        color: white;
-        padding: 0.45rem 0.95rem;
-        border-radius: 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 12px rgba(79, 106, 220, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-    
-    .property-status-badge {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 2;
-        color: white;
-        padding: 12px 15px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        text-align: center;
-        background: linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.7), rgba(0,0,0,0.5));
-        backdrop-filter: blur(8px);
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        transform: translateY(100%);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .property-card:hover .property-status-badge {
-        transform: translateY(0);
-    }
-    
-    /* دکمه مشاهده جزئیات */
-    .property-view-details {
-        position: absolute;
-        top: 18px;
-        left: 18px;
-        z-index: 4;
-        background-color: rgba(255, 255, 255, 0.95);
-        color: #4f6adc;
+        padding: 0.35rem 0.8rem;
         border-radius: 50px;
-        padding: 0.6rem 1.3rem;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-        text-decoration: none;
-        transform: translateX(-150%);
-        transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-    }
-    
-    .property-card:hover .property-view-details {
-        transform: translateX(0);
-    }
-    
-    .property-view-details:hover {
-        background-color: #4f6adc;
+        gap: 5px;
         color: white;
-        box-shadow: 0 6px 20px rgba(79, 106, 220, 0.3);
     }
     
-    /* بخش محتوا */
+    .status-available {
+        background-color: #10b981;
+    }
+    
+    .status-sold {
+        background-color: #ef4444;
+    }
+    
+    .status-rented {
+        background-color: #ef4444;
+    }
+    
+    .status-reserved {
+        background-color: #4f46e5;
+    }
+    
+    .status-building {
+        background-color: #6b7280;
+    }
+    
+    .status-ready {
+        background-color: #0ea5e9;
+    }
+    
+    /* کد ملک */
+    .property-code {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 2;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        font-size: 0.75rem;
+        border-radius: 5px;
+        padding: 0.25rem 0.5rem;
+        backdrop-filter: blur(4px);
+    }
+    
+    /* محتوای ملک */
     .property-content {
-        padding: 2rem;
+        padding: 1.25rem;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
-        position: relative;
     }
     
-    .property-content::before {
-        content: '';
-        position: absolute;
-        top: -30px;
-        left: 0;
-        right: 0;
-        height: 30px;
-        background: linear-gradient(to bottom, rgba(255,255,255,0), #ffffff);
-        z-index: 2;
-        border-radius: 24px 24px 0 0;
-    }
-    
+    /* عنوان ملک */
     .property-title {
-        font-size: 1.35rem;
+        font-size: 1.1rem;
         font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 1rem;
-        line-height: 1.4;
-        transition: all 0.3s ease;
-        letter-spacing: -0.3px;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
     }
     
-    .property-card:hover .property-title {
-        color: #4f6adc;
-        transform: translateX(-3px);
-    }
-    
+    /* آدرس */
     .property-location {
         display: flex;
+        gap: 0.4rem;
+        color: #64748b;
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
         align-items: flex-start;
-        gap: 0.6rem;
-        color: #718096;
-        margin-bottom: 1.7rem;
-        font-size: 0.9rem;
-        position: relative;
     }
     
     .property-location svg {
-        min-width: 16px;
+        min-width: 14px;
         margin-top: 3px;
-        color: #a0aec0;
-        transition: all 0.3s ease;
     }
     
-    .property-card:hover .property-location svg {
-        color: #4f6adc;
-    }
-    
-    /* ویژگی‌های ملک */
+    /* ویژگی‌های کلیدی */
     .property-features {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.8rem;
-        padding: 1.5rem 0;
-        border-top: 1px solid rgba(226, 232, 240, 0.6);
-        border-bottom: 1px solid rgba(226, 232, 240, 0.6);
-        position: relative;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-top: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+        margin-bottom: 1rem;
     }
     
     .feature-item {
@@ -275,57 +182,16 @@
         text-align: center;
     }
     
-    .feature-icon {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f0f5ff;
-        color: #4f6adc;
-        border-radius: 14px;
-        margin-bottom: 0.8rem;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-        z-index: 1;
-    }
-    
-    .feature-icon::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, #4f6adc, #6f84e8);
-        border-radius: 14px;
-        opacity: 0;
-        z-index: -1;
-        transition: opacity 0.4s ease;
-    }
-    
-    .property-card:hover .feature-icon {
-        color: white;
-        transform: scale(1.15) rotate(-8deg);
-        box-shadow: 0 5px 15px rgba(79, 106, 220, 0.25);
-    }
-    
-    .property-card:hover .feature-icon::before {
-        opacity: 1;
-    }
-    
     .feature-value {
         font-weight: 700;
-        color: #2d3748;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .property-card:hover .feature-value {
-        color: #4f6adc;
+        color: #334155;
+        font-size: 0.9rem;
     }
     
     .feature-label {
-        font-size: 0.85rem;
-        color: #718096;
-        margin-top: 3px;
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-top: 0.2rem;
     }
     
     /* قیمت و نوع معامله */
@@ -337,285 +203,162 @@
     }
     
     .property-price {
-        font-size: 1.25rem;
         font-weight: 700;
-        color: #4f6adc;
-        display: flex;
-        align-items: center;
-        gap: 0.7rem;
-        transition: all 0.3s ease;
-    }
-    
-    .property-card:hover .property-price {
-        transform: scale(1.05);
-    }
-    
-    .price-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        background-color: rgba(79, 106, 220, 0.08);
-        border-radius: 12px;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-        z-index: 1;
-    }
-    
-    .price-icon::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, #4f6adc, #6f84e8);
-        border-radius: 12px;
-        opacity: 0;
-        z-index: -1;
-        transition: opacity 0.4s ease;
-    }
-    
-    .property-card:hover .price-icon {
-        color: white;
-        transform: scale(1.2) rotate(-5deg);
-        box-shadow: 0 5px 15px rgba(79, 106, 220, 0.25);
-    }
-    
-    .property-card:hover .price-icon::before {
-        opacity: 1;
+        color: #4338ca;
+        font-size: 1rem;
     }
     
     .transaction-badge {
-        background-color: rgba(79, 106, 220, 0.08);
-        color: #4f6adc;
-        font-size: 0.85rem;
+        background-color: #eff6ff;
+        color: #3b82f6;
+        padding: 0.25rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
         font-weight: 600;
-        padding: 0.4rem 1rem;
-        border-radius: 50px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(79, 106, 220, 0.1);
     }
     
-    .property-card:hover .transaction-badge {
-        background-color: #4f6adc;
+    /* دکمه مشاهده جزئیات */
+    .view-details-btn {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.75rem;
+        background-color: #4f46e5;
         color: white;
-        box-shadow: 0 4px 10px rgba(79, 106, 220, 0.25);
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .property-card:hover .view-details-btn {
+        transform: translateY(0);
     }
     
     /* دکمه‌های بالای صفحه */
     .action-buttons {
         display: flex;
-        gap: 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
     
     .btn-add-property {
-        background: linear-gradient(45deg, #4f6adc, #5a7cfa);
+        background-color: #4f46e5;
         color: white;
         border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 15px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
         font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(79, 106, 220, 0.25);
+        gap: 0.5rem;
+        transition: all 0.2s ease;
     }
     
     .btn-add-property:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(79, 106, 220, 0.35);
-        color: white;
+        background-color: #4338ca;
+        transform: translateY(-2px);
     }
     
     .btn-search {
-        background-color: #fff;
-        color: #4f6adc;
-        border: 1px solid rgba(79, 106, 220, 0.2);
-        padding: 0.75rem 1.5rem;
-        border-radius: 15px;
+        background-color: #f8fafc;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
         font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-        transition: all 0.3s ease;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
     }
     
     .btn-search:hover {
-        background-color: #f1f5fd;
-        border-color: rgba(79, 106, 220, 0.4);
-        color: #4f6adc;
-    }
-    
-    /* پیجینیشن مدرن */
-    .pagination-container {
-        margin-top: 3.5rem;
-        display: flex;
-        justify-content: center;
-    }
-    
-    .pagination {
-        display: flex;
-        gap: 0.6rem;
-    }
-    
-    .page-item.active .page-link {
-        background-color: #4f6adc;
-        border-color: #4f6adc;
-        color: white;
-    }
-    
-    .page-link {
-        border-radius: 12px;
-        font-weight: 600;
-        color: #4f6adc;
-        padding: 0.6rem 1rem;
-        min-width: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(79, 106, 220, 0.15);
-        background-color: white;
-        transition: all 0.25s ease;
-    }
-    
-    .page-link:hover {
-        background-color: rgba(79, 106, 220, 0.08);
-        color: #4f6adc;
-        border-color: rgba(79, 106, 220, 0.25);
-    }
-    
-    .page-link.nav-link {
-        padding: 0.6rem 1.2rem;
+        background-color: #f1f5f9;
     }
     
     /* حالت خالی */
     .empty-state {
         text-align: center;
-        padding: 5rem 2rem;
+        padding: 3rem 1.5rem;
         background-color: white;
-        border-radius: 20px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+        border-radius: 16px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
     }
     
     .empty-state-icon {
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 2rem;
+        margin: 0 auto 1.5rem;
+        width: 80px;
+        height: 80px;
+        background-color: #f1f5f9;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: rgba(79, 106, 220, 0.05);
-        border-radius: 50%;
-        color: #4f6adc;
+        color: #64748b;
     }
     
     .empty-state-title {
-        font-size: 1.6rem;
+        font-size: 1.25rem;
         font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 1rem;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
     }
     
     .empty-state-text {
-        color: #718096;
-        margin-bottom: 2rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
+        color: #64748b;
+        margin-bottom: 1.5rem;
     }
     
-    /* برای نمایش موبایل */
+    /* پیجینیشن */
+    .pagination-container {
+        margin-top: 2.5rem;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 0.2rem;
+        color: #4f46e5;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+    }
+    
+    /* موبایل */
     @media (max-width: 768px) {
         .properties-grid {
             grid-template-columns: 1fr;
-            gap: 1.2rem;
         }
         
-        .property-image-wrapper {
-            padding-top: 50%;
+        .page-header {
+            text-align: center;
         }
         
-        .mobile-card {
-            display: flex;
-            background-color: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
-            margin-bottom: 1rem;
-            border: 1px solid rgba(226, 232, 240, 0.7);
+        .action-buttons {
+            justify-content: center;
+            margin-top: 1rem;
         }
-        
-        .mobile-image {
-            width: 120px;
-            min-width: 120px;
-            height: 120px;
-            position: relative;
-            overflow: hidden;
+    }
+    
+    /* بارگذاری تصویر تدریجی */
+    .property-image {
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
         }
-        
-        .mobile-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .mobile-content {
-            padding: 1rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .mobile-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #2d3748;
-        }
-        
-        .mobile-location {
-            font-size: 0.8rem;
-            color: #718096;
-            margin-bottom: 0.7rem;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        
-        .mobile-features {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.7rem;
-            flex-wrap: wrap;
-        }
-        
-        .mobile-feature {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.6rem;
-            background-color: #f1f5fd;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        
-        .mobile-price {
-            margin-top: auto;
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #4f6adc;
-        }
-        
-        .mobile-transaction {
-            font-size: 0.7rem;
-            background-color: rgba(79, 106, 220, 0.08);
-            color: #4f6adc;
-            padding: 0.2rem 0.5rem;
-            border-radius: 50px;
-            margin-right: 0.5rem;
+        to {
+            opacity: 1;
         }
     }
 </style>
@@ -631,22 +374,22 @@
 {% block content %}
 <div class="properties-page">
     <div class="container">
-        <!-- عنوان صفحه -->
-        <div class="page-header-container">
-            <div class="row align-items-center">
-                <div class="col-md-7 mb-4 mb-md-0">
-                    <h1 class="page-title">مدیریت املاک</h1>
-                    <p class="page-subtitle">مجموعه املاک فعال و قابل معامله در سیستم هوشمند هیرو</p>
+        <!-- هدر صفحه -->
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-7">
+                    <h1 class="page-title">لیست املاک</h1>
+                    <p class="page-subtitle">مدیریت و جستجوی املاک موجود در سیستم</p>
                 </div>
                 <div class="col-md-5 text-md-end">
                     <div class="action-buttons">
                         <a href="{% url 'properties:property_search' %}" class="btn btn-search">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                             جستجوی پیشرفته
                         </a>
                         
                         <a href="{% url 'properties:property_create' %}" class="btn btn-add-property">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             افزودن ملک جدید
                         </a>
                     </div>
@@ -654,238 +397,153 @@
             </div>
         </div>
         
-        <!-- نمایش املاک -->
         {% if properties %}
-            <!-- نسخه دسکتاپ -->
-            <div class="properties-grid d-none d-md-grid">
-                {% for property in properties %}
-                <div class="property-card">
-                    <!-- بخش تصویر -->
-                    <div class="property-image-wrapper">
-                        {% if property.image %}
-                            <img src="{{ property.image.url }}" class="property-image" alt="{{ property.title }}">
-                        {% elif system_config.default_property_image %}
-                            <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
-                        {% else %}
-                            <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#a3aed0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- افکت روی تصویر -->
-                        <div class="image-overlay"></div>
-                        
-                        <!-- کد ملک -->
-                        <div class="property-code-badge">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-hash"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
-                            {{ property.property_code }}
+        <!-- گرید کارت‌های املاک -->
+        <div class="properties-grid">
+            {% for property in properties %}
+            <div class="property-card">
+                <!-- تصویر ملک -->
+                <div class="property-image-wrapper">
+                    {% if property.image %}
+                        <img src="{{ property.image.url }}" class="property-image" alt="{{ property.title }}">
+                    {% elif system_config.default_property_image %}
+                        <img src="{{ system_config.default_property_image.url }}" class="property-image" alt="{{ property.title }}">
+                    {% else %}
+                        <div class="property-image bg-light d-flex align-items-center justify-content-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         </div>
+                    {% endif %}
+                    
+                    <!-- وضعیت ملک - همیشه نمایان -->
+                    <div class="property-status 
+                        {% if property.status.name == 'موجود' %}status-available
+                        {% elif property.status.name == 'فروخته شده' %}status-sold
+                        {% elif property.status.name == 'اجاره داده شده' %}status-rented
+                        {% elif property.status.name == 'رزرو شده' %}status-reserved
+                        {% elif property.status.name == 'در حال ساخت' %}status-building
+                        {% else %}status-ready{% endif %}">
                         
-                        <!-- وضعیت ملک -->
-                        <div class="property-status-badge 
-                            {% if property.status.name == 'موجود' %}bg-success
-                            {% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger
-                            {% elif property.status.name == 'رزرو شده' %}bg-primary
-                            {% elif property.status.name == 'در حال ساخت' %}bg-secondary
-                            {% else %}bg-info{% endif %}">
-                            {{ property.status.name }}
-                        </div>
-                        
-                        <!-- دکمه مشاهده جزئیات -->
-                        <a href="{% url 'properties:property_detail' property.id %}" class="property-view-details">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            مشاهده جزئیات
-                        </a>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                        {{ property.status.name }}
                     </div>
                     
-                    <!-- محتوای اصلی -->
-                    <div class="property-content">
-                        <!-- عنوان ملک -->
-                        <h3 class="property-title">{{ property.title }}</h3>
-                        
-                        <!-- آدرس -->
-                        <div class="property-location">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            <span>{{ property.address|truncatechars:60 }}</span>
-                        </div>
-                        
-                        <!-- ویژگی‌های ملک -->
-                        <div class="property-features">
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-                                </div>
-                                <div class="feature-value">{{ property.area|default:"0" }}</div>
-                                <div class="feature-label">متر مربع</div>
-                            </div>
-                            
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                </div>
-                                <div class="feature-value">{{ property.rooms|default:"0" }}</div>
-                                <div class="feature-label">اتاق</div>
-                            </div>
-                            
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                </div>
-                                <div class="feature-value">{{ property.year_built|default:"--" }}</div>
-                                <div class="feature-label">سال ساخت</div>
-                            </div>
-                        </div>
-                        
-                        <!-- قیمت و نوع معامله -->
-                        <div class="property-meta">
-                            <div class="property-price">
-                                <span class="price-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                                </span>
-                                {% if property.total_price %}
-                                    {{ property.total_price|intcomma }} تومان
-                                {% elif property.price_per_meter %}
-                                    {{ property.price_per_meter|intcomma }} / متر
-                                {% endif %}
-                            </div>
-                            
-                            {% if property.transaction_type %}
-                            <div class="transaction-badge">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                                {{ property.transaction_type.name }}
-                            </div>
-                            {% endif %}
-                        </div>
+                    <!-- کد ملک -->
+                    <div class="property-code">
+                        {{ property.property_code }}
                     </div>
+                    
+                    <!-- دکمه مشاهده جزئیات -->
+                    <a href="{% url 'properties:property_detail' property.id %}" class="view-details-btn">
+                        مشاهده جزئیات
+                    </a>
                 </div>
-                {% endfor %}
-            </div>
-            
-            <!-- نسخه موبایل -->
-            <div class="d-md-none">
-                {% for property in properties %}
-                <div class="mobile-card">
-                    <div class="mobile-image">
-                        {% if property.image %}
-                            <img src="{{ property.image.url }}" alt="{{ property.title }}">
-                        {% elif system_config.default_property_image %}
-                            <img src="{{ system_config.default_property_image.url }}" alt="{{ property.title }}">
-                        {% else %}
-                            <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a3aed0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                            </div>
-                        {% endif %}
+                
+                <!-- محتوای ملک -->
+                <div class="property-content">
+                    <!-- عنوان -->
+                    <h3 class="property-title">{{ property.title }}</h3>
+                    
+                    <!-- آدرس -->
+                    <div class="property-location">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <span>{{ property.address|truncatechars:50 }}</span>
                     </div>
                     
-                    <div class="mobile-content">
-                        <h3 class="mobile-title">{{ property.title }}</h3>
-                        
-                        <div class="mobile-location">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            {{ property.address|truncatechars:30 }}
+                    <!-- ویژگی‌های کلیدی -->
+                    <div class="property-features">
+                        <div class="feature-item">
+                            <span class="feature-value">{{ property.area|default:"0" }}</span>
+                            <span class="feature-label">متر مربع</span>
                         </div>
                         
-                        <div class="mobile-features">
-                            {% if property.area %}
-                            <div class="mobile-feature">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-                                {{ property.area }} متر
-                            </div>
-                            {% endif %}
-                            
-                            {% if property.rooms %}
-                            <div class="mobile-feature">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                {{ property.rooms }} اتاق
-                            </div>
-                            {% endif %}
-                            
-                            <div class="mobile-feature 
-                                {% if property.status.name == 'موجود' %}bg-success text-white
-                                {% elif property.status.name == 'فروخته شده' or property.status.name == 'اجاره داده شده' %}bg-danger text-white
-                                {% elif property.status.name == 'رزرو شده' %}bg-primary text-white
-                                {% elif property.status.name == 'در حال ساخت' %}bg-secondary text-white
-                                {% else %}bg-info text-white{% endif %}">
-                                {{ property.status.name }}
-                            </div>
+                        <div class="feature-item">
+                            <span class="feature-value">{{ property.rooms|default:"0" }}</span>
+                            <span class="feature-label">اتاق</span>
                         </div>
                         
-                        <div class="mobile-price">
+                        <div class="feature-item">
+                            <span class="feature-value">{{ property.year_built|default:"--" }}</span>
+                            <span class="feature-label">سال ساخت</span>
+                        </div>
+                    </div>
+                    
+                    <!-- قیمت و نوع معامله -->
+                    <div class="property-meta">
+                        <div class="property-price">
                             {% if property.total_price %}
                                 {{ property.total_price|intcomma }} تومان
                             {% elif property.price_per_meter %}
-                                {{ property.price_per_meter|intcomma }} / متر
-                            {% endif %}
-                            
-                            {% if property.transaction_type %}
-                                <span class="mobile-transaction">{{ property.transaction_type.name }}</span>
+                                متری {{ property.price_per_meter|intcomma }} تومان
                             {% endif %}
                         </div>
                         
-                        <div class="text-end mt-2">
-                            <a href="{% url 'properties:property_detail' property.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">مشاهده جزئیات</a>
+                        {% if property.transaction_type %}
+                        <div class="transaction-badge">
+                            {{ property.transaction_type.name }}
                         </div>
+                        {% endif %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
-            
-            <!-- پیجینیشن -->
-            {% if page_obj.has_other_pages %}
-            <div class="pagination-container">
-                <nav>
-                    <ul class="pagination">
-                        {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link nav-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-right"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link nav-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </a>
-                        </li>
-                        {% endif %}
-                        
-                        {% for num in page_obj.paginator.page_range %}
-                        {% if page_obj.number == num %}
-                        <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
-                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
-                        {% endif %}
-                        {% endfor %}
-                        
-                        {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link nav-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-left"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link nav-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-left"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-            {% endif %}
-            
+            {% endfor %}
+        </div>
+        
+        <!-- پیجینیشن -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-right"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-left"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-left"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        
         {% else %}
-            <!-- حالت خالی -->
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </div>
-                <h3 class="empty-state-title">هنوز هیچ ملکی در سیستم ثبت نشده است</h3>
-                <p class="empty-state-text">میتوانید اولین ملک را به سیستم اضافه کنید و مدیریت املاک را آغاز کنید.</p>
-                <a href="{% url 'properties:property_create' %}" class="btn btn-add-property">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    افزودن اولین ملک
-                </a>
+        <!-- حالت خالی -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </div>
+            <h3 class="empty-state-title">هیچ ملکی یافت نشد</h3>
+            <p class="empty-state-text">در حال حاضر هیچ ملکی در سیستم ثبت نشده است.</p>
+            <a href="{% url 'properties:property_create' %}" class="btn btn-add-property">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                افزودن اولین ملک
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>
