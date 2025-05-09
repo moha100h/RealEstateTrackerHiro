@@ -1,14 +1,16 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Avg
-from django.db.models.functions import TruncMonth
+from django.db.models import Count, Avg, Sum, Max, Min, F, Q
+from django.db.models.functions import TruncMonth, TruncDate, ExtractMonth
 from properties.models import Property, PropertyStatus, PropertyType, TransactionType
+from django.contrib.auth.models import User
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
+import json
 
 @login_required
 def dashboard_home(request):
-    """داشبورد اصلی سیستم"""
+    """داشبورد اصلی سیستم با طراحی مدرن و داده‌های پیشرفته"""
     # تعداد کل املاک
     total_properties = Property.objects.count()
     
@@ -54,6 +56,44 @@ def dashboard_home(request):
     # تعداد املاک موجود (قابل معامله)
     available_properties = Property.objects.filter(status__name='موجود').count()
     
+    # تعداد املاک در حال ساخت یا آماده تحویل
+    upcoming_properties = Property.objects.filter(status__name__in=['در حال ساخت', 'آماده تحویل']).count()
+    
+    # تعداد املاک رزرو شده
+    reserved_properties = Property.objects.filter(status__name='رزرو شده').count()
+    
+    # آمار افزوده شده در ماه جاری
+    now = timezone.now()
+    current_month_start = timezone.make_aware(datetime(now.year, now.month, 1))
+    current_month_properties = Property.objects.filter(created_at__gte=current_month_start).count()
+    
+    # نرخ رشد ماهانه (اگر املاک ماه قبل وجود دارد)
+    last_month_start = current_month_start - timedelta(days=30)  # تقریبی، کافی برای این مثال
+    last_month_properties = Property.objects.filter(
+        created_at__gte=last_month_start, 
+        created_at__lt=current_month_start
+    ).count()
+    
+    monthly_growth_rate = 0
+    if last_month_properties > 0:
+        monthly_growth_rate = ((current_month_properties - last_month_properties) / last_month_properties) * 100
+    
+    # گروه‌بندی قیمت املاک
+    price_ranges = {
+        'economic': Property.objects.filter(price__lt=1000000000).count(),  # زیر 1 میلیارد تومان
+        'mid_range': Property.objects.filter(price__gte=1000000000, price__lt=5000000000).count(),  # 1-5 میلیارد تومان
+        'luxury': Property.objects.filter(price__gte=5000000000).count()  # بالای 5 میلیارد تومان
+    }
+    
+    # آمار کلی بروز تنظیم شده
+    stats_updated_at = timezone.now()
+    
+    # جمع مساحت کل املاک (به عنوان یک آمار جالب)
+    total_area = Property.objects.aggregate(total=Sum('area'))['total'] or 0
+    
+    # میانگین روزهای حضور ملک در سیستم تا فروش/اجاره
+    # (این مورد نیاز به فیلد 'date_sold' یا مشابه آن دارد که در سیستم فعلی نیست)
+    
     context = {
         'property_status_stats': property_status_stats,
         'transaction_type_stats': transaction_type_stats,
@@ -63,7 +103,14 @@ def dashboard_home(request):
         'total_properties': total_properties,
         'sold_properties': sold_properties,
         'available_properties': available_properties,
-        'title': 'داشبورد مدیریت'
+        'upcoming_properties': upcoming_properties,
+        'reserved_properties': reserved_properties,
+        'current_month_properties': current_month_properties,
+        'monthly_growth_rate': monthly_growth_rate,
+        'price_ranges': price_ranges,
+        'stats_updated_at': stats_updated_at,
+        'total_area': total_area,
+        'title': 'داشبورد مدیریت هوشمند'
     }
     
-    return render(request, 'dashboard/dashboard.html', context)
+    return render(request, 'dashboard/new_dashboard.html', context)
