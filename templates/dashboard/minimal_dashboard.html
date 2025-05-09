@@ -646,7 +646,7 @@
                                             {{ stat.property_type__name }}
                                         </div>
                                     </td>
-                                    <td class="text-center property-price">{{ stat.avg_price|floatformat:0|intcomma }}</td>
+                                    <td class="text-center property-price">{{ stat.avg_price|floatformat:0 }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -707,7 +707,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="property-price">{{ property.price|intcomma }}</td>
+                                    <td class="property-price">{{ property.price }}</td>
                                     <td>
                                         <span class="status-badge 
                                         {% if property.status.name == 'موجود' %}badge-available
