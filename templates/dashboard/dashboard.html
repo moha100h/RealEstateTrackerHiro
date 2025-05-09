@@ -768,4 +768,293 @@
 
 {% block extra_js %}
 <script src="/static/js/status-manager.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+// آماده‌سازی داده‌ها برای نمودارها
+document.addEventListener('DOMContentLoaded', function() {
+    // داده‌های نمودار وضعیت املاک
+    const statusChartData = {
+        labels: [{% for stat in property_status_stats %}'{{ stat.status__name }}',{% endfor %}],
+        datasets: [{
+            data: [{% for stat in property_status_stats %}{{ stat.count }},{% endfor %}],
+            backgroundColor: [
+                {% for stat in property_status_stats %}
+                {% if stat.status__name == 'موجود' %}'#198754'
+                {% elif stat.status__name == 'فروخته شده' %}'#dc3545'
+                {% elif stat.status__name == 'اجاره داده شده' %}'#e35d6a'
+                {% elif stat.status__name == 'رزرو شده' %}'#0d6efd'
+                {% elif stat.status__name == 'در حال ساخت' %}'#6c757d'
+                {% elif stat.status__name == 'آماده تحویل' %}'#0dcaf0'
+                {% else %}'#ffc107'{% endif %},
+                {% endfor %}
+            ],
+            hoverOffset: 4,
+            borderWidth: 0,
+        }]
+    };
+
+    // داده‌های نمودار نوع معامله
+    const transactionChartData = {
+        labels: [{% for stat in transaction_type_stats %}'{{ stat.transaction_type__name }}',{% endfor %}],
+        datasets: [{
+            label: 'تعداد معاملات',
+            data: [{% for stat in transaction_type_stats %}{{ stat.count }},{% endfor %}],
+            backgroundColor: 'rgba(13, 110, 253, 0.7)',
+            borderColor: 'rgba(13, 110, 253, 1)',
+            borderWidth: 1,
+            borderRadius: 5,
+            hoverBackgroundColor: 'rgba(13, 110, 253, 0.9)',
+        }]
+    };
+
+    // داده‌های نمودار نوع ملک
+    const propertyTypeChartData = {
+        labels: [{% for stat in property_type_stats %}'{{ stat.property_type__name }}',{% endfor %}],
+        datasets: [{
+            label: 'تعداد املاک',
+            data: [{% for stat in property_type_stats %}{{ stat.count }},{% endfor %}],
+            backgroundColor: 'rgba(255, 193, 7, 0.7)',
+            borderColor: 'rgba(255, 193, 7, 1)',
+            borderWidth: 1,
+            borderRadius: 5,
+            hoverBackgroundColor: 'rgba(255, 193, 7, 0.9)',
+        }]
+    };
+
+    // داده‌های نمودار میانگین قیمت
+    const avgPriceChartData = {
+        labels: [{% for stat in avg_price_by_type %}'{{ stat.property_type__name }}',{% endfor %}],
+        datasets: [{
+            label: 'میانگین قیمت (تومان)',
+            data: [{% for stat in avg_price_by_type %}{{ stat.avg_price|floatformat:0 }},{% endfor %}],
+            backgroundColor: 'rgba(25, 135, 84, 0.7)',
+            borderColor: 'rgba(25, 135, 84, 1)',
+            borderWidth: 1,
+            hoverBackgroundColor: 'rgba(25, 135, 84, 0.9)',
+            fill: true,
+        }]
+    };
+
+    // تنظیمات عمومی نمودارها
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false,
+                position: 'bottom',
+                labels: {
+                    font: {
+                        family: 'Vazirmatn, sans-serif',
+                    },
+                    color: '#495057',
+                    padding: 15
+                }
+            },
+            tooltip: {
+                titleFont: {
+                    family: 'Vazirmatn, sans-serif',
+                },
+                bodyFont: {
+                    family: 'Vazirmatn, sans-serif',
+                },
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed !== null) {
+                            label += new Intl.NumberFormat('fa-IR').format(context.parsed);
+                        }
+                        return label;
+                    }
+                }
+            }
+        }
+    };
+
+    // رسم نمودار وضعیت املاک
+    const statusChartElement = document.getElementById('propertyStatusChart');
+    if (statusChartElement) {
+        const statusChart = new Chart(statusChartElement, {
+            type: 'doughnut',
+            data: statusChartData,
+            options: {
+                ...chartOptions,
+                cutout: '65%',
+                plugins: {
+                    ...chartOptions.plugins,
+                    legend: {
+                        display: false,
+                    }
+                }
+            }
+        });
+        
+        // دکمه‌های دانلود و بروزرسانی
+        document.getElementById('downloadStatusChart').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = statusChartElement.toDataURL('image/png');
+            link.download = 'نمودار-وضعیت-املاک.png';
+            link.click();
+        });
+        
+        document.getElementById('refreshStatusChart').addEventListener('click', function() {
+            location.reload();
+        });
+    }
+
+    // رسم نمودار نوع معامله
+    const transactionChartElement = document.getElementById('transactionTypeChart');
+    if (transactionChartElement) {
+        const transactionChart = new Chart(transactionChartElement, {
+            type: 'bar',
+            data: transactionChartData,
+            options: {
+                ...chartOptions,
+                indexAxis: 'y', // نمودار افقی
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn, sans-serif'
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            drawBorder: false,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn, sans-serif'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        
+        // دکمه‌های دانلود و بروزرسانی
+        document.getElementById('downloadTransactionChart').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = transactionChartElement.toDataURL('image/png');
+            link.download = 'نمودار-نوع-معاملات.png';
+            link.click();
+        });
+        
+        document.getElementById('refreshTransactionChart').addEventListener('click', function() {
+            location.reload();
+        });
+    }
+
+    // رسم نمودار نوع ملک
+    const propertyTypeChartElement = document.getElementById('propertyTypeChart');
+    if (propertyTypeChartElement) {
+        const propertyTypeChart = new Chart(propertyTypeChartElement, {
+            type: 'bar',
+            data: propertyTypeChartData,
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn, sans-serif'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn, sans-serif'
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            drawBorder: false,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // دکمه‌های دانلود و بروزرسانی
+        document.getElementById('downloadPropertyTypeChart').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = propertyTypeChartElement.toDataURL('image/png');
+            link.download = 'نمودار-نوع-املاک.png';
+            link.click();
+        });
+        
+        document.getElementById('refreshPropertyTypeChart').addEventListener('click', function() {
+            location.reload();
+        });
+    }
+
+    // رسم نمودار میانگین قیمت
+    const avgPriceChartElement = document.getElementById('avgPriceChart');
+    if (avgPriceChartElement) {
+        const avgPriceChart = new Chart(avgPriceChartElement, {
+            type: 'bar',
+            data: avgPriceChartData,
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn, sans-serif'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn, sans-serif'
+                            },
+                            callback: function(value) {
+                                return new Intl.NumberFormat('fa-IR').format(value);
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            drawBorder: false,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // دکمه‌های دانلود و بروزرسانی
+        document.getElementById('downloadPriceChart').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = avgPriceChartElement.toDataURL('image/png');
+            link.download = 'نمودار-میانگین-قیمت.png';
+            link.click();
+        });
+        
+        document.getElementById('refreshPriceChart').addEventListener('click', function() {
+            location.reload();
+        });
+    }
+});
+</script>
 {% endblock %}
