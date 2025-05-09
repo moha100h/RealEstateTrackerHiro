@@ -16,8 +16,8 @@
     }
     
     .filter-card {
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
         border: none;
         overflow: hidden;
@@ -26,15 +26,23 @@
     }
     
     .filter-card .card-header {
-        background: linear-gradient(to left, #4481eb, #04befe);
+        background: linear-gradient(135deg, #4a6cf7, #2651e9);
         padding: 1.5rem;
         border: none;
+        box-shadow: 0 4px 15px rgba(38, 81, 233, 0.2);
     }
     
     .filter-card .card-header h5 {
         color: white;
         margin: 0;
-        font-weight: 600;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .filter-card .card-header h5 svg {
+        margin-left: 0.75rem;
     }
     
     .filter-card .card-body {
@@ -147,24 +155,25 @@
     }
     
     .property-card {
-        border: none;
-        border-radius: 15px;
+        position: relative;
         overflow: hidden;
-        transition: all 0.3s;
+        border-radius: 16px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+        background: white;
         height: 100%;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
     .property-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
     
     .property-image-container {
         position: relative;
-        padding-top: 65%;
+        padding-top: 40%; /* نسبت کمتر برای ارتفاع کوتاه‌تر */
         overflow: hidden;
     }
     
@@ -176,24 +185,65 @@
         height: 100%;
         object-fit: cover;
         transition: transform 0.5s ease;
+        filter: brightness(1);
     }
     
     .property-card:hover .property-image {
-        transform: scale(1.05);
+        transform: scale(1.08);
+        filter: brightness(1.05);
     }
     
     .property-code {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
+        top: 12px;
+        left: 12px;
         z-index: 2;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        font-size: 0.75rem;
+        border-radius: 5px;
+        padding: 0.25rem 0.5rem;
+        backdrop-filter: blur(4px);
     }
     
-    .status-badge {
+    .property-status {
         position: absolute;
-        top: 1rem;
-        left: 1rem;
+        top: 12px;
+        right: 12px;
         z-index: 2;
+        padding: 0.35rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: white;
+    }
+    
+    .status-available {
+        background-color: #10b981;
+    }
+    
+    .status-sold {
+        background-color: #ef4444;
+    }
+    
+    .status-rented {
+        background-color: #ef4444;
+    }
+    
+    .status-reserved {
+        background-color: #4f46e5;
+    }
+    
+    .status-building {
+        background-color: #6b7280;
+    }
+    
+    .status-ready {
+        background-color: #0ea5e9;
     }
     
     .property-content {
