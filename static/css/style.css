@@ -1,5 +1,213 @@
 /* استایل‌های سفارشی و مینیمال سیستم هیرو املاک */
 
+/* استایل‌های بخش املاک جدید در داشبورد */
+.dashboard-section {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.dashboard-section:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+}
+
+.section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 15px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.section-title h5 {
+    margin-bottom: 0;
+    font-weight: 600;
+    font-size: 1.15rem;
+}
+
+.section-actions .btn-icon {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.section-actions .btn-icon i {
+    font-size: 0.9rem;
+}
+
+.property-cards-container {
+    padding: 1.5rem;
+}
+
+.property-card {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.property-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.property-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: #f8f9fa;
+}
+
+.property-date {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.property-card-body {
+    padding: 1rem;
+    flex-grow: 1;
+}
+
+.property-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.property-title a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.property-title a:hover {
+    color: var(--primary-dark);
+}
+
+.property-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.property-meta > div {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.property-meta > div i {
+    width: 20px;
+    color: #6c757d;
+}
+
+.property-price {
+    background-color: #f5f9ff;
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.price-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.price-value {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--primary-dark);
+}
+
+.property-card-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-section-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.view-all-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.view-all-link:hover {
+    color: var(--primary-dark);
+}
+
+.view-all-link i {
+    font-size: 1.25rem;
+}
+
+.empty-state-container {
+    padding: 4rem 1rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+}
+
+.empty-state-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.empty-state-subtitle {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-action {
+    margin-top: 1rem;
+}
+
 /* استایل‌های نمودارهای داشبورد */
 .dashboard-chart-card {
     border-radius: 15px;
