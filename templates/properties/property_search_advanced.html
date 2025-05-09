@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.css">
@@ -1445,7 +1446,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     
                                     <div class="property-price">
                                         <span class="transaction-type">{{ property.transaction_type.name }}</span>
-                                        {{ property.price|floatformat:"0"|intcomma }} تومان
+                                        {{ property.price|floatformat:"0" }} تومان
                                     </div>
                                     
                                     <div class="property-actions">
