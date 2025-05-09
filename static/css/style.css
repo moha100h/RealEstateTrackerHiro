@@ -1100,6 +1100,11 @@ h2 {
 /* بهبود استایل مودال تغییر وضعیت */
 #statusChangeModal .modal-dialog {
     max-width: 450px;
+    margin: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 #statusChangeModal .modal-content {
