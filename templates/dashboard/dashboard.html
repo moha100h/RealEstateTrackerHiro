@@ -772,13 +772,14 @@
                                     <th>قیمت (تومان)</th>
                                     <th>وضعیت</th>
                                     <th>تاریخ ثبت</th>
+                                    <th>عملیات</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for property in recent_properties %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'properties:property_detail' property.property_code %}" class="property-link">
+                                        <a href="{% url 'properties:property_detail' property.id %}" class="property-link">
                                             {{ property.title }}
                                         </a>
                                     </td>
@@ -826,10 +827,41 @@
                                         </span>
                                     </td>
                                     <td>{{ property.created_at|date:"Y/m/d" }}</td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <a href="{% url 'properties:property_detail' property.id %}" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip" title="مشاهده ملک">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'properties:property_update' property.id %}" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip" title="ویرایش ملک">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <div class="dropdown d-inline-block">
+                                                <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="statusButton{{ property.id }}" data-bs-toggle="dropdown" aria-expanded="false" title="تغییر وضعیت">
+                                                    <i class="bi bi-arrow-repeat"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end status-dropdown-menu" id="statusDropdown{{ property.id }}" aria-labelledby="statusButton{{ property.id }}">
+                                                    <li><h6 class="dropdown-header">تغییر به وضعیت جدید:</h6></li>
+                                                    {% for status in status_choices %}
+                                                    <li>
+                                                        <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
+                                                           href="#" 
+                                                           data-property-id="{{ property.id }}" 
+                                                           data-status-id="{{ status.id }}" 
+                                                           data-status-name="{{ status.name }}">
+                                                            <span class="badge {% if status.name == 'موجود' %}bg-success{% elif status.name == 'فروخته شده' or status.name == 'اجاره داده شده' %}bg-danger{% elif status.name == 'رزرو شده' %}bg-warning{% elif status.name == 'در حال ساخت' %}bg-info{% elif status.name == 'آماده تحویل' %}bg-primary{% else %}bg-secondary{% endif %} me-1">
+                                                                {{ status.name }}
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="8" class="text-center py-5">
                                         <div class="d-flex flex-column align-items-center">
                                             <i class="bi bi-clipboard-x text-muted mb-3" style="font-size: 3rem;"></i>
                                             <h5 class="mb-2">هنوز هیچ ملکی ثبت نشده است</h5>
