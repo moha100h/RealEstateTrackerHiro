@@ -713,14 +713,7 @@
                                 مشاهده جزئیات <i class="bi bi-arrow-left"></i>
                             </a>
                             
-                            {% if user.is_staff %}
-                            <button type="button" 
-                                    onclick="showStatusModal({{ property.id }}, '{{ property.title }}')" 
-                                    class="mobile-action-link"
-                                    style="background: none; border: none; padding: 0; color: #4481eb; font-size: 0.8rem;">
-                                تغییر وضعیت
-                            </button>
-                            {% endif %}
+
                         </div>
                     </div>
                 </div>
@@ -778,39 +771,5 @@
     </div>
 </div>
 
-<!-- مودال تغییر وضعیت ملک -->
-<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="statusChangeModalLabel">تغییر وضعیت ملک</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-4">
-                    <h6 class="mb-1 text-secondary fs-7">عنوان ملک:</h6>
-                    <h6 id="propertyTitle" class="mb-0 text-primary"></h6>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="statusSelect" class="form-label fw-medium">انتخاب وضعیت جدید</label>
-                    <select class="form-select shadow-sm" id="statusSelect">
-                        {% for status in property_statuses %}
-                        <option value="{{ status.id }}">{{ status.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-lg me-1"></i>
-                    انصراف
-                </button>
-                <button type="button" class="btn btn-primary" id="saveStatusBtn">
-                    <span id="saveButtonText">ذخیره تغییرات</span>
-                    <span id="statusSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+
 {% endblock %}
