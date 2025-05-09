@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Avg, Sum, Max, Min, F, Q
 from django.db.models.functions import TruncMonth, TruncDate, ExtractMonth
 from properties.models import Property, PropertyStatus, PropertyType, TransactionType
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from datetime import timedelta, datetime
 import json
@@ -112,8 +112,25 @@ def dashboard_home(request):
     # جمع مساحت کل املاک (به عنوان یک آمار جالب)
     total_area = Property.objects.aggregate(total=Sum('area'))['total'] or 0
     
-    # میانگین روزهای حضور ملک در سیستم تا فروش/اجاره
-    # (این مورد نیاز به فیلد 'date_sold' یا مشابه آن دارد که در سیستم فعلی نیست)
+    # مدیران و مشاوران فعال
+    # کاربرانی که در گروه مدیر املاک یا مشاور املاک هستند
+    property_manager_group = Group.objects.filter(name='مدیر املاک').first()
+    sales_agent_group = Group.objects.filter(name='مشاور املاک').first()
+    
+    staff_users_ids = []
+    if property_manager_group:
+        staff_users_ids.extend(property_manager_group.user_set.values_list('id', flat=True))
+    if sales_agent_group:
+        staff_users_ids.extend(sales_agent_group.user_set.values_list('id', flat=True))
+    
+    # حذف تکرارها
+    staff_users_ids = list(set(staff_users_ids))
+    
+    # دریافت کاربران با اطلاعات پروفایل
+    staff_users = User.objects.filter(id__in=staff_users_ids).select_related('profile').prefetch_related('properties').order_by('first_name', 'last_name')
+    
+    # دریافت وضعیت‌های ملک برای مدال‌های تغییر وضعیت
+    status_choices = PropertyStatus.objects.all().order_by('name')
     
     context = {
         'property_status_stats': property_status_stats,
@@ -131,7 +148,9 @@ def dashboard_home(request):
         'price_ranges': price_ranges,
         'stats_updated_at': stats_updated_at,
         'total_area': total_area,
+        'staff_users': staff_users,
+        'status_choices': status_choices,
         'title': 'داشبورد مدیریت هوشمند'
     }
     
-    return render(request, 'dashboard/new_minimal_dashboard.html', context)
+    return render(request, 'dashboard/modern_dashboard.html', context)
