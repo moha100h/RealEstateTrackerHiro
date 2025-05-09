@@ -3,74 +3,75 @@
 {% block styles %}
 {{ block.super }}
 <style>
-    .login-page {
+    .login-container {
         min-height: 100vh;
+        background: var(--bs-light, #f8f9fa);
+        background-image: linear-gradient(135deg, rgba(245, 247, 250, 1) 0%, rgba(230, 235, 240, 1) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, rgba(240,242,245,1) 0%, rgba(221,226,234,1) 100%);
         position: relative;
         overflow: hidden;
+        padding: 3rem 1rem;
     }
-    
-    .login-page::before {
+
+    /* تزئینات پس‌زمینه */
+    .login-container::before,
+    .login-container::after {
         content: '';
         position: absolute;
-        top: -100px;
-        left: -100px;
-        width: 200px;
-        height: 200px;
         border-radius: 50%;
-        background: linear-gradient(45deg, rgba(0,123,255,0.1), rgba(0,86,179,0.2));
+        z-index: 0;
     }
     
-    .login-page::after {
-        content: '';
-        position: absolute;
-        bottom: -150px;
-        right: -150px;
-        width: 300px;
-        height: 300px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, rgba(32,201,151,0.1), rgba(32,201,151,0.2));
+    .login-container::before {
+        width: 50vw;
+        height: 50vw;
+        background: linear-gradient(to right, rgba(59, 130, 246, 0.03), rgba(37, 99, 235, 0.05));
+        top: -15vw;
+        right: -20vw;
     }
     
-    .buildings-icon {
+    .login-container::after {
+        width: 30vw;
+        height: 30vw;
+        background: linear-gradient(to right, rgba(5, 150, 105, 0.03), rgba(4, 120, 87, 0.05));
+        bottom: -10vw;
+        left: -10vw;
+    }
+    
+    /* آیکون ساختمان در پس‌زمینه */
+    .buildings-pattern {
         position: absolute;
-        top: 2rem;
-        left: 2rem;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
         opacity: 0.03;
-        width: 300px;
-        height: 300px;
-        transform: rotate(-15deg);
+        background-size: 250px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M1,22H23L23,3.38L14.5,3.38L14.5,8.5L12.5,6.5L10.5,8.5L10.5,3.38L1,3.38L1,22Z M3,5H8V7H3V5Z M3,9H8V11H3V9Z M3,13H8V15H3V13Z M3,17H8V19H3V17Z M16,7H21V9H16V7Z M16,11H21V13H16V11Z M16,15H21V17H16V15Z'/%3E%3C/svg%3E");
     }
     
+    /* کارت لاگین */
     .login-card {
-        border: none;
-        border-radius: 18px;
+        width: 100%;
+        max-width: 480px;
+        background-color: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         overflow: hidden;
-        box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
-        transition: all 0.3s ease;
         position: relative;
         z-index: 10;
-        max-width: 480px;
-        width: 100%;
-        margin: 0 auto;
-        background-color: white;
     }
     
-    .login-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(50, 50, 93, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    
+    /* هدر کارت */
     .login-header {
-        padding: 2.8rem 2rem 1.2rem;
-        text-align: center;
-        background: linear-gradient(120deg, #0070e5, #0056b3);
+        background: linear-gradient(to right, #3563E9, #4F46E5);
         color: white;
+        padding: 2.5rem 2rem 2rem;
+        text-align: center;
         position: relative;
-        overflow: hidden;
     }
     
     .login-header::before {
@@ -80,303 +81,339 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.184 20c.357-.13.72-.264.888-.14 1.652-1.1 2.782.92 5.108-2.29.332-.27.648-.508.98-.746 1.196-.868 2.072-1.32 3.48-1.254.142.005.278.01.388.02.276.03.494.21.66.466.164.254.164.612.164.96 0 .583-.032 1.14-.367 1.577-.335.436-1.033.683-1.81.683-1.19 0-1.73-.46-2.087-.919-.358.46-.868.692-1.857.692-1.207 0-1.414-.241-1.88-.704a.614.614 0 0 0-.113-.097c-.404-.303-.6-.709-.692-1.131a.885.885 0 0 0-.122-.34c-.396-.54-.985-.78-1.42-.779-1.037 0-1.937.664-1.972 1.554-.05 1.175.378 1.935 1.9 2.495.058.02.116.04.175.058 1.03.324 1.807.645 2.548 1.075.974.57 1.488 1.304 1.933 2.204.083.169.135.342.153.518.214 2.048-.698 3.147-1.902 3.872-.757.455-1.622.71-2.452.816-.35.044-.718.053-1.079.053-1.604 0-2.925-.366-3.725-1.025-.548-.45-.808-1.003-.363-1.77.445-.767 1.207-.903 1.902-.903.582 0 1.223.17 1.81.517.472.276.705.638.831.98.04.111.063.21.077.324.03.25.035.517-.188.726-.144.133-.325.18-.498.18-.182 0-.345-.058-.463-.174-.128-.127-.140-.207-.167-.342-.115-.575-.678-1.075-1.494-1.075-.65 0-1.004.275-1.106.555-.197.541.232.978.704 1.39.3.263.585.492.85.695 1.385 1.082 2.903 1.84 5.399 1.84 1.765 0 3.193-.383 4.232-1.064 1.088-.713 1.898-1.95 1.447-3.49-.198-.67-.739-1.08-1.36-1.08-.74 0-1.283.508-1.316 1.01a.636.636 0 0 0 .463.656c.258.59.595.115.952.115 1.378 0 1.165-.943.303-1.194-.173-.05-.296-.062-.356-.046-.154.036-.153.19-.189.345a.34.34 0 0 1-.329.338c-.377 0-.482-.308-.437-.54.045-.232.168-.428.313-.574.085-.085.162-.135.213-.175.138-.109.301-.227.107-.518-.193-.291-.95-.546-1.188-.546-1.274 0-1.845.887-2.08 1.442-.07.166-.088.342-.025.527.064.185.213.345.488.412l.052.01c.997.147 1.733.018 2.293-.258.274-.137.366-.198.372-.334.003-.067-.008-.131-.022-.187.106.042.237.066.371.066.711 0 1.079-.435 1.079-.891 0-.342-.202-.697-.569-.928-.366-.23-.982-.329-1.594-.329-1.711 0-2.65.712-3.143 1.624-.125.232-.156.467-.093.686.061.218.213.387.475.46.118.033.221.051.318.066 1.524.225 1.986.06 2.377-.146.204-.108.343-.27.403-.466.059-.195.072-.517-.123-.82-.196-.303-.711-.566-1.267-.566-.142 0-.246.011-.268.028-.22.017.01.136-.114.455-.125.32-.498.576-.878.576-.192 0-.357-.062-.48-.184-.129-.131-.179-.303-.143-.508.067-.366.36-.699.835-.888.474-.19 1.075-.242 1.641-.242.313 0 .627.001.919.038.374.067.71.21.903.463.201.263.242.65.163 1.103-.118.676-.411 1.174-.766 1.475-.349.297-.753.427-1.059.454-.16.014-.406.025-.665-.056-.07-.022-.124-.055-.162-.077-.116.029-.25.056-.39.083-.469.092-.945.152-1.45.152-2.432 0-4.227-.84-5.867-2.486-.46-.473-.846-.96-1.135-1.343-.808-1.056-.667-1.738-.374-2.129.34-.454.895-.673 1.408-.673.152 0 .296.018.432.054-.065-.255-.108-.55-.108-.879 0-1.213.68-1.917 1.695-1.917 1.407 0 2.15 1.188 2.44 1.805.228.485.39 1.017.509 1.546.483-.968 1.236-1.634 2.573-1.691.302-.013.615.006.915.058.75.125 1.363.452 1.58 1.022.192.51.163 1.03-.091 1.544-.048.097-.121.195-.195.311a.603.603 0 0 0-.075.099c-.354.465-.604.773-1.273.79-.724.018-1.363-.332-1.673-.94-.155-.3-.2-.525-.2-.81 0-.124.002-.267.022-.41.028-.176.064-.338.084-.424.026-.112.04-.234.041-.354.002-.12-.05-.23-.156-.33a.463.463 0 0 0-.312-.11c-.445 0-.658.279-.658.631 0 .232.054.56.228.92.373.77 1.187 1.214 2.043 1.214 1.579 0 2.257-1.052 2.698-1.858.36-.663.548-1.437.548-2.107 0-1.322-.733-1.9-1.63-1.9-.659 0-1.376.306-1.814.875-.369.479-.496 1.082-.406 1.74.089.661.378 1.128.671 1.343.105.078.208.13.312.163-.063.166-.158.33-.274.48-.182.237-.437.435-.758.563-.358.142-.718.206-1.062.206-.96 0-1.895-.482-2.58-1.493-.82-1.222-.888-2.522-1.133-3.772-.146-.747-.473-1.545-1.117-2.06-.644-.517-1.564-.644-2.642-.541-.598.057-1.181.236-1.756.57-.752.437-1.38.98-1.578 1.53-.112.311-.11.657.007.992.12.333.337.622.64.85.289.216.67.33 1.066.33.255 0 .495-.044.684-.132.227-.104.35-.261.35-.472 0-.22-.138-.366-.237-.466-.097-.096-.212-.177-.212-.282 0-.107.117-.19.235-.19.318 0 .663.202.82.529.158.327.131.626-.013.878a1.302 1.302 0 0 1-.257.346c-.096.096-.193.173-.269.22-.171.107-.354.174-.523.204-.168.03-.335.028-.491-.003-.468-.097-.91-.39-1.162-.796-.254-.407-.33-.92-.044-1.401.285-.486.8-.957 1.43-1.322.634-.365 1.333-.62 2.02-.68 1.32-.115 2.49.37 3.104 1.134.586.734.849 1.706 1.012 2.569.175.93.316 1.816.7 2.48.386.665.924 1.11 1.637 1.11.212 0 .435-.03.654-.09.218-.058.412-.153.558-.264.28-.214.394-.437.394-.623 0-.1-.016-.192-.048-.272-.023-.56-.074-.112-.12-.16z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
-        background-position: center;
-        opacity: 0.1;
+        background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
     }
     
-    .login-header-icon {
-        background: white;
-        color: #0070e5;
+    .logo-container {
         width: 90px;
         height: 90px;
-        margin: 0 auto 1rem;
+        background-color: white;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 50%;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        margin: 0 auto 1.25rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         position: relative;
-        z-index: 5;
+        z-index: 1;
+        animation: gentle-pulse 3s infinite;
+    }
+    
+    @keyframes gentle-pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        70% {
+            box-shadow: 0 0 0 15px rgba(255, 255, 255, 0), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    }
+    
+    .logo-container svg {
+        color: #4F46E5;
+        width: 45px;
+        height: 45px;
     }
     
     .login-header h2 {
         font-weight: 700;
+        font-size: 1.75rem;
         margin-bottom: 0.5rem;
-        font-size: 1.8rem;
     }
     
     .login-header p {
         opacity: 0.9;
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin-bottom: 0;
     }
     
-    .login-form {
-        padding: 2.8rem;
-        position: relative;
-        z-index: 1;
-        background: white;
-        border-radius: 0 0 18px 18px;
+    /* بدنه فرم */
+    .login-body {
+        padding: 2.5rem;
     }
     
-    .login-title {
-        font-size: 1.5rem;
+    .login-body h3 {
+        color: #374151;
+        font-size: 1.25rem;
         font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 1.8rem;
         text-align: center;
+        margin-bottom: 1.5rem;
         position: relative;
         display: inline-block;
+        padding-bottom: 8px;
     }
     
-    .login-title::after {
-        content: '';
+    .login-body h3::after {
+        content: "";
         position: absolute;
-        bottom: -10px;
+        bottom: 0;
         left: 50%;
         transform: translateX(-50%);
-        width: 50px;
-        height: 4px;
-        background: linear-gradient(to right, #0070e5, #38b6ff);
-        border-radius: 2px;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(to right, #3563E9, #4F46E5);
+        border-radius: 3px;
+    }
+    
+    /* فیلدهای فرم */
+    .input-container {
+        margin-bottom: 1.5rem;
+    }
+    
+    .input-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #4B5563;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    
+    .input-icon {
+        position: absolute;
+        right: 1rem;
+        color: #6B7280;
     }
     
     .form-control {
-        height: 52px;
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        padding: 0.7rem 1rem;
-        transition: all 0.3s ease;
+        display: block;
+        width: 100%;
+        padding: 0.75rem 2.5rem 0.75rem 1rem;
         font-size: 1rem;
+        height: 3.25rem;
+        background-color: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
     }
     
     .form-control:focus {
-        background: white;
-        border-color: #0070e5;
-        box-shadow: 0 0 0 0.2rem rgba(0, 112, 229, 0.15);
+        background-color: #FFFFFF;
+        border-color: #3563E9;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
     
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 0.6rem;
-    }
-    
-    .input-group-text {
-        background-color: #f0f4f8;
-        border: 1px solid #e9ecef;
-        border-radius: 10px 0 0 10px;
-        padding: 0.7rem;
-        color: #0070e5;
-    }
-    
-    .input-group .form-control {
-        border-radius: 0 10px 10px 0;
-    }
-    
-    .login-btn {
-        height: 56px;
-        border-radius: 10px;
-        font-weight: 700;
+    /* دکمه ارسال */
+    .submit-btn {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
         font-size: 1.1rem;
-        background: linear-gradient(to right, #0070e5, #38b6ff);
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(to right, #3563E9, #4F46E5);
         border: none;
-        box-shadow: 0 8px 16px rgba(0, 112, 229, 0.3);
+        border-radius: 0.5rem;
+        cursor: pointer;
         transition: all 0.3s ease;
+        height: 3.25rem;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+    }
+    
+    .submit-btn:hover {
+        background: linear-gradient(to right, #2E5BD9, #4338CA);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.1);
+    }
+    
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+    
+    .submit-btn svg {
+        margin-right: 0.5rem;
+    }
+    
+    /* باکس اطلاعات امنیتی */
+    .security-notice {
+        margin-top: 1.5rem;
+        padding: 1.25rem;
+        background-color: #ECFDF5;
+        border: 1px solid #D1FAE5;
+        border-right: 4px solid #10B981;
+        border-radius: 0.5rem;
+    }
+    
+    .security-notice-header {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-    
-    .login-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 20px rgba(0, 112, 229, 0.4);
-        background: linear-gradient(to right, #0056b3, #0070e5);
-    }
-    
-    .login-btn:active {
-        transform: translateY(-1px);
-    }
-    
-    .login-security {
-        background: linear-gradient(to right, rgba(238, 249, 245, 1), rgba(230, 248, 243, 1));
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-top: 2rem;
-        border-right: 5px solid #20c997;
-        box-shadow: 0 5px 15px rgba(32, 201, 151, 0.1);
-    }
-    
-    .login-security h5 {
-        color: #17a97d;
-        margin-bottom: 0.7rem;
-        font-weight: 700;
-        font-size: 1.2rem;
-    }
-    
-    .login-security p {
-        color: #495057;
-        font-size: 0.95rem;
-        line-height: 1.6;
+        margin-bottom: 0.5rem;
     }
     
     .security-icon {
-        margin-left: 0.7rem;
-        color: #17a97d;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 44px;
-        height: 44px;
-        background-color: rgba(32, 201, 151, 0.15);
+        width: 2rem;
+        height: 2rem;
+        background-color: rgba(16, 185, 129, 0.1);
         border-radius: 50%;
+        margin-left: 0.75rem;
+        color: #10B981;
     }
     
-    .pulse {
-        animation: pulse 2s infinite;
+    .security-title {
+        font-weight: 700;
+        color: #10B981;
+        font-size: 1rem;
+        margin: 0;
     }
     
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 112, 229, 0.4);
-        }
-        70% {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 10px rgba(0, 112, 229, 0);
-        }
-        100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 112, 229, 0);
-        }
+    .security-notice p {
+        color: #374151;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 0;
     }
     
+    /* هشدارها */
     .alert {
-        border-radius: 10px;
         padding: 1rem;
         margin-bottom: 1.5rem;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
     }
     
     .alert-danger {
-        background-color: #fff5f5;
-        color: #e53e3e;
-        border-right: 4px solid #e53e3e;
+        background-color: #FEF2F2;
+        border: 1px solid #FEE2E2;
+        border-right: 4px solid #EF4444;
+        color: #B91C1C;
     }
     
+    .alert-icon {
+        margin-left: 0.75rem;
+        flex-shrink: 0;
+    }
+    
+    .alert-message {
+        flex-grow: 1;
+    }
+    
+    /* ریسپانسیو */
     @media (max-width: 576px) {
-        .login-form {
-            padding: 2rem 1.5rem;
-        }
-        
         .login-header {
-            padding: 2rem 1.5rem 1rem;
+            padding: 2rem 1.5rem 1.5rem;
         }
         
-        .login-security {
-            padding: 1.2rem;
+        .login-body {
+            padding: 1.5rem;
+        }
+        
+        .form-control {
+            font-size: 0.95rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-page">
-    <!-- SVG background elements -->
-    <svg class="buildings-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1,22H23L23,3.38L14.5,3.38L14.5,8.5L12.5,6.5L10.5,8.5L10.5,3.38L1,3.38L1,22Z" />
-        <path d="M3,5H8V7H3V5Z" />
-        <path d="M3,9H8V11H3V9Z" />
-        <path d="M3,13H8V15H3V13Z" />
-        <path d="M3,17H8V19H3V17Z" />
-        <path d="M16,7H21V9H16V7Z" />
-        <path d="M16,11H21V13H16V11Z" />
-        <path d="M16,15H21V17H16V15Z" />
-    </svg>
+<div class="login-container">
+    <div class="buildings-pattern"></div>
     
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-10 col-lg-8 col-xl-6">
-                <div class="login-card">
-                    <div class="login-header">
-                        <div class="login-header-icon pulse">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+            </div>
+            <h2>سیستم هیرو املاک</h2>
+            <p>سامانه هوشمند جامع مدیریت املاک</p>
+        </div>
+        
+        <div class="login-body">
+            <h3>ورود به سیستم</h3>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <div class="alert-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
                         </div>
-                        <h2 class="mb-1">سیستم هیرو املاک</h2>
-                        <p class="mb-0">سامانه هوشمند جامع مدیریت املاک</p>
+                        <div class="alert-message">{{ message }}</div>
                     </div>
-                    
-                    <div class="login-form">
-                        <h3 class="login-title w-100">ورود به پنل مدیریت</h3>
-                        
-                        {% if messages %}
-                        <div class="mb-4">
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} shadow-sm">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                        {% elif form.errors %}
-                        <div class="alert alert-danger shadow-sm">
-                            <div class="d-flex align-items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-circle ml-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                <strong class="mr-2">خطا در ورود:</strong> نام کاربری یا رمز عبور اشتباه است.
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <form method="post" action="{% url 'accounts:login' %}">
-                            {% csrf_token %}
-                            <div class="mb-4">
-                                <label for="{{ form.username.id_for_label }}" class="form-label">نام کاربری:</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                    </span>
-                                    {{ form.username }}
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="{{ form.password.id_for_label }}" class="form-label">رمز عبور:</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-lock"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                    </span>
-                                    {{ form.password }}
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg login-btn">
-                                        <span class="ml-2">ورود به سیستم</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-in"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <input type="hidden" name="next" value="{{ next }}">
-                        </form>
-                        
-                        <div class="login-security">
-                            <div class="d-flex align-items-center">
-                                <span class="security-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                                </span>
-                                <h5>امنیت پیشرفته</h5>
-                            </div>
-                            <p class="mb-0">
-                                سیستم مجهز به قفل هوشمند حساب کاربری و محافظت در برابر حملات است.
-                                تلاش‌های ناموفق متعدد منجر به قفل موقت حساب خواهد شد.
-                            </p>
-                        </div>
+                {% endfor %}
+            {% elif form.errors %}
+                <div class="alert alert-danger">
+                    <div class="alert-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div class="alert-message">
+                        <strong>خطا در ورود:</strong> نام کاربری یا رمز عبور اشتباه است.
                     </div>
                 </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                
+                <div class="input-container">
+                    <label for="{{ form.username.id_for_label }}" class="input-label">نام کاربری</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </span>
+                        {{ form.username }}
+                    </div>
+                </div>
+                
+                <div class="input-container">
+                    <label for="{{ form.password.id_for_label }}" class="input-label">رمز عبور</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </span>
+                        {{ form.password }}
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                    ورود به سیستم
+                </button>
+                
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+            
+            <div class="security-notice">
+                <div class="security-notice-header">
+                    <div class="security-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                    <h5 class="security-title">امنیت پیشرفته</h5>
+                </div>
+                <p>سیستم مجهز به قفل هوشمند حساب کاربری و محافظت در برابر حملات است. تلاش‌های ناموفق متعدد منجر به قفل موقت حساب خواهد شد.</p>
             </div>
         </div>
     </div>
