@@ -1039,6 +1039,105 @@ h2 {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+/* تنظیمات موقعیت مودال تغییر وضعیت */
+.modal-dialog {
+    margin: 1.75rem auto;
+}
+
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 3.5rem);
+}
+
+/* بهبود استایل مودال تغییر وضعیت */
+#statusChangeModal .modal-dialog {
+    max-width: 450px;
+}
+
+#statusChangeModal .modal-content {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    border-radius: 0.8rem;
+    overflow: hidden;
+}
+
+#statusChangeModal .modal-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 1.25rem 1.5rem;
+    border-bottom: none;
+}
+
+#statusChangeModal .modal-title {
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+#statusChangeModal .modal-title::before {
+    content: "";
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    margin-left: 10px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E");
+    background-size: contain;
+}
+
+#statusChangeModal .modal-body {
+    padding: 1.5rem;
+}
+
+#statusChangeModal #propertyTitle {
+    background-color: rgba(var(--primary-rgb), 0.07);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+#statusChangeModal .form-select {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border-color: var(--gray-300);
+    font-size: 1rem;
+}
+
+#statusChangeModal .form-select:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.25);
+}
+
+#statusChangeModal .modal-footer {
+    border-top: 1px solid var(--gray-200);
+    padding: 1.25rem 1.5rem;
+    background-color: var(--gray-100);
+}
+
+#statusChangeModal .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+}
+
+#statusChangeModal .btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+#statusChangeModal .btn-secondary {
+    background-color: transparent;
+    color: var(--gray-700);
+    border-color: var(--gray-300);
+}
+
+#statusChangeModal .btn-secondary:hover {
+    background-color: var(--gray-200);
+    color: var(--gray-800);
+}
+
 .text-success {
     color: #10b981 !important;
 }

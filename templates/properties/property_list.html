@@ -787,10 +787,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <h6 id="propertyTitle" class="mb-3 text-primary"></h6>
-                <div class="form-group">
-                    <label for="statusSelect" class="form-label">وضعیت جدید</label>
-                    <select class="form-select" id="statusSelect">
+                <div class="mb-4">
+                    <h6 class="mb-1 text-secondary fs-7">عنوان ملک:</h6>
+                    <h6 id="propertyTitle" class="mb-0 text-primary"></h6>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="statusSelect" class="form-label fw-medium">انتخاب وضعیت جدید</label>
+                    <select class="form-select shadow-sm" id="statusSelect">
                         {% for status in property_statuses %}
                         <option value="{{ status.id }}">{{ status.name }}</option>
                         {% endfor %}
@@ -798,8 +801,14 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                <button type="button" class="btn btn-primary" id="saveStatusBtn">ذخیره تغییرات</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i>
+                    انصراف
+                </button>
+                <button type="button" class="btn btn-primary" id="saveStatusBtn">
+                    <span id="saveButtonText">ذخیره تغییرات</span>
+                    <span id="statusSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
     </div>
