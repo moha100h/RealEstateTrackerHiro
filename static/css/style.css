@@ -1040,8 +1040,55 @@ h2 {
 }
 
 /* تنظیمات موقعیت مودال تغییر وضعیت */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    outline: 0;
+    display: none;
+}
+
+.modal.show {
+    display: block;
+}
+
+/* مدال‌های تغییر وضعیت ملک */
+[id^="statusModal"] .modal-dialog {
+    position: relative;
+    width: auto;
+    max-width: 450px;
+    margin: 5vh auto;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+[id^="statusModal"] .modal-content {
+    position: relative;
+    border-radius: 0.8rem;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
 .modal-dialog {
     margin: 1.75rem auto;
+    position: relative;
+    max-width: 550px;
+    z-index: 1050;
 }
 
 .modal-dialog-centered {

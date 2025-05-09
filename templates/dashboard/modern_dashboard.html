@@ -629,6 +629,33 @@
 {% block extra_js %}
 <!-- ApexCharts -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"></script>
+<!-- بهبود نمایش مدال‌ها -->
+<script>
+// تنظیم موقعیت مناسب برای مدال‌های تغییر وضعیت
+document.addEventListener('DOMContentLoaded', function() {
+    // تمام دکمه‌های نمایش مدال تغییر وضعیت
+    const statusModalButtons = document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target^="#statusModal"]');
+    
+    statusModalButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            const modalId = this.getAttribute('data-bs-target');
+            const modal = document.querySelector(modalId);
+            
+            if (modal) {
+                setTimeout(function() {
+                    const dialog = modal.querySelector('.modal-dialog');
+                    if (dialog) {
+                        // اطمینان از نمایش صحیح مدال در وسط صفحه
+                        dialog.style.top = '50%';
+                        dialog.style.transform = 'translateY(-50%)';
+                        dialog.style.margin = '0 auto';
+                    }
+                }, 50);
+            }
+        });
+    });
+});
+</script>
 <script>
     // نمودارها بعد از بارگذاری صفحه ایجاد می‌شوند
     document.addEventListener('DOMContentLoaded', function() {
