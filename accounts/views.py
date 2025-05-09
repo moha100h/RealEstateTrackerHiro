@@ -2,17 +2,19 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 import time
 
 from .models import UserProfile, create_default_groups
 from .forms import CustomAuthenticationForm, UserForm, UserProfileForm, UserProfileEditForm
+from .mixins import CustomLoginRequiredMixin, AdminRequiredMixin, SuperUserRequiredMixin
 
 class CustomLoginView(LoginView):
     """نمای سفارشی صفحه ورود"""
@@ -109,7 +111,7 @@ def profile_view(request):
     }
     return render(request, 'accounts/profile.html', context)
 
-class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class UserListView(CustomLoginRequiredMixin, UserPassesTestMixin, ListView):
     """لیست کاربران سیستم - فقط برای مدیران"""
     model = User
     template_name = 'accounts/user_list.html'
@@ -125,7 +127,7 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         create_default_groups()
         return context
 
-class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
     """ایجاد کاربر جدید - فقط برای مدیران"""
     model = User
     form_class = UserForm
@@ -147,7 +149,7 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         context['title'] = 'افزودن کاربر جدید'
         return context
 
-class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """ویرایش کاربر - فقط برای مدیران"""
     model = User
     form_class = UserForm
@@ -169,7 +171,7 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['title'] = f'ویرایش کاربر {self.object.username}'
         return context
 
-class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class UserDeleteView(CustomLoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """حذف کاربر - فقط برای مدیران ارشد"""
     model = User
     template_name = 'accounts/user_confirm_delete.html'
