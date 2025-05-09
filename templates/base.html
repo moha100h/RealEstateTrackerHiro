@@ -69,6 +69,28 @@
     
     <!-- Dynamic Color Theme Based on System Config -->
     <style>
+        /* حذف دکمه اضافه به علاقه‌مندی‌ها که در نوار بالایی نمایش داده می‌شود */
+        a[data-original-title="اضافه به علاقه‌مندی‌ها"],
+        button[data-original-title="اضافه به علاقه‌مندی‌ها"],
+        a[title="اضافه به علاقه‌مندی‌ها"],
+        button[title="اضافه به علاقه‌مندی‌ها"],
+        a[title*="نزدیک"],
+        button[title*="نزدیک"],
+        .favorite-button,
+        .add-to-favorites,
+        .add-to-favorite,
+        .wishlist-btn,
+        [id*="favorite"],
+        [class*="favorite"],
+        [id*="wishlist"],
+        [class*="wishlist"],
+        [data-action*="favorite"],
+        [data-action*="wishlist"],
+        a[href*="favorite"],
+        a[href*="wishlist"] {
+            display: none !important;
+        }
+        
         :root {
             --primary-color: {{ system_config.primary_color|default:'#3F51B5' }};
             --primary-rgb: {{ system_config.primary_color|default:'63, 81, 181'|cut:'#' }};
