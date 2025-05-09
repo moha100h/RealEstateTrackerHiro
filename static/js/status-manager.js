@@ -32,7 +32,7 @@ class PropertyStatusManager {
         }
         
         // ارسال درخواست AJAX
-        fetch(`/properties/${propertyId}/change-status/`, {
+        fetch(`/properties/change-status/${propertyId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

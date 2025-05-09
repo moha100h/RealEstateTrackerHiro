@@ -833,7 +833,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
                 
                 // ارسال درخواست AJAX
-                fetch('/properties/' + propertyId + '/change-status/', {
+                fetch('/properties/change-status/' + propertyId + '/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

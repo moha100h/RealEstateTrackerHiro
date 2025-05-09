@@ -885,16 +885,34 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             
                             <div class="property-links">
-                                <a href="{% url 'properties:property_detail' property.slug %}" class="property-link">
+                                <a href="{% url 'properties:property_detail' property.id %}" class="property-link">
                                     <i class="bi bi-eye-fill"></i>
                                     مشاهده جزئیات
                                 </a>
                                 
                                 {% if user.is_staff %}
-                                <button type="button" class="property-link" onclick="showStatusModal({{ property.id }}, '{{ property.title }}')">
-                                    <i class="bi bi-pencil-square"></i>
-                                    تغییر وضعیت
-                                </button>
+                                <div class="dropdown d-inline-block">
+                                    <button class="property-link dropdown-toggle" type="button" id="statusButton{{ property.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                        تغییر وضعیت
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end status-dropdown-menu" id="statusDropdown{{ property.id }}" aria-labelledby="statusButton{{ property.id }}">
+                                        <li><h6 class="dropdown-header">تغییر به وضعیت جدید:</h6></li>
+                                        {% for status in status_choices %}
+                                        <li>
+                                            <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
+                                               href="#" 
+                                               data-property-id="{{ property.id }}" 
+                                               data-status-id="{{ status.id }}" 
+                                               data-status-name="{{ status.name }}">
+                                                <span class="badge {% if status.name == 'موجود' %}bg-success{% elif status.name == 'فروخته شده' or status.name == 'اجاره داده شده' %}bg-danger{% elif status.name == 'رزرو شده' %}bg-warning{% elif status.name == 'در حال ساخت' %}bg-info{% elif status.name == 'آماده تحویل' %}bg-primary{% else %}bg-secondary{% endif %} me-1">
+                                                    {{ status.name }}
+                                                </span>
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
                                 {% endif %}
                             </div>
                         </div>
