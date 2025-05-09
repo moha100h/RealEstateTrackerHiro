@@ -549,7 +549,7 @@
                                     <td class="text-center">
                                         {% if total_properties %}
                                         <div class="d-flex flex-column">
-                                            <span class="mb-1">{{ stat.count|floatformat:0|default:"0" }}%</span>
+                                            <span class="mb-1">{{ stat.percentage|floatformat:0 }}%</span>
                                             <div class="progress-slim">
                                                 <div class="
                                                 {% if stat.status__name == 'موجود' %}progress-bar-success
@@ -558,7 +558,7 @@
                                                 {% elif stat.status__name == 'در حال ساخت' %}progress-bar-secondary
                                                 {% elif stat.status__name == 'آماده تحویل' %}progress-bar-info
                                                 {% else %}progress-bar-warning{% endif %}" 
-                                                style="width: {{ stat.count|floatformat:0|default:"0" }}%; height: 100%;"></div>
+                                                style="width: {{ stat.percentage|floatformat:0 }}%; height: 100%;"></div>
                                             </div>
                                         </div>
                                         {% else %}
@@ -615,9 +615,9 @@
                                     <td class="text-center">
                                         {% if total_properties %}
                                         <div class="d-flex flex-column">
-                                            <span class="mb-1">{{ stat.count|floatformat:0|default:"0" }}%</span>
+                                            <span class="mb-1">{{ stat.percentage|floatformat:0 }}%</span>
                                             <div class="progress-slim">
-                                                <div class="progress-bar-primary" style="width: {{ stat.count|floatformat:0|default:"0" }}%; height: 100%;"></div>
+                                                <div class="progress-bar-primary" style="width: {{ stat.percentage|floatformat:0 }}%; height: 100%;"></div>
                                             </div>
                                         </div>
                                         {% else %}
@@ -676,9 +676,9 @@
                                     <td class="text-center">
                                         {% if total_properties %}
                                         <div class="d-flex flex-column">
-                                            <span class="mb-1">{{ stat.count|floatformat:0|default:"0" }}%</span>
+                                            <span class="mb-1">{{ stat.percentage|floatformat:0 }}%</span>
                                             <div class="progress-slim">
-                                                <div class="progress-bar-warning" style="width: {{ stat.count|floatformat:0|default:"0" }}%; height: 100%;"></div>
+                                                <div class="progress-bar-warning" style="width: {{ stat.percentage|floatformat:0 }}%; height: 100%;"></div>
                                             </div>
                                         </div>
                                         {% else %}
