@@ -516,7 +516,7 @@
                                 {% endif %}
                                 
                                 <div class="property-overlay">
-                                    <a href="{% url 'properties:property_detail' property.slug %}" class="btn btn-sm btn-light rounded-pill px-3">
+                                    <a href="{% url 'properties:property_detail' property.id %}" class="btn btn-sm btn-light rounded-pill px-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                         مشاهده جزئیات
                                     </a>
@@ -550,7 +550,7 @@
                                         <div class="badge badge-sm bg-primary-light">{{ property.transaction_type.name }}</div>
                                         <div class="property-price">{{ property.price|floatformat:"0"|intcomma }} تومان</div>
                                     </div>
-                                    <a href="{% url 'properties:property_detail' property.slug %}" class="property-more">
+                                    <a href="{% url 'properties:property_detail' property.id %}" class="property-more">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left-circle"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line></svg>
                                     </a>
                                 </div>
