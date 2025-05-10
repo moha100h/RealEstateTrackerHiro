@@ -162,7 +162,12 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         """
         self.object = None
         user_form = UserForm(request.POST, request=request)
-        profile_form = UserProfileForm(request.POST, request.FILES)
+        
+        # آپلود فایل را به درستی مدیریت می‌کنیم
+        if request.FILES:
+            profile_form = UserProfileForm(request.POST, request.FILES)
+        else:
+            profile_form = UserProfileForm(request.POST)
         
         if user_form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
             return self.forms_valid(user_form, profile_form)
@@ -187,14 +192,14 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         
         # پردازش فرم پروفایل اگر تغییر کرده باشد
         if profile_form.has_changed():
-            # کپی کردن داده‌های معتبر از فرم پروفایل به شی پروفایل
-            profile.phone = profile_form.cleaned_data.get('phone', '')
-            profile.position = profile_form.cleaned_data.get('position', '')
+            # استفاده مستقیم از save با commit=False برای تنظیم خودکار فیلدها
+            temp_profile = profile_form.save(commit=False)
+            profile.phone = temp_profile.phone
+            profile.position = temp_profile.position
             
             # پردازش آواتار اگر ارسال شده باشد
-            avatar_file = profile_form.cleaned_data.get('avatar')
-            if avatar_file:
-                profile.avatar = avatar_file
+            if 'avatar' in profile_form.cleaned_data and profile_form.cleaned_data['avatar']:
+                profile.avatar = profile_form.cleaned_data['avatar']
                 
         # ذخیره پروفایل
         profile.save()
