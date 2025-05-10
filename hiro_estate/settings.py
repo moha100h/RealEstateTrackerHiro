@@ -73,7 +73,7 @@ MIDDLEWARE = [
     # میدل‌ویرهای سفارشی امنیتی - قبل از همه میدل‌ویرها
     'accounts.middleware.RateLimitMiddleware',           # محدودیت نرخ درخواست‌ها
     'accounts.middleware.EnhancedSecurityMiddleware',    # امنیت پیشرفته
-    'accounts.middleware.ContentSecurityPolicyMiddleware', # سیاست امنیت محتوا (CSP)
+    'accounts.middleware.ContentSecurityPolicyMiddleware', # سیاست امنیت محتوا (CSP) سفارشی
     
     # میدل‌ویرهای اصلی Django
     'django.middleware.security.SecurityMiddleware',
@@ -203,8 +203,7 @@ CSP_IMG_SRC = ("'self'", "data:", "blob:", "*")
 CSP_CONNECT_SRC = ("'self'",)
 CSP_INCLUDE_NONCE_IN = ('script-src',)
 
-# تنظیمات Admin Honeypot
-ADMIN_HONEYPOT_EMAIL_ADMINS = True
+# تنظیمات امنیتی ادمین
 
 # محافظت از حملات SQL Injection
 DATABASES_DEFAULT_CONN_MAX_AGE = 600  # 10 دقیقه
