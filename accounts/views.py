@@ -219,7 +219,9 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_form(self, form_class=None):
         """ارسال request به فرم برای استفاده در تنظیم پسورد پیش‌فرض"""
         form_class = self.get_form_class()
-        return form_class(instance=self.object, request=self.request, **self.get_form_kwargs())
+        kwargs = self.get_form_kwargs()
+        # instance در kwargs خودش وجود دارد و نیازی به ارسال مجدد نیست
+        return form_class(request=self.request, **kwargs)
     
     def test_func(self):
         return self.request.user.is_superuser or hasattr(self.request.user, 'profile') and self.request.user.profile.is_super_admin
@@ -241,8 +243,8 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
         
         # اطمینان از اینکه فرم کاربر، request را دریافت می‌کند
         if 'form' not in kwargs:
-            form_class = self.get_form_class()
-            context['form'] = form_class(instance=self.object, request=self.request)
+            # فرم با call به get_form که قبلاً اصلاح کردیم، دریافت می‌شود
+            context['form'] = self.get_form()
             
         return context
         
