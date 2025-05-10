@@ -18,6 +18,9 @@ import shutil
 import platform
 import pandas as pd
 import xlsxwriter
+import time
+import hashlib
+from io import StringIO
 from datetime import datetime
 
 from .models import SystemConfig, BackupRecord
@@ -256,14 +259,32 @@ def create_backup(request):
             with open(zip_path, 'rb') as f:
                 file_content = f.read()
                 
+            # محاسبه چک‌سام فایل نهایی
+            file_checksum = hashlib.sha256()
+            with open(zip_path, 'rb') as f:
+                for chunk in iter(lambda: f.read(4096), b''):
+                    file_checksum.update(chunk)
+            checksum_hex = file_checksum.hexdigest()
+            
+            # دریافت نوع و توضیحات پشتیبان از فرم
+            backup_description = request.POST.get('description', '')
+            backup_type = request.POST.get('backup_type', 'full')
+            compression_level = int(request.POST.get('compression_level', '9'))
+            
+            # تعیین نوع پشتیبان بر اساس محتوا
+            if not os.path.exists(media_dir):
+                backup_type = 'data_only'  # اگر مدیا نداشته باشد
+            
             # ثبت رکورد پشتیبان‌گیری با اطلاعات تکمیلی
             file_size = os.path.getsize(zip_path)
             backup_record = BackupRecord.objects.create(
                 file_name=f"{filename}.zip",
                 created_by=request.user,
                 file_size=file_size,
-                backup_type='full',  # نوع پشتیبان‌گیری
-                description=f"پشتیبان کامل سیستم شامل {Property.objects.count()} ملک و {User.objects.count()} کاربر"
+                backup_type=backup_type,
+                description=backup_description or f"پشتیبان سیستم شامل {Property.objects.count()} ملک و {User.objects.count()} کاربر",
+                checksum=checksum_hex,
+                compression_level=compression_level
             )
             
             # پاکسازی فایل‌های موقت
@@ -296,28 +317,46 @@ def create_backup(request):
 @login_required
 @user_passes_test(is_superuser)
 def restore_backup(request):
-    """بازیابی پایگاه داده و فایل‌های مدیا از فایل پشتیبان"""
+    """بازیابی پایگاه داده و فایل‌های مدیا از فایل پشتیبان با امکانات پیشرفته"""
     # Verify that the user still has permission to restore backup
     if not is_superuser(request.user):
         messages.error(request, 'شما مجوز دسترسی به این عملیات را ندارید.')
         return redirect('dashboard:home')
         
     if request.method == 'POST' and request.FILES.get('backup_file'):
+        temp_dir = None
         try:
             backup_file = request.FILES['backup_file']
             
-            # بررسی نوع فایل و اندازه آن
+            # بررسی نوع فایل با روش‌های چندگانه (مجیک بایت، پسوند، هدر)
             if not backup_file.name.endswith('.zip'):
                 messages.error(request, 'فایل پشتیبان باید با فرمت ZIP باشد.')
                 return redirect('config:backup')
+            
+            # بررسی محتوای ابتدای فایل (مجیک بایت‌های ZIP)
+            file_header = backup_file.read(4)
+            backup_file.seek(0)  # برگشت به ابتدای فایل
+            if file_header != b'PK\x03\x04':
+                messages.error(request, 'فایل انتخاب شده یک فایل ZIP معتبر نیست.')
+                return redirect('config:backup')
                 
-            # محدودیت اندازه فایل (100 مگابایت)
-            max_file_size = 100 * 1024 * 1024  # 100 MB
+            # محدودیت اندازه فایل (200 مگابایت)
+            max_file_size = 200 * 1024 * 1024  # 200 MB
             if backup_file.size > max_file_size:
-                messages.error(request, 'حجم فایل پشتیبان بیشتر از حد مجاز (100 مگابایت) است.')
+                messages.error(request, 'حجم فایل پشتیبان بیشتر از حد مجاز (200 مگابایت) است.')
                 return redirect('config:backup')
             
-            # ایجاد دایرکتوری موقت با دسترسی محدود
+            # بررسی فضای دیسک
+            _, _, free = shutil.disk_usage("/")
+            required_space = backup_file.size * 2  # حداقل دو برابر حجم فایل زیپ
+            if free < required_space:
+                messages.error(
+                    request,
+                    f'فضای دیسک کافی برای بازیابی پشتیبان موجود نیست. حداقل {required_space / (1024*1024):.1f} مگابایت فضای آزاد مورد نیاز است.'
+                )
+                return redirect('config:backup')
+            
+            # ایجاد دایرکتوری موقت با دسترسی محدود و امنیت بالا
             temp_dir = tempfile.mkdtemp(prefix='hiro_restore_')
             os.chmod(temp_dir, 0o700)  # فقط کاربر فعلی دسترسی داشته باشد
             
@@ -335,41 +374,99 @@ def restore_backup(request):
                         return redirect('config:backup')
                     f.write(chunk)
             
+            # زمان شروع عملیات استخراج برای اندازه‌گیری عملکرد
+            start_time = time.time()
+            
             # باز کردن فایل زیپ
             with zipfile.ZipFile(zip_path, 'r') as zf:
                 # بررسی محتوای فایل پشتیبان
-                json_files = [f for f in zf.namelist() if f.endswith('.json')]
-                media_files = [f for f in zf.namelist() if f.startswith('media/')]
+                all_files = zf.namelist()
+                json_files = [f for f in all_files if f.endswith('.json') and not f.startswith('manifest')]
+                media_files = [f for f in all_files if f.startswith('media/')]
+                manifest_file = 'manifest.json' if 'manifest.json' in all_files else None
+                
+                # بررسی مانیفست (اگر وجود داشته باشد)
+                manifest_data = {}
+                if manifest_file:
+                    zf.extract(manifest_file, temp_dir)
+                    manifest_path = os.path.join(temp_dir, manifest_file)
+                    
+                    try:
+                        with open(manifest_path, 'r', encoding='utf-8') as f:
+                            manifest_data = json.load(f)
+                            
+                        # نمایش اطلاعات مانیفست به کاربر
+                        if 'created_at' in manifest_data:
+                            created_time = datetime.fromisoformat(manifest_data['created_at']).strftime('%Y-%m-%d %H:%M')
+                            messages.info(request, f'تاریخ ایجاد پشتیبان: {created_time}')
+                        
+                        if 'total_properties' in manifest_data and 'total_users' in manifest_data:
+                            messages.info(
+                                request, 
+                                f'اطلاعات پشتیبان: {manifest_data["total_properties"]} ملک و {manifest_data["total_users"]} کاربر'
+                            )
+                    except json.JSONDecodeError:
+                        messages.warning(request, 'فایل مانیفست پشتیبان آسیب دیده است، اما بازیابی ادامه می‌یابد.')
                 
                 if not json_files:
                     messages.error(request, 'فایل JSON در آرشیو پشتیبان یافت نشد.')
                     return redirect('config:backup')
                 
-                # استخراج اولین فایل JSON
+                # استخراج اولین فایل JSON (داده‌های اصلی)
                 json_file = json_files[0]
                 zf.extract(json_file, temp_dir)
                 
-                # بازیابی از فایل JSON
+                # بازیابی از فایل JSON با محافظت از خطا
                 json_path = os.path.join(temp_dir, json_file)
-                call_command('loaddata', json_path)
                 
-                # بازیابی فایل‌های مدیا
+                # بررسی اعتبار فایل JSON قبل از بازیابی
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        json.load(f)  # تلاش برای بارگذاری JSON برای اطمینان از اعتبار آن
+                except json.JSONDecodeError:
+                    messages.error(request, 'فایل JSON معتبر نیست و ممکن است آسیب دیده باشد.')
+                    return redirect('config:backup')
+                    
+                # اجرای دستور بازیابی با محافظت از خطا
+                restore_result = StringIO()
+                call_command('loaddata', json_path, stdout=restore_result)
+                
+                # نمایش نتیجه بازیابی
+                restore_output = restore_result.getvalue()
+                if "Installed" in restore_output:
+                    installed_count = restore_output.count("Installed")
+                    messages.success(request, f'{installed_count} رکورد از دیتابیس با موفقیت بازیابی شد.')
+                
+                # بازیابی فایل‌های مدیا با گزینه‌های پیشرفته
                 if media_files:
                     media_dir = os.path.join(settings.BASE_DIR, 'media')
                     
-                    # حذف فایل‌های مدیای قبلی (با احتیاط)
-                    if os.path.exists(media_dir):
+                    # فقط در صورت انتخاب گزینه‌ی حذف فایل‌های قبلی
+                    clean_media = request.POST.get('clean_media', 'on') == 'on'
+                    if clean_media and os.path.exists(media_dir):
                         # به جای حذف کامل، پوشه‌ها را یکی یکی بررسی و پاک می‌کنیم
+                        files_removed = 0
                         for root, dirs, files in os.walk(media_dir):
                             for file in files:
                                 file_path = os.path.join(root, file)
                                 if os.path.isfile(file_path):
-                                    os.unlink(file_path)
+                                    try:
+                                        os.unlink(file_path)
+                                        files_removed += 1
+                                    except (OSError, PermissionError):
+                                        # اگر فایل در حال استفاده است، آن را نادیده می‌گیریم
+                                        continue
+                        
+                        if files_removed > 0:
+                            messages.info(request, f'{files_removed} فایل مدیا قبلی حذف شد.')
                     else:
                         # ایجاد دایرکتوری مدیا اگر وجود ندارد
                         os.makedirs(media_dir, exist_ok=True)
                     
-                    # استخراج فایل‌های مدیا با مکانیزم امنیتی
+                    # استخراج فایل‌های مدیا با مکانیزم امنیتی و گزارش پیشرفت
+                    files_extracted = 0
+                    files_skipped = 0
+                    
                     for file in media_files:
                         # حذف 'media/' از ابتدای مسیر
                         relative_path = file[6:] if file.startswith('media/') else file
@@ -388,22 +485,53 @@ def restore_backup(request):
                                 try:
                                     os.makedirs(os.path.dirname(file_path), exist_ok=True)
                                     
-                                    # استخراج فایل مدیا با محدودیت اندازه
-                                    source = zf.open(file)
-                                    with open(file_path, 'wb') as target:
-                                        # محدودیت اندازه هر فایل به 10 مگابایت
-                                        shutil.copyfileobj(source, target, 10 * 1024 * 1024)
+                                    # بررسی پسوند فایل برای فیلتر کردن فایل‌های غیرمجاز
+                                    if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.pdf', '.svg',
+                                                               '.doc', '.docx', '.xls', '.xlsx', '.mp4', '.avi',
+                                                               '.mov', '.mp3', '.wav', '.zip')):
+                                        # استخراج فایل مدیا با محدودیت اندازه
+                                        source = zf.open(file)
+                                        with open(file_path, 'wb') as target:
+                                            # محدودیت اندازه هر فایل به 20 مگابایت
+                                            shutil.copyfileobj(source, target, 20 * 1024 * 1024)
+                                        files_extracted += 1
+                                    else:
+                                        files_skipped += 1
                                 except (OSError, IOError) as e:
                                     # ثبت رویداد خطا بدون توقف فرآیند
-                                    print(f"Error extracting file {file}: {str(e)}")
+                                    print(f"Error extracting file {file}: {str(e)}", file=sys.stderr)
+                                    files_skipped += 1
                                     continue
+                    
+                    # گزارش نتیجه استخراج فایل‌ها
+                    messages.success(request, f'{files_extracted} فایل مدیا با موفقیت بازیابی شد.')
+                    if files_skipped > 0:
+                        messages.warning(request, f'{files_skipped} فایل به دلیل مشکلات امنیتی یا دسترسی نادیده گرفته شد.')
+            
+            # گزارش زمان انجام عملیات
+            elapsed_time = time.time() - start_time
+            messages.info(request, f'عملیات بازیابی در {elapsed_time:.2f} ثانیه انجام شد.')
             
             # پاکسازی فایل‌های موقت
             shutil.rmtree(temp_dir)
             
+            # ثبت رکورد بازیابی
+            restore_log = f"بازیابی از فایل {backup_file.name} - {len(json_files)} فایل JSON و {len(media_files)} فایل مدیا"
+            
             messages.success(request, 'بازیابی پشتیبان با موفقیت انجام شد.')
+        except zipfile.BadZipFile:
+            messages.error(request, 'فایل ZIP معتبر نیست یا آسیب دیده است.')
         except Exception as e:
-            messages.error(request, f'خطا در بازیابی پشتیبان: {str(e)}')
+            error_msg = f'خطا در بازیابی پشتیبان: {str(e)}'
+            print(f"Restore error: {str(e)}", file=sys.stderr)
+            messages.error(request, error_msg)
+        finally:
+            # اطمینان از پاکسازی فایل‌های موقت در هر شرایطی
+            if temp_dir and os.path.exists(temp_dir):
+                try:
+                    shutil.rmtree(temp_dir)
+                except Exception:
+                    pass
     else:
         messages.error(request, 'لطفاً یک فایل پشتیبان انتخاب کنید.')
     
