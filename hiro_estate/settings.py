@@ -180,7 +180,7 @@ RATE_LIMIT_MIDDLEWARE = {
     ],
 }
 
-# تنظیمات امنیتی
+# تنظیمات امنیتی پیشرفته
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -193,6 +193,18 @@ USE_HTTPS = os.environ.get('USE_HTTPS', 'False') == 'True'
 SESSION_COOKIE_SECURE = USE_HTTPS
 CSRF_COOKIE_SECURE = USE_HTTPS
 SECURE_SSL_REDIRECT = USE_HTTPS
+
+# تنظیمات سیاست امنیتی محتوا (CSP)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdn.jsdelivr.net", "cdnjs.cloudflare.com")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "cdnjs.cloudflare.com")
+CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "cdn.jsdelivr.net", "cdnjs.cloudflare.com")
+CSP_IMG_SRC = ("'self'", "data:", "blob:", "*")
+CSP_CONNECT_SRC = ("'self'",)
+CSP_INCLUDE_NONCE_IN = ('script-src',)
+
+# تنظیمات Admin Honeypot
+ADMIN_HONEYPOT_EMAIL_ADMINS = True
 
 # محافظت از حملات SQL Injection
 DATABASES_DEFAULT_CONN_MAX_AGE = 600  # 10 دقیقه

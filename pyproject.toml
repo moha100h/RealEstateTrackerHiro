@@ -14,4 +14,8 @@ dependencies = [
     "xlsxwriter>=3.2.3",
     "pandas>=2.2.3",
     "python-magic>=0.4.27",
+    "django-admin-honeypot>=1.1.0",
+    "bandit>=1.8.3",
+    "safety>=3.5.0",
+    "django-csp>=4.0",
 ]
