@@ -140,14 +140,33 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         # ایجاد پروفایل برای کاربر جدید
-        UserProfile.objects.create(user=self.object)
+        profile = UserProfile.objects.create(user=self.object)
+        
+        # بررسی و ذخیره تصویر پروفایل اگر فراهم شده باشد
+        if 'avatar' in self.request.FILES:
+            profile.avatar = self.request.FILES['avatar']
+            profile.save()
+            
         messages.success(self.request, f'کاربر {self.object.username} با موفقیت ایجاد شد.')
         return response
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'افزودن کاربر جدید'
+        # افزودن فرم پروفایل برای آپلود تصویر
+        if 'profile_form' not in context:
+            context['profile_form'] = UserProfileForm()
         return context
+        
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = self.get_form()
+        profile_form = UserProfileForm(request.POST, request.FILES)
+        
+        if form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """ویرایش کاربر - فقط برای مدیران"""
@@ -161,15 +180,44 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     
     def form_valid(self, form):
         response = super().form_valid(form)
+        
         # اطمینان از وجود پروفایل
-        UserProfile.objects.get_or_create(user=self.object)
+        profile, created = UserProfile.objects.get_or_create(user=self.object)
+        
+        # بررسی و ذخیره تصویر پروفایل اگر فراهم شده باشد
+        if 'avatar' in self.request.FILES:
+            profile.avatar = self.request.FILES['avatar']
+            profile.save()
+            
         messages.success(self.request, f'اطلاعات کاربر {self.object.username} با موفقیت بروزرسانی شد.')
         return response
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = f'ویرایش کاربر {self.object.username}'
+        
+        # افزودن فرم پروفایل برای آپلود تصویر
+        if 'profile_form' not in context:
+            profile, created = UserProfile.objects.get_or_create(user=self.object)
+            context['profile_form'] = UserProfileForm(instance=profile)
+            
         return context
+        
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        
+        try:
+            profile = self.object.profile
+        except UserProfile.DoesNotExist:
+            profile = UserProfile(user=self.object)
+            
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        
+        if form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 class UserDeleteView(CustomLoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """حذف کاربر - فقط برای مدیران ارشد"""
