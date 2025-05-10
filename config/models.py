@@ -507,7 +507,15 @@ class SystemConfig(models.Model):
         return config
 
 class BackupRecord(models.Model):
-    """ثبت تاریخچه پشتیبان‌گیری"""
+    """ثبت تاریخچه پشتیبان‌گیری با امکانات پیشرفته"""
+    BACKUP_TYPES = [
+        ('full', 'پشتیبان کامل'),
+        ('data_only', 'فقط داده‌ها'),
+        ('media_only', 'فقط فایل‌های مدیا'),
+        ('config_only', 'فقط تنظیمات'),
+        ('custom', 'سفارشی'),
+    ]
+    
     file_name = models.CharField(
         max_length=255, 
         validators=[MaxLengthValidator(255), validate_no_script, validate_file_path],
@@ -528,14 +536,45 @@ class BackupRecord(models.Model):
         default=0, 
         verbose_name='حجم فایل (بایت)'
     )
+    backup_type = models.CharField(
+        max_length=20,
+        choices=BACKUP_TYPES,
+        default='full',
+        verbose_name='نوع پشتیبان'
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='توضیحات'
+    )
+    checksum = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        verbose_name='چک‌سام'
+    )
+    is_encrypted = models.BooleanField(
+        default=False,
+        verbose_name='رمزنگاری شده'
+    )
+    compression_level = models.PositiveSmallIntegerField(
+        default=9,
+        verbose_name='سطح فشرده‌سازی'
+    )
     
     class Meta:
         verbose_name = 'سابقه پشتیبان‌گیری'
         verbose_name_plural = 'سوابق پشتیبان‌گیری'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['backup_type']),
+            models.Index(fields=['created_by'])
+        ]
     
     def __str__(self):
-        return f"{self.file_name} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        backup_type_display = dict(self.BACKUP_TYPES).get(self.backup_type, '')
+        return f"{self.file_name} ({backup_type_display}) - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
     
     def get_file_size_display(self):
         """نمایش حجم فایل به صورت خوانا"""
@@ -543,5 +582,27 @@ class BackupRecord(models.Model):
             return f"{self.file_size} بایت"
         elif self.file_size < 1024 * 1024:
             return f"{self.file_size / 1024:.1f} کیلوبایت"
-        else:
+        elif self.file_size < 1024 * 1024 * 1024:
             return f"{self.file_size / (1024 * 1024):.1f} مگابایت"
+        else:
+            return f"{self.file_size / (1024 * 1024 * 1024):.2f} گیگابایت"
+            
+    def get_backup_age(self):
+        """محاسبه سن پشتیبان (چه مدت از ایجاد آن گذشته است)"""
+        from django.utils import timezone
+        now = timezone.now()
+        delta = now - self.created_at
+        
+        if delta.days > 30:
+            months = delta.days // 30
+            return f"{months} ماه پیش"
+        elif delta.days > 0:
+            return f"{delta.days} روز پیش"
+        elif delta.seconds >= 3600:
+            hours = delta.seconds // 3600
+            return f"{hours} ساعت پیش"
+        elif delta.seconds >= 60:
+            minutes = delta.seconds // 60
+            return f"{minutes} دقیقه پیش"
+        else:
+            return "همین الان"

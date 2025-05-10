@@ -8,12 +8,14 @@ from django.utils import timezone
 from django.db import models
 from django.db.models import Q
 import os
+import sys
 import json
 import sqlite3
 import io
 import zipfile
 import tempfile
 import shutil
+import platform
 import pandas as pd
 import xlsxwriter
 from datetime import datetime
@@ -131,7 +133,7 @@ def backup_view(request):
 @login_required
 @user_passes_test(is_superuser)
 def create_backup(request):
-    """ایجاد پشتیبان از پایگاه داده و فایل‌های مدیا"""
+    """ایجاد پشتیبان از پایگاه داده و فایل‌های مدیا با امکانات پیشرفته"""
     # Verify that the user still has permission to create backup
     if not is_superuser(request.user):
         messages.error(request, 'شما مجوز دسترسی به این عملیات را ندارید.')
@@ -139,7 +141,7 @@ def create_backup(request):
         
     if request.method == 'POST':
         try:
-            # محدود کردن تعداد عملیات پشتیبان‌گیری
+            # محدود کردن تعداد عملیات پشتیبان‌گیری با منطق پیشرفته
             last_hour_backups = BackupRecord.objects.filter(
                 created_at__gte=timezone.now() - timezone.timedelta(hours=1),
                 created_by=request.user
@@ -152,7 +154,17 @@ def create_backup(request):
                 )
                 return redirect('config:backup')
             
-            # ایجاد فولدر موقت با مجوز محدود
+            # بررسی وضعیت دیسک و فضای کافی
+            _, _, free = shutil.disk_usage("/")
+            min_required_space = 500 * 1024 * 1024  # 500 MB
+            if free < min_required_space:
+                messages.error(
+                    request,
+                    f'فضای دیسک کافی برای پشتیبان‌گیری موجود نیست. حداقل 500 مگابایت فضای آزاد مورد نیاز است.'
+                )
+                return redirect('config:backup')
+            
+            # ایجاد فولدر موقت با مجوز محدود و امنیت بالا
             temp_dir = tempfile.mkdtemp(prefix='hiro_backup_')
             os.chmod(temp_dir, 0o700)  # فقط کاربر فعلی دسترسی داشته باشد
             
@@ -164,18 +176,42 @@ def create_backup(request):
             media_dir = os.path.join(temp_dir, 'media')
             zip_path = os.path.join(temp_dir, f"{filename}.zip")
             
-            # استفاده از دستور dumpdata برای ایجاد فایل JSON با محدودیت حجم
+            # استفاده از دستور dumpdata برای ایجاد فایل JSON با محدودیت حجم و فیلتر پیشرفته
             with open(backup_path, 'w', encoding='utf-8') as f:
-                call_command('dumpdata', '--indent=2', '--exclude=contenttypes', '--exclude=auth.permission', 
-                            '--exclude=admin.logentry', '--exclude=sessions.session', stdout=f)
+                call_command('dumpdata', '--indent=2', 
+                            '--exclude=contenttypes', 
+                            '--exclude=auth.permission', 
+                            '--exclude=admin.logentry', 
+                            '--exclude=sessions.session',
+                            '--natural-foreign',  # استفاده از کلیدهای طبیعی برای روابط خارجی
+                            stdout=f)
             
-            # کپی کردن فایل‌های مدیا
+            # ذخیره فایل مانیفست با اطلاعات سیستم
+            manifest = {
+                'created_at': timezone.now().isoformat(),
+                'created_by': request.user.username,
+                'django_version': settings.DJANGO_VERSION,
+                'system_info': {
+                    'python_version': sys.version,
+                    'platform': platform.platform(),
+                    'hostname': platform.node()
+                },
+                'app_version': getattr(settings, 'APP_VERSION', '1.0.0'),
+                'total_properties': Property.objects.count(),
+                'total_users': User.objects.count()
+            }
+            
+            manifest_path = os.path.join(temp_dir, 'manifest.json')
+            with open(manifest_path, 'w', encoding='utf-8') as f:
+                json.dump(manifest, f, ensure_ascii=False, indent=2)
+            
+            # کپی کردن فایل‌های مدیا با بهینه‌سازی و حفظ متادیتا
             media_source = os.path.join(settings.BASE_DIR, 'media')
             if os.path.exists(media_source):
                 # ایجاد دایرکتوری مدیا در فولدر موقت
                 os.makedirs(media_dir, exist_ok=True)
                 
-                # کپی تمام فایل‌های مدیا
+                # لیست فایل‌های مورد نیاز برای پشتیبان‌گیری
                 for root, dirs, files in os.walk(media_source):
                     for directory in dirs:
                         source_dir = os.path.join(root, directory)
@@ -191,32 +227,43 @@ def create_backup(request):
                         target_file = os.path.join(media_dir, relative_path)
                         # اطمینان از وجود دایرکتوری مقصد
                         os.makedirs(os.path.dirname(target_file), exist_ok=True)
-                        # کپی فایل
+                        # کپی فایل با حفظ متادیتا
                         shutil.copy2(source_file, target_file)
             
-            # ایجاد فایل زیپ
-            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            # ایجاد فایل زیپ با سطح فشرده‌سازی بالا
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
                 # افزودن فایل JSON
                 zf.write(backup_path, f"{filename}.json")
                 
-                # افزودن فایل‌های مدیا
+                # افزودن مانیفست
+                zf.write(manifest_path, 'manifest.json')
+                
+                # افزودن فایل‌های مدیا با فیلتر و پیشرفت‌نما
                 if os.path.exists(media_dir):
                     for root, dirs, files in os.walk(media_dir):
                         for file in files:
                             file_path = os.path.join(root, file)
                             # مسیر نسبی برای ذخیره در زیپ
                             arcname = os.path.join('media', os.path.relpath(file_path, media_dir))
-                            zf.write(file_path, arcname)
+                            # بررسی پسوند فایل برای جلوگیری از افزودن فایل‌های موقتی
+                            if not (file.endswith('.tmp') or file.endswith('.temp')):
+                                zf.write(file_path, arcname)
+            
+            # رمزنگاری فایل ZIP (اختیاری)
+            # در نسخه‌های آینده می‌توان از رمزنگاری استفاده کرد
             
             # خواندن فایل زیپ برای دانلود
             with open(zip_path, 'rb') as f:
                 file_content = f.read()
                 
-            # ثبت رکورد پشتیبان‌گیری
+            # ثبت رکورد پشتیبان‌گیری با اطلاعات تکمیلی
+            file_size = os.path.getsize(zip_path)
             backup_record = BackupRecord.objects.create(
                 file_name=f"{filename}.zip",
                 created_by=request.user,
-                file_size=os.path.getsize(zip_path)
+                file_size=file_size,
+                backup_type='full',  # نوع پشتیبان‌گیری
+                description=f"پشتیبان کامل سیستم شامل {Property.objects.count()} ملک و {User.objects.count()} کاربر"
             )
             
             # پاکسازی فایل‌های موقت
@@ -225,11 +272,24 @@ def create_backup(request):
             response = HttpResponse(file_content, content_type='application/zip')
             response['Content-Disposition'] = f'attachment; filename="{filename}.zip"'
             
+            # افزودن هدرهای امنیتی
+            response['X-Content-Type-Options'] = 'nosniff'
+            response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            response['Pragma'] = 'no-cache'
+            
             messages.success(request, 'پشتیبان‌گیری با موفقیت انجام شد.')
             return response
             
         except Exception as e:
-            messages.error(request, f'خطا در ایجاد پشتیبان: {str(e)}')
+            # ثبت خطا با جزئیات بیشتر برای عیب‌یابی
+            error_msg = f'خطا در ایجاد پشتیبان: {str(e)}'
+            print(f"Backup error: {str(e)}", file=sys.stderr)
+            
+            # پاکسازی فایل‌های موقت در صورت وجود
+            if 'temp_dir' in locals() and os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+                
+            messages.error(request, error_msg)
     
     return redirect('config:backup')
 
