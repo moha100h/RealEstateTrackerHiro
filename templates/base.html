@@ -481,42 +481,45 @@
         </button>
     </div>
 
-    <!-- یک نسخه از jQuery وندورشده استفاده می‌کنیم -->
+    <!-- تمام JavaScript ما را به فایل‌های خارجی منتقل می‌کنیم -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    
+    <!-- Select2 CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- اسکریپت جایگزین -->
     <script>
-        // Load jQuery and set it to window.jQuery and window.$
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if jQuery is already loaded
-            if (typeof jQuery === 'undefined') {
-                console.log('Loading jQuery from CDN...');
-                var script = document.createElement('script');
-                script.src = 'https://code.jquery.com/jquery-3.6.4.min.js';
-                script.integrity = 'sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=';
-                script.crossOrigin = 'anonymous';
-                script.onload = function() {
-                    console.log('jQuery loaded successfully');
-                    window.$ = window.jQuery;
+        // فانکشن امن برای jQuery
+        function initJQuery() {
+            try {
+                // ساخت یک نسخه از jQuery در متغیر عمومی
+                window.$ = jQuery;
+                
+                // اجرای کد زمانی که صفحه آماده شد
+                $(document).ready(function() {
+                    console.log('jQuery loaded and ready');
                     
-                    // Load Select2 after jQuery is loaded
-                    var select2Script = document.createElement('script');
-                    select2Script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
-                    select2Script.onload = function() {
-                        console.log('Select2 loaded successfully');
-                        // Initialize Select2 manually
-                        if (typeof jQuery.fn.select2 !== 'undefined') {
-                            jQuery('.select2').select2({
-                                dir: 'rtl',
-                                language: 'fa'
-                            });
-                        }
-                    };
-                    document.head.appendChild(select2Script);
-                };
-                document.head.appendChild(script);
-            } else {
-                console.log('jQuery already loaded');
-                window.$ = window.jQuery;
+                    // راه‌اندازی Select2 (در صورت وجود)
+                    if ($.fn && $.fn.select2) {
+                        $('.select2').select2({
+                            dir: 'rtl',
+                            language: 'fa'
+                        });
+                        console.log('Select2 initialized');
+                    }
+                });
+            } catch (e) {
+                console.error('jQuery initialization error:', e);
             }
-        });
+        }
+        
+        // اطمینان از اجرای کد بعد از بارگذاری کامل صفحه
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(initJQuery, 1);
+        } else {
+            document.addEventListener('DOMContentLoaded', initJQuery);
+        }
     </script>
 
     <!-- جاوااسکریپت‌های بوتسترپ با آخرین نسخه -->

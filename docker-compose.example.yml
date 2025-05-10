@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=hiroestate
+      - POSTGRES_USER=hiroestate_user
+      - POSTGRES_PASSWORD=strong_password_here
+    restart: always
+
+  web:
+    build: .
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               gunicorn hiro_estate.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=change_this_to_a_secure_random_string
+      - DATABASE_URL=postgres://hiroestate_user:strong_password_here@db:5432/hiroestate
+      - ALLOWED_HOSTS=localhost,127.0.0.1,your_domain.com
+    depends_on:
+      - db
+    restart: always
+
+  nginx:
+    image: nginx:1.25
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - static_volume:/var/www/html/static
+      - media_volume:/var/www/html/media
+    depends_on:
+      - web
+    restart: always
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
