@@ -494,6 +494,57 @@
                     </div>
                 </div>
                 
+                <!-- اطلاعات پروفایل -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-person-badge-fill fs-4"></i>
+                        </div>
+                        <div class="section-title">
+                            <h5>اطلاعات تکمیلی پروفایل</h5>
+                            <p>اطلاعات جانبی و تصویر پروفایل کاربر</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ profile_form.phone.id_for_label }}" class="form-label">
+                                    {{ profile_form.phone.label }}
+                                </label>
+                                {{ profile_form.phone }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ profile_form.position.id_for_label }}" class="form-label">
+                                    {{ profile_form.position.label }}
+                                </label>
+                                {{ profile_form.position }}
+                                <div class="form-hint">نقش یا سمت کاربر در سازمان</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-field">
+                                <label for="{{ profile_form.avatar.id_for_label }}" class="form-label">
+                                    {{ profile_form.avatar.label }}
+                                </label>
+                                {{ profile_form.avatar }}
+                                <div class="form-hint">تصویر پروفایل کاربر (اختیاری)</div>
+                                
+                                {% if profile_form.instance.avatar %}
+                                <div class="mt-2">
+                                    <img src="{{ profile_form.instance.avatar.url }}" alt="تصویر پروفایل" class="img-thumbnail" style="max-width: 150px;">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="form-buttons">
                     <a href="{% url 'accounts:user_list' %}" class="btn-cancel">
                         <i class="bi bi-x-lg"></i>

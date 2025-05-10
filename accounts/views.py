@@ -164,9 +164,13 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         profile_form = UserProfileForm(request.POST, request.FILES)
         
         if form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
-            return self.form_valid(form)
+            # اگر فرم پروفایل تغییر کرده و معتبر است، آن را ذخیره کنید
+            response = self.form_valid(form)
+            # پروفایل در form_valid ایجاد می‌شود و اگر آواتار وجود داشته باشد، ذخیره می‌شود
+            return response
         else:
-            return self.form_invalid(form)
+            context = self.get_context_data(form=form, profile_form=profile_form)
+            return self.render_to_response(context)
 
 class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """ویرایش کاربر - فقط برای مدیران"""
@@ -215,9 +219,16 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
         profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         
         if form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
-            return self.form_valid(form)
+            response = self.form_valid(form)
+            
+            # اگر فرم پروفایل معتبر است و تغییر کرده، آن را ذخیره کنید
+            if profile_form.has_changed() and profile_form.is_valid():
+                profile_form.save()
+                
+            return response
         else:
-            return self.form_invalid(form)
+            context = self.get_context_data(form=form, profile_form=profile_form)
+            return self.render_to_response(context)
 
 class UserDeleteView(CustomLoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """حذف کاربر - فقط برای مدیران ارشد"""
