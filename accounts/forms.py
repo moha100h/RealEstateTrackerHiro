@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User, Group
+from django.contrib import messages
 from .models import UserProfile
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -48,6 +49,7 @@ class UserForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
         # افزودن کلاس‌های بوتسترپ
         for field_name, field in self.fields.items():
@@ -71,6 +73,12 @@ class UserForm(forms.ModelForm):
         password = self.cleaned_data.get('password')
         if password:
             user.set_password(password)
+        elif not user.pk:  # اگر کاربر جدید است و رمز عبور تنظیم نشده
+            # اطمینان از اینکه کاربر جدید حتماً رمز عبور داشته باشد
+            # اگر رمز عبور خالی باشد، یک رمز پیش‌فرض تنظیم می‌کنیم
+            user.set_password('changeme123')
+            if self.request:
+                messages.warning(self.request, 'رمز عبور پیش‌فرض "changeme123" برای کاربر تنظیم شد. لطفاً آن را تغییر دهید.')
         
         if commit:
             user.save()

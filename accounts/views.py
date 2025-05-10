@@ -137,19 +137,6 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
     def test_func(self):
         return self.request.user.is_superuser or hasattr(self.request.user, 'profile') and self.request.user.profile.is_super_admin
     
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        # ایجاد پروفایل برای کاربر جدید
-        profile = UserProfile.objects.create(user=self.object)
-        
-        # بررسی و ذخیره تصویر پروفایل اگر فراهم شده باشد
-        if 'avatar' in self.request.FILES:
-            profile.avatar = self.request.FILES['avatar']
-            profile.save()
-            
-        messages.success(self.request, f'کاربر {self.object.username} با موفقیت ایجاد شد.')
-        return response
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'افزودن کاربر جدید'
@@ -157,20 +144,53 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         if 'profile_form' not in context:
             context['profile_form'] = UserProfileForm()
         return context
-        
+    
     def post(self, request, *args, **kwargs):
+        """
+        متد بازنویسی شده برای هندل کردن هر دو فرم کاربر و پروفایل
+        """
         self.object = None
-        form = self.get_form()
+        user_form = UserForm(request.POST, request=request)
         profile_form = UserProfileForm(request.POST, request.FILES)
         
-        if form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
-            # اگر فرم پروفایل تغییر کرده و معتبر است، آن را ذخیره کنید
-            response = self.form_valid(form)
-            # پروفایل در form_valid ایجاد می‌شود و اگر آواتار وجود داشته باشد، ذخیره می‌شود
-            return response
+        if user_form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
+            return self.forms_valid(user_form, profile_form)
         else:
-            context = self.get_context_data(form=form, profile_form=profile_form)
-            return self.render_to_response(context)
+            return self.forms_invalid(user_form, profile_form)
+    
+    def forms_valid(self, user_form, profile_form):
+        """
+        متد ذخیره هر دو فرم کاربر و پروفایل
+        """
+        # ایجاد کاربر جدید
+        self.object = user_form.save()
+        
+        # ایجاد پروفایل برای کاربر جدید
+        profile = UserProfile(user=self.object)
+        
+        # پردازش فرم پروفایل اگر تغییر کرده باشد
+        if profile_form.has_changed():
+            # کپی کردن داده‌های معتبر از فرم پروفایل به شی پروفایل
+            profile.phone = profile_form.cleaned_data.get('phone', '')
+            profile.position = profile_form.cleaned_data.get('position', '')
+            
+            # پردازش آواتار اگر ارسال شده باشد
+            avatar_file = profile_form.cleaned_data.get('avatar')
+            if avatar_file:
+                profile.avatar = avatar_file
+                
+        # ذخیره پروفایل
+        profile.save()
+            
+        messages.success(self.request, f'کاربر {self.object.username} با موفقیت ایجاد شد.')
+        return redirect(self.success_url)
+    
+    def forms_invalid(self, user_form, profile_form):
+        """
+        متد پردازش فرم‌های نامعتبر
+        """
+        context = self.get_context_data(form=user_form, profile_form=profile_form)
+        return self.render_to_response(context)
 
 class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """ویرایش کاربر - فقط برای مدیران"""
@@ -181,54 +201,65 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     
     def test_func(self):
         return self.request.user.is_superuser or hasattr(self.request.user, 'profile') and self.request.user.profile.is_super_admin
-    
-    def form_valid(self, form):
-        response = super().form_valid(form)
         
-        # اطمینان از وجود پروفایل
-        profile, created = UserProfile.objects.get_or_create(user=self.object)
-        
-        # بررسی و ذخیره تصویر پروفایل اگر فراهم شده باشد
-        if 'avatar' in self.request.FILES:
-            profile.avatar = self.request.FILES['avatar']
-            profile.save()
-            
-        messages.success(self.request, f'اطلاعات کاربر {self.object.username} با موفقیت بروزرسانی شد.')
-        return response
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = f'ویرایش کاربر {self.object.username}'
         
         # افزودن فرم پروفایل برای آپلود تصویر
         if 'profile_form' not in context:
-            profile, created = UserProfile.objects.get_or_create(user=self.object)
+            # پیدا کردن یا ایجاد پروفایل کاربر
+            try:
+                profile = self.object.profile
+            except UserProfile.DoesNotExist:
+                profile = UserProfile(user=self.object)
+                profile.save()
+                
             context['profile_form'] = UserProfileForm(instance=profile)
             
         return context
         
     def post(self, request, *args, **kwargs):
+        """
+        متد بازنویسی شده برای هندل کردن هر دو فرم کاربر و پروفایل
+        """
         self.object = self.get_object()
-        form = self.get_form()
+        user_form = self.get_form()
         
+        # پیدا کردن یا ایجاد پروفایل کاربر
         try:
             profile = self.object.profile
         except UserProfile.DoesNotExist:
             profile = UserProfile(user=self.object)
+            profile.save()
             
         profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         
-        if form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
-            response = self.form_valid(form)
-            
-            # اگر فرم پروفایل معتبر است و تغییر کرده، آن را ذخیره کنید
-            if profile_form.has_changed() and profile_form.is_valid():
-                profile_form.save()
-                
-            return response
+        if user_form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
+            return self.forms_valid(user_form, profile_form)
         else:
-            context = self.get_context_data(form=form, profile_form=profile_form)
-            return self.render_to_response(context)
+            return self.forms_invalid(user_form, profile_form)
+    
+    def forms_valid(self, user_form, profile_form):
+        """
+        متد ذخیره هر دو فرم کاربر و پروفایل
+        """
+        # ذخیره کاربر
+        self.object = user_form.save()
+        
+        # ذخیره پروفایل اگر تغییر کرده باشد
+        if profile_form.has_changed():
+            profile_form.save()
+            
+        messages.success(self.request, f'اطلاعات کاربر {self.object.username} با موفقیت بروزرسانی شد.')
+        return redirect(self.success_url)
+    
+    def forms_invalid(self, user_form, profile_form):
+        """
+        متد پردازش فرم‌های نامعتبر
+        """
+        context = self.get_context_data(form=user_form, profile_form=profile_form)
+        return self.render_to_response(context)
 
 class UserDeleteView(CustomLoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """حذف کاربر - فقط برای مدیران ارشد"""
