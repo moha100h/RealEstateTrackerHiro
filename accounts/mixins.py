@@ -52,11 +52,13 @@ class AdminRequiredMixin(LoginRequiredMixin):
         is_in_admin_group = user.groups.filter(name__in=['admin_super', 'admin_property']).exists()
         
         # بررسی از طریق متد‌های پروفایل
-        is_admin_via_profile = (
-            hasattr(user, 'profile') and 
-            (getattr(user.profile, 'is_super_admin', False) or
-             getattr(user.profile, 'is_property_manager', False))
-        )
+        is_admin_via_profile = False
+        if hasattr(user, 'profile'):
+            profile = user.profile
+            if hasattr(profile, 'is_super_admin') and profile.is_super_admin:
+                is_admin_via_profile = True
+            elif hasattr(profile, 'is_property_manager') and profile.is_property_manager:
+                is_admin_via_profile = True
         
         # بررسی از طریق فیلد‌های داخلی جنگو
         is_admin_via_django = user.is_superuser or user.is_staff
@@ -83,12 +85,15 @@ class PropertyManagerRequiredMixin(LoginRequiredMixin):
         is_in_property_group = user.groups.filter(name__in=['admin_super', 'admin_property', 'admin_sales']).exists()
         
         # بررسی از طریق متد‌های پروفایل
-        is_property_manager_via_profile = (
-            hasattr(user, 'profile') and 
-            (getattr(user.profile, 'is_super_admin', False) or 
-             getattr(user.profile, 'is_property_manager', False) or
-             getattr(user.profile, 'is_sales_agent', False))
-        )
+        is_property_manager_via_profile = False
+        if hasattr(user, 'profile'):
+            profile = user.profile
+            if hasattr(profile, 'is_super_admin') and profile.is_super_admin:
+                is_property_manager_via_profile = True
+            elif hasattr(profile, 'is_property_manager') and profile.is_property_manager:
+                is_property_manager_via_profile = True
+            elif hasattr(profile, 'is_sales_agent') and profile.is_sales_agent:
+                is_property_manager_via_profile = True
         
         # بررسی از طریق فیلد‌های داخلی جنگو
         is_property_manager_via_django = user.is_superuser or user.is_staff

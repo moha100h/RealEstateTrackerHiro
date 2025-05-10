@@ -121,11 +121,11 @@ def admin_access_required(view_func=None, custom_forbidden_template=None):
             is_admin_via_profile = False
             if hasattr(user, 'profile'):
                 profile = user.profile
-                if hasattr(profile, 'is_super_admin') and profile.is_super_admin():
+                if hasattr(profile, 'is_super_admin') and profile.is_super_admin:
                     is_admin_via_profile = True
-                elif hasattr(profile, 'is_property_manager') and profile.is_property_manager():
+                elif hasattr(profile, 'is_property_manager') and profile.is_property_manager:
                     is_admin_via_profile = True
-                elif hasattr(profile, 'is_sales_agent') and profile.is_sales_agent():
+                elif hasattr(profile, 'is_sales_agent') and profile.is_sales_agent:
                     is_admin_via_profile = True
             
             # اگر با هیچکدام از روش‌ها تایید نشد، دسترسی ندارد
