@@ -163,56 +163,34 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         self.object = None
         user_form = UserForm(request.POST, request=request)
         
-        # آپلود فایل را به درستی مدیریت می‌کنیم
-        if request.FILES:
-            profile_form = UserProfileForm(request.POST, request.FILES)
-        else:
-            profile_form = UserProfileForm(request.POST)
+        # ایجاد فرم پروفایل، اما با تنظیم فایل‌ها به صورت دستی
+        profile_form = UserProfileForm(request.POST)
         
-        if user_form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
-            return self.forms_valid(user_form, profile_form)
-        else:
-            return self.forms_invalid(user_form, profile_form)
-    
-    def forms_valid(self, user_form, profile_form):
-        """
-        متد ذخیره هر دو فرم کاربر و پروفایل
-        """
-        # ایجاد کاربر جدید - commit=False برای اینکه بتوانیم پروفایل را هم ذخیره کنیم
-        self.object = user_form.save(commit=False)
-        
-        # ذخیره اصلی کاربر 
-        self.object.save()
-        
-        # ذخیره گروه‌ها - این مرحله خیلی مهم است
-        user_form.save_m2m()  
-        
-        # ایجاد پروفایل برای کاربر جدید
-        profile = UserProfile(user=self.object)
-        
-        # پردازش فرم پروفایل اگر تغییر کرده باشد
-        if profile_form.has_changed():
-            # استفاده مستقیم از save با commit=False برای تنظیم خودکار فیلدها
-            temp_profile = profile_form.save(commit=False)
-            profile.phone = temp_profile.phone
-            profile.position = temp_profile.position
+        if user_form.is_valid() and profile_form.is_valid():
+            # ذخیره کاربر و گروه‌های آن
+            user = user_form.save()
             
-            # پردازش آواتار اگر ارسال شده باشد
-            if 'avatar' in profile_form.cleaned_data and profile_form.cleaned_data['avatar']:
-                profile.avatar = profile_form.cleaned_data['avatar']
+            # ایجاد پروفایل کاربر
+            profile = UserProfile(user=user)
+            profile.phone = profile_form.cleaned_data.get('phone', '')
+            profile.position = profile_form.cleaned_data.get('position', '')
+            
+            # پردازش آواتار به صورت مستقیم از request.FILES
+            # این روش اطمینان می‌دهد که دسترسی به فایل‌های آپلود شده بدون واسطه انجام شود
+            if 'avatar' in request.FILES:
+                # با ذخیره مستقیم فایل از request.FILES، مشکل ذخیره فایل حل می‌شود
+                profile.avatar = request.FILES['avatar']
                 
-        # ذخیره پروفایل
-        profile.save()
+            # ذخیره پروفایل
+            profile.save()
             
-        messages.success(self.request, f'کاربر {self.object.username} با موفقیت ایجاد شد.')
-        return redirect(self.success_url)
-    
-    def forms_invalid(self, user_form, profile_form):
-        """
-        متد پردازش فرم‌های نامعتبر
-        """
-        context = self.get_context_data(form=user_form, profile_form=profile_form)
-        return self.render_to_response(context)
+            messages.success(request, f'کاربر {user.username} با موفقیت ایجاد شد.')
+            return redirect(self.success_url)
+        else:
+            # بازگشت به صفحه فرم با نمایش خطاها
+            return self.render_to_response(
+                self.get_context_data(form=user_form, profile_form=profile_form)
+            )
 
 class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """ویرایش کاربر - فقط برای مدیران"""
@@ -260,43 +238,45 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
         self.object = self.get_object()
         user_form = UserForm(request.POST, instance=self.object, request=request)
         
-        # پیدا کردن یا ایجاد پروفایل کاربر
+        # پیدا کردن یا ایجاد پروفایل کاربر - با استفاده از try/except بهینه
         try:
             profile = self.object.profile
-        except UserProfile.DoesNotExist:
+        except:
+            # اگر پروفایل وجود نداشته باشد، یک پروفایل جدید ایجاد می‌کنیم
             profile = UserProfile(user=self.object)
             profile.save()
             
-        profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        # ایجاد فرم پروفایل بدون در نظر گرفتن فایل‌ها (مدیریت دستی فایل‌ها)
+        profile_form = UserProfileForm(request.POST, instance=profile)
         
-        if user_form.is_valid() and (not profile_form.has_changed() or profile_form.is_valid()):
-            return self.forms_valid(user_form, profile_form)
+        if user_form.is_valid() and profile_form.is_valid():
+            # ذخیره کاربر
+            user = user_form.save()
+            
+            # به‌روزرسانی فیلدهای پروفایل
+            profile.phone = profile_form.cleaned_data.get('phone', '')
+            profile.position = profile_form.cleaned_data.get('position', '')
+            
+            # پردازش آواتار جدید اگر آپلود شده باشد
+            if 'avatar' in request.FILES:
+                profile.avatar = request.FILES['avatar']
+                
+            # ذخیره پروفایل
+            profile.save()
+            
+            messages.success(request, f'اطلاعات کاربر {user.username} با موفقیت بروزرسانی شد.')
+            return redirect(self.success_url)
         else:
             return self.forms_invalid(user_form, profile_form)
     
-    def forms_valid(self, user_form, profile_form):
-        """
-        متد ذخیره هر دو فرم کاربر و پروفایل
-        """
-        # ذخیره کاربر - ابتدا بدون ذخیره روابط
-        self.object = user_form.save(commit=False)
-        self.object.save()
-        
-        # ذخیره گروه‌ها - این مرحله خیلی مهم است
-        user_form.save_m2m()
-        
-        # ذخیره پروفایل اگر تغییر کرده باشد
-        if profile_form.has_changed():
-            profile_form.save()
-            
-        messages.success(self.request, f'اطلاعات کاربر {self.object.username} با موفقیت بروزرسانی شد.')
-        return redirect(self.success_url)
+
     
     def forms_invalid(self, user_form, profile_form):
         """
         متد پردازش فرم‌های نامعتبر
         """
         context = self.get_context_data(form=user_form, profile_form=profile_form)
+        messages.error(self.request, 'لطفاً خطاهای فرم را اصلاح کنید.')
         return self.render_to_response(context)
 
 class UserDeleteView(CustomLoginRequiredMixin, UserPassesTestMixin, DeleteView):
