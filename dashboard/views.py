@@ -7,8 +7,9 @@ from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from datetime import timedelta, datetime
 import json
+from accounts.decorators import admin_access_required
 
-@login_required
+@admin_access_required
 def dashboard_home(request):
     """داشبورد اصلی سیستم با طراحی مدرن و داده‌های پیشرفته"""
     # تعداد کل املاک

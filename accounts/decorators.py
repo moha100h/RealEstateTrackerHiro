@@ -108,15 +108,36 @@ def admin_access_required(view_func=None, custom_forbidden_template=None):
                     'login_url': f"{reverse('accounts:login')}?next={request.path}"
                 }, status=403)
             
-            # بررسی دسترسی مدیران
-            if not (request.user.is_staff or request.user.is_superuser):
+            # بررسی دسترسی مدیران - با بررسی جامع‌تر
+            user = request.user
+            
+            # بررسی از طریق گروه‌های سیستم
+            is_in_admin_group = user.groups.filter(name__in=['admin_super', 'admin_property', 'admin_sales']).exists()
+            
+            # بررسی از طریق فیلدهای داخلی جنگو
+            is_admin_via_django = user.is_staff or user.is_superuser
+            
+            # بررسی از طریق پروفایل (اگر وجود داشته باشد)
+            is_admin_via_profile = False
+            if hasattr(user, 'profile'):
+                profile = user.profile
+                if hasattr(profile, 'is_super_admin') and profile.is_super_admin():
+                    is_admin_via_profile = True
+                elif hasattr(profile, 'is_property_manager') and profile.is_property_manager():
+                    is_admin_via_profile = True
+                elif hasattr(profile, 'is_sales_agent') and profile.is_sales_agent():
+                    is_admin_via_profile = True
+            
+            # اگر با هیچکدام از روش‌ها تایید نشد، دسترسی ندارد
+            if not (is_in_admin_group or is_admin_via_django or is_admin_via_profile):
                 # ثبت تلاش دسترسی غیرمجاز
                 security_logger.warning(
                     f"Insufficient permissions for admin access: {request.path}",
                     extra={
                         'ip': _get_client_ip(request),
                         'user': request.user.username,
-                        'path': request.path
+                        'path': request.path,
+                        'groups': [g.name for g in request.user.groups.all()]
                     }
                 )
                 
@@ -129,11 +150,8 @@ def admin_access_required(view_func=None, custom_forbidden_template=None):
                     }, status=403)
                 
                 # نمایش صفحه خطای فوربیدن پیش‌فرض
-                return render(request, 'errors/403.html', {
-                    'message': 'شما مجوز دسترسی به این بخش را ندارید.',
-                    'title': 'خطای دسترسی',
-                    'code': 403
-                }, status=403)
+                from hiro_estate.security_views import custom_permission_denied
+                return custom_permission_denied(request)
             
             # در صورت داشتن دسترسی، اجرای ویو اصلی
             return view_func(request, *args, **kwargs)
