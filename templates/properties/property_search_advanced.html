@@ -380,8 +380,9 @@
         transition: var(--transition-normal);
         transform: translateY(0);
         border: 1px solid rgba(0,0,0,0.03);
-        max-height: 340px;
+        max-height: none; /* حذف محدودیت ارتفاع */
         animation: fadeInUp 0.5s ease forwards;
+        margin-bottom: 20px;
     }
     
     .property-card:hover {
@@ -559,6 +560,10 @@
     .property-actions {
         display: flex;
         margin-top: 0.8rem;
+        flex-wrap: wrap;
+        width: 100%;
+        position: relative;
+        z-index: 5;
     }
     
     .action-button {
@@ -574,6 +579,10 @@
         font-weight: 500;
         transition: var(--transition-fast);
         text-decoration: none;
+        cursor: pointer;
+        border: none;
+        margin-bottom: 0.5rem;
+        min-height: 36px;
     }
     
     .action-button:hover {
@@ -587,6 +596,13 @@
     
     .action-button + .action-button {
         margin-right: 0.5rem;
+    }
+    
+    /* تضمین نمایش دکمه‌های اکشن */
+    .property-card:hover .property-actions {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
     }
     
     /* بدون نتیجه */
@@ -1456,26 +1472,28 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </a>
                                         
                                         {% if user.is_staff %}
-                                        <button type="button" class="action-button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-arrow-repeat"></i>
-                                            تغییر وضعیت
-                                        </button>
-                                        <ul class="dropdown-menu status-dropdown-menu" aria-labelledby="statusButton{{ property.id }}">
-                                            <li><h6 class="dropdown-header">تغییر به وضعیت جدید:</h6></li>
-                                            {% for status in status_choices %}
-                                            <li>
-                                                <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
-                                                   href="#" 
-                                                   data-property-id="{{ property.id }}" 
-                                                   data-status-id="{{ status.id }}" 
-                                                   data-status-name="{{ status.name }}">
-                                                    <span class="badge {% if status.name == 'موجود' %}bg-success{% elif status.name == 'فروخته شده' or status.name == 'اجاره داده شده' %}bg-danger{% elif status.name == 'رزرو شده' %}bg-warning{% elif status.name == 'در حال ساخت' %}bg-info{% elif status.name == 'آماده تحویل' %}bg-primary{% else %}bg-secondary{% endif %} me-1">
-                                                        {{ status.name }}
-                                                    </span>
-                                                </a>
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
+                                        <div class="dropdown d-inline-block" style="flex: 1;">
+                                            <button type="button" class="action-button w-100" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                                تغییر وضعیت
+                                            </button>
+                                            <ul class="dropdown-menu status-dropdown-menu" aria-labelledby="statusButton{{ property.id }}">
+                                                <li><h6 class="dropdown-header">تغییر به وضعیت جدید:</h6></li>
+                                                {% for status in status_choices %}
+                                                <li>
+                                                    <a class="dropdown-item status-option {% if property.status.id == status.id %}active{% endif %}" 
+                                                       href="#" 
+                                                       data-property-id="{{ property.id }}" 
+                                                       data-status-id="{{ status.id }}" 
+                                                       data-status-name="{{ status.name }}">
+                                                        <span class="badge {% if status.name == 'موجود' %}bg-success{% elif status.name == 'فروخته شده' or status.name == 'اجاره داده شده' %}bg-danger{% elif status.name == 'رزرو شده' %}bg-warning{% elif status.name == 'در حال ساخت' %}bg-info{% elif status.name == 'آماده تحویل' %}bg-primary{% else %}bg-secondary{% endif %} me-1">
+                                                            {{ status.name }}
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
                                         {% endif %}
                                     </div>
                                 </div>
