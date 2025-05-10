@@ -36,13 +36,14 @@ class PropertyForm(forms.ModelForm):
         fields = [
             'title', 'address', 'area', 'price', 'year_built',
             'property_type', 'transaction_type', 'status', 'document_type',
-            'rooms', 'description', 'image',
+            'rooms', 'description', 'owner_contact', 'image',
             'has_elevator', 'has_parking', 'has_warehouse', 'has_balcony',
             'is_renovated', 'has_package', 'latitude', 'longitude'
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 5}),
             'address': forms.Textarea(attrs={'rows': 3}),
+            'owner_contact': forms.TextInput(attrs={'placeholder': 'نام، شماره تماس و ایمیل مالک'}),
             'year_built': forms.NumberInput(attrs={'min': 1300, 'max': 1410}),
             'area': forms.NumberInput(attrs={'min': 1}),
             'price': forms.NumberInput(attrs={'min': 0}),
@@ -68,6 +69,7 @@ class PropertyForm(forms.ModelForm):
                 field.widget.attrs['class'] = 'form-control'
                 
         # توضیحات بیشتر برای فیلدهای جدید
+        self.fields['owner_contact'].help_text = 'اطلاعات تماس مالک ملک، مانند نام، شماره تماس و ایمیل (اختیاری)'
         self.fields['latitude'].help_text = 'مختصات جغرافیایی برای نمایش روی نقشه (اختیاری)'
         self.fields['longitude'].help_text = 'مختصات جغرافیایی برای نمایش روی نقشه (اختیاری)'
     

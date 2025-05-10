@@ -229,6 +229,19 @@
                             <div id="property-map" class="property-map"></div>
                         </div>
                         
+                        {% if property.owner_contact %}
+                        <!-- اطلاعات تماس مالک -->
+                        <div class="mb-5">
+                            <h4 class="property-section-title">اطلاعات تماس مالک</h4>
+                            <div class="property-owner-contact">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-lines-fill fs-4 text-primary me-3"></i>
+                                    <p class="mb-0">{{ property.owner_contact }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <!-- توضیحات -->
                         <div class="mb-5">
                             <h4 class="property-section-title">توضیحات</h4>

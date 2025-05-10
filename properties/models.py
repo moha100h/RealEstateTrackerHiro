@@ -122,6 +122,7 @@ class Property(models.Model):
     document_type = models.ForeignKey(DocumentType, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="نوع سند")
     rooms = models.PositiveSmallIntegerField(verbose_name="تعداد اتاق")
     description = models.TextField(verbose_name="توضیحات")
+    owner_contact = models.CharField(max_length=255, blank=True, null=True, verbose_name="اطلاعات تماس مالک")
     image = models.ImageField(
         upload_to='properties/', 
         blank=True, 
