@@ -277,8 +277,13 @@
                         <div class="form-section">
                             <h5 class="form-section-title">
                                 <i class="bi bi-file-text"></i>
-                                توضیحات
+                                توضیحات و اطلاعات تماس
                             </h5>
+                            <div class="mb-3">
+                                <label for="{{ form.owner_contact.id_for_label }}" class="form-label">{{ form.owner_contact.label }}</label>
+                                {{ form.owner_contact }}
+                                <small class="form-text text-muted">{{ form.owner_contact.help_text }}</small>
+                            </div>
                             <div class="mb-3">
                                 <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
                                 {{ form.description }}
