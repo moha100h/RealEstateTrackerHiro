@@ -134,6 +134,11 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
     template_name = 'accounts/user_form.html'
     success_url = reverse_lazy('accounts:user_list')
     
+    def get_form(self, form_class=None):
+        """ارسال request به فرم برای استفاده در تنظیم پسورد پیش‌فرض"""
+        form_class = self.get_form_class()
+        return form_class(request=self.request, **self.get_form_kwargs())
+    
     def test_func(self):
         return self.request.user.is_superuser or hasattr(self.request.user, 'profile') and self.request.user.profile.is_super_admin
     
@@ -143,6 +148,12 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         # افزودن فرم پروفایل برای آپلود تصویر
         if 'profile_form' not in context:
             context['profile_form'] = UserProfileForm()
+        
+        # اطمینان از اینکه فرم کاربر، request را دریافت می‌کند
+        if 'form' not in kwargs:
+            form_class = self.get_form_class()
+            context['form'] = form_class(request=self.request)
+        
         return context
     
     def post(self, request, *args, **kwargs):
@@ -199,6 +210,11 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'accounts/user_form.html'
     success_url = reverse_lazy('accounts:user_list')
     
+    def get_form(self, form_class=None):
+        """ارسال request به فرم برای استفاده در تنظیم پسورد پیش‌فرض"""
+        form_class = self.get_form_class()
+        return form_class(instance=self.object, request=self.request, **self.get_form_kwargs())
+    
     def test_func(self):
         return self.request.user.is_superuser or hasattr(self.request.user, 'profile') and self.request.user.profile.is_super_admin
         
@@ -216,6 +232,11 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
                 profile.save()
                 
             context['profile_form'] = UserProfileForm(instance=profile)
+        
+        # اطمینان از اینکه فرم کاربر، request را دریافت می‌کند
+        if 'form' not in kwargs:
+            form_class = self.get_form_class()
+            context['form'] = form_class(instance=self.object, request=self.request)
             
         return context
         
@@ -224,7 +245,7 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
         متد بازنویسی شده برای هندل کردن هر دو فرم کاربر و پروفایل
         """
         self.object = self.get_object()
-        user_form = self.get_form()
+        user_form = UserForm(request.POST, instance=self.object, request=request)
         
         # پیدا کردن یا ایجاد پروفایل کاربر
         try:
