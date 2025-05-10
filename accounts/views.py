@@ -173,8 +173,14 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         """
         متد ذخیره هر دو فرم کاربر و پروفایل
         """
-        # ایجاد کاربر جدید
-        self.object = user_form.save()
+        # ایجاد کاربر جدید - commit=False برای اینکه بتوانیم پروفایل را هم ذخیره کنیم
+        self.object = user_form.save(commit=False)
+        
+        # ذخیره اصلی کاربر 
+        self.object.save()
+        
+        # ذخیره گروه‌ها - این مرحله خیلی مهم است
+        user_form.save_m2m()  
         
         # ایجاد پروفایل برای کاربر جدید
         profile = UserProfile(user=self.object)
@@ -265,8 +271,12 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
         """
         متد ذخیره هر دو فرم کاربر و پروفایل
         """
-        # ذخیره کاربر
-        self.object = user_form.save()
+        # ذخیره کاربر - ابتدا بدون ذخیره روابط
+        self.object = user_form.save(commit=False)
+        self.object.save()
+        
+        # ذخیره گروه‌ها - این مرحله خیلی مهم است
+        user_form.save_m2m()
         
         # ذخیره پروفایل اگر تغییر کرده باشد
         if profile_form.has_changed():

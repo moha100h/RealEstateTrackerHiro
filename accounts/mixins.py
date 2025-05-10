@@ -47,12 +47,22 @@ class AdminRequiredMixin(LoginRequiredMixin):
             return custom_permission_denied(request)
         
         user = cast(User, request.user)
-        is_admin = user.is_superuser or user.is_staff or (
+        
+        # بررسی از طریق گروه‌های سیستم
+        is_in_admin_group = user.groups.filter(name__in=['admin_super', 'admin_property']).exists()
+        
+        # بررسی از طریق متد‌های پروفایل
+        is_admin_via_profile = (
             hasattr(user, 'profile') and 
-            getattr(user.profile, 'is_super_admin', False)
+            (getattr(user.profile, 'is_super_admin', False) or
+             getattr(user.profile, 'is_property_manager', False))
         )
         
-        if not is_admin:
+        # بررسی از طریق فیلد‌های داخلی جنگو
+        is_admin_via_django = user.is_superuser or user.is_staff
+        
+        # اگر با هر یک از روش‌ها تایید شد، دسترسی بدهد
+        if not (is_in_admin_group or is_admin_via_profile or is_admin_via_django):
             from hiro_estate.security_views import custom_permission_denied
             return custom_permission_denied(request)
         
@@ -68,15 +78,23 @@ class PropertyManagerRequiredMixin(LoginRequiredMixin):
             return custom_permission_denied(request)
         
         user = cast(User, request.user)
-        is_property_manager = (
-            user.is_superuser or 
-            user.is_staff or 
-            (hasattr(user, 'profile') and 
-             (getattr(user.profile, 'is_super_admin', False) or 
-              getattr(user.profile, 'is_property_manager', False)))
+        
+        # بررسی از طریق گروه‌های سیستم - هم مدیران املاک و هم کارشناسان فروش
+        is_in_property_group = user.groups.filter(name__in=['admin_super', 'admin_property', 'admin_sales']).exists()
+        
+        # بررسی از طریق متد‌های پروفایل
+        is_property_manager_via_profile = (
+            hasattr(user, 'profile') and 
+            (getattr(user.profile, 'is_super_admin', False) or 
+             getattr(user.profile, 'is_property_manager', False) or
+             getattr(user.profile, 'is_sales_agent', False))
         )
         
-        if not is_property_manager:
+        # بررسی از طریق فیلد‌های داخلی جنگو
+        is_property_manager_via_django = user.is_superuser or user.is_staff
+        
+        # اگر با هر یک از روش‌ها تایید شد، دسترسی بدهد
+        if not (is_in_property_group or is_property_manager_via_profile or is_property_manager_via_django):
             from hiro_estate.security_views import custom_permission_denied
             return custom_permission_denied(request)
         
