@@ -140,11 +140,14 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
         return form_class(request=self.request, **self.get_form_kwargs())
     
     def test_func(self):
+        """بررسی دسترسی کاربر"""
         return self.request.user.is_superuser or hasattr(self.request.user, 'profile') and self.request.user.profile.is_super_admin
     
     def get_context_data(self, **kwargs):
+        """اضافه کردن فرم پروفایل به context"""
         context = super().get_context_data(**kwargs)
         context['title'] = 'افزودن کاربر جدید'
+        
         # افزودن فرم پروفایل برای آپلود تصویر
         if 'profile_form' not in context:
             context['profile_form'] = UserProfileForm()
@@ -158,39 +161,58 @@ class UserCreateView(CustomLoginRequiredMixin, UserPassesTestMixin, CreateView):
     
     def post(self, request, *args, **kwargs):
         """
-        متد بازنویسی شده برای هندل کردن هر دو فرم کاربر و پروفایل
+        پردازش فرم‌های کاربر و پروفایل با دقت بیشتر در پردازش فایل‌های آپلود شده
         """
         self.object = None
+        
+        # مقداردهی اولیه فرم‌ها
         user_form = UserForm(request.POST, request=request)
+        profile_form = UserProfileForm(request.POST, request.FILES)
         
-        # ایجاد فرم پروفایل، اما با تنظیم فایل‌ها به صورت دستی
-        profile_form = UserProfileForm(request.POST)
-        
+        # بررسی معتبر بودن فرم‌ها
         if user_form.is_valid() and profile_form.is_valid():
-            # ذخیره کاربر و گروه‌های آن
+            return self._process_valid_forms(user_form, profile_form, request)
+        else:
+            return self._process_invalid_forms(user_form, profile_form)
+    
+    def _process_valid_forms(self, user_form, profile_form, request):
+        """پردازش فرم‌های معتبر و ایجاد کاربر و پروفایل"""
+        try:
+            # ایجاد کاربر
             user = user_form.save()
             
-            # ایجاد پروفایل کاربر
+            # ایجاد و تنظیم پروفایل
             profile = UserProfile(user=user)
             profile.phone = profile_form.cleaned_data.get('phone', '')
             profile.position = profile_form.cleaned_data.get('position', '')
             
-            # پردازش آواتار به صورت مستقیم از request.FILES
-            # این روش اطمینان می‌دهد که دسترسی به فایل‌های آپلود شده بدون واسطه انجام شود
+            # بررسی و پردازش آواتار کاربر
             if 'avatar' in request.FILES:
-                # با ذخیره مستقیم فایل از request.FILES، مشکل ذخیره فایل حل می‌شود
                 profile.avatar = request.FILES['avatar']
-                
+            
             # ذخیره پروفایل
             profile.save()
             
             messages.success(request, f'کاربر {user.username} با موفقیت ایجاد شد.')
             return redirect(self.success_url)
-        else:
-            # بازگشت به صفحه فرم با نمایش خطاها
-            return self.render_to_response(
-                self.get_context_data(form=user_form, profile_form=profile_form)
-            )
+        except Exception as e:
+            # در صورت بروز خطا، پیام مناسب نمایش داده می‌شود
+            messages.error(request, f'خطا در ایجاد کاربر: {str(e)}')
+            return self._process_invalid_forms(user_form, profile_form)
+    
+    def _process_invalid_forms(self, user_form, profile_form):
+        """پردازش فرم‌های نامعتبر و نمایش خطاها"""
+        for field, errors in user_form.errors.items():
+            for error in errors:
+                messages.error(self.request, f'خطا در فیلد {field}: {error}')
+        
+        for field, errors in profile_form.errors.items():
+            for error in errors:
+                messages.error(self.request, f'خطا در فیلد پروفایل {field}: {error}')
+        
+        return self.render_to_response(
+            self.get_context_data(form=user_form, profile_form=profile_form)
+        )
 
 class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """ویرایش کاربر - فقط برای مدیران"""
@@ -246,23 +268,16 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
             profile = UserProfile(user=self.object)
             profile.save()
             
-        # ایجاد فرم پروفایل بدون در نظر گرفتن فایل‌ها (مدیریت دستی فایل‌ها)
-        profile_form = UserProfileForm(request.POST, instance=profile)
+        # ایجاد فرم پروفایل با در نظر گرفتن فایل‌های آپلود شده
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         
         if user_form.is_valid() and profile_form.is_valid():
             # ذخیره کاربر
             user = user_form.save()
             
-            # به‌روزرسانی فیلدهای پروفایل
-            profile.phone = profile_form.cleaned_data.get('phone', '')
-            profile.position = profile_form.cleaned_data.get('position', '')
-            
-            # پردازش آواتار جدید اگر آپلود شده باشد
-            if 'avatar' in request.FILES:
-                profile.avatar = request.FILES['avatar']
-                
-            # ذخیره پروفایل
-            profile.save()
+            # ذخیره فرم پروفایل با save()
+            # این روش به طور خودکار همه فیلدها از جمله فایل‌ها را مدیریت می‌کند
+            profile_form.save()
             
             messages.success(request, f'اطلاعات کاربر {user.username} با موفقیت بروزرسانی شد.')
             return redirect(self.success_url)
@@ -273,10 +288,19 @@ class UserUpdateView(CustomLoginRequiredMixin, UserPassesTestMixin, UpdateView):
     
     def forms_invalid(self, user_form, profile_form):
         """
-        متد پردازش فرم‌های نامعتبر
+        متد پردازش فرم‌های نامعتبر با نمایش خطاهای دقیق
         """
+        # نمایش خطاهای فرم کاربر
+        for field, errors in user_form.errors.items():
+            for error in errors:
+                messages.error(self.request, f'خطا در فیلد {field}: {error}')
+        
+        # نمایش خطاهای فرم پروفایل
+        for field, errors in profile_form.errors.items():
+            for error in errors:
+                messages.error(self.request, f'خطا در فیلد پروفایل {field}: {error}')
+                
         context = self.get_context_data(form=user_form, profile_form=profile_form)
-        messages.error(self.request, 'لطفاً خطاهای فرم را اصلاح کنید.')
         return self.render_to_response(context)
 
 class UserDeleteView(CustomLoginRequiredMixin, UserPassesTestMixin, DeleteView):
