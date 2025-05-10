@@ -988,16 +988,55 @@
                                     <thead>
                                         <tr>
                                             <th>نام فایل</th>
+                                            <th>نوع پشتیبان</th>
                                             <th>تاریخ ایجاد</th>
                                             <th>حجم فایل</th>
                                             <th>ایجاد کننده</th>
+                                            <th>توضیحات</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for backup in backups %}
                                         <tr>
-                                            <td>{{ backup.file_name }}</td>
-                                            <td>{{ backup.created_at|date:"Y/m/d - H:i" }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-file-earmark-zip text-primary me-2"></i>
+                                                    <span>{{ backup.file_name }}</span>
+                                                    {% if backup.checksum %}
+                                                    <span class="ms-2" data-bs-toggle="tooltip" title="فایل دارای چک‌سام برای بررسی سلامت">
+                                                        <i class="bi bi-shield-check text-success"></i>
+                                                    </span>
+                                                    {% endif %}
+                                                    {% if backup.is_encrypted %}
+                                                    <span class="ms-2" data-bs-toggle="tooltip" title="فایل رمزنگاری شده است">
+                                                        <i class="bi bi-lock-fill text-warning"></i>
+                                                    </span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if backup.backup_type == 'full' %}
+                                                <span class="badge bg-primary">پشتیبان کامل</span>
+                                                {% elif backup.backup_type == 'data_only' %}
+                                                <span class="badge bg-info">فقط داده‌ها</span>
+                                                {% elif backup.backup_type == 'media_only' %}
+                                                <span class="badge bg-warning">فقط فایل‌ها</span>
+                                                {% elif backup.backup_type == 'config_only' %}
+                                                <span class="badge bg-secondary">فقط تنظیمات</span>
+                                                {% else %}
+                                                <span class="badge bg-dark">{{ backup.backup_type }}</span>
+                                                {% endif %}
+                                                
+                                                {% if backup.compression_level %}
+                                                <span class="ms-1 small text-muted" data-bs-toggle="tooltip" title="سطح فشرده‌سازی">
+                                                    <i class="bi bi-arrows-collapse"></i> {{ backup.compression_level }}
+                                                </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div>{{ backup.created_at|date:"Y/m/d - H:i" }}</div>
+                                                <small class="text-muted">{{ backup.get_backup_age }}</small>
+                                            </td>
                                             <td>
                                                 <span class="file-size-badge">
                                                     <i class="bi bi-file-earmark-zip me-1"></i>
@@ -1005,10 +1044,20 @@
                                                 </span>
                                             </td>
                                             <td>{{ backup.created_by.get_full_name|default:backup.created_by.username }}</td>
+                                            <td>
+                                                {% if backup.description %}
+                                                <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                                      data-bs-toggle="tooltip" title="{{ backup.description }}">
+                                                    {{ backup.description }}
+                                                </span>
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         {% empty %}
                                         <tr>
-                                            <td colspan="4" class="text-center py-5">
+                                            <td colspan="6" class="text-center py-5">
                                                 <div class="d-flex flex-column align-items-center">
                                                     <i class="bi bi-inbox text-muted mb-3" style="font-size: 3rem;"></i>
                                                     <h5 class="mb-2">هیچ سابقه پشتیبان‌گیری یافت نشد</h5>

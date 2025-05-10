@@ -7,6 +7,7 @@ from django.http import HttpResponse, FileResponse
 from django.utils import timezone
 from django.db import models
 from django.db.models import Q
+import django
 import os
 import sys
 import json
@@ -193,7 +194,7 @@ def create_backup(request):
             manifest = {
                 'created_at': timezone.now().isoformat(),
                 'created_by': request.user.username,
-                'django_version': settings.DJANGO_VERSION,
+                'django_version': django.get_version(),
                 'system_info': {
                     'python_version': sys.version,
                     'platform': platform.platform(),
