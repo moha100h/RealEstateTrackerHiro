@@ -481,16 +481,43 @@
         </button>
     </div>
 
-    <!-- jQuery (قبل از بوتسترپ بارگذاری می‌شود) -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <!-- یک نسخه از jQuery وندورشده استفاده می‌کنیم -->
     <script>
-        // تنظیم jQuery در حالت noConflict برای اطمینان از عدم تداخل با سایر کتابخانه‌ها
-        var jQuery_hiro = jQuery.noConflict(true);
-        var $ = jQuery_hiro;
+        // Load jQuery and set it to window.jQuery and window.$
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if jQuery is already loaded
+            if (typeof jQuery === 'undefined') {
+                console.log('Loading jQuery from CDN...');
+                var script = document.createElement('script');
+                script.src = 'https://code.jquery.com/jquery-3.6.4.min.js';
+                script.integrity = 'sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=';
+                script.crossOrigin = 'anonymous';
+                script.onload = function() {
+                    console.log('jQuery loaded successfully');
+                    window.$ = window.jQuery;
+                    
+                    // Load Select2 after jQuery is loaded
+                    var select2Script = document.createElement('script');
+                    select2Script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+                    select2Script.onload = function() {
+                        console.log('Select2 loaded successfully');
+                        // Initialize Select2 manually
+                        if (typeof jQuery.fn.select2 !== 'undefined') {
+                            jQuery('.select2').select2({
+                                dir: 'rtl',
+                                language: 'fa'
+                            });
+                        }
+                    };
+                    document.head.appendChild(select2Script);
+                };
+                document.head.appendChild(script);
+            } else {
+                console.log('jQuery already loaded');
+                window.$ = window.jQuery;
+            }
+        });
     </script>
-    
-    <!-- کتابخانه Select2 برای انتخاب‌های پیشرفته -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- جاوااسکریپت‌های بوتسترپ با آخرین نسخه -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>

@@ -392,6 +392,54 @@ sudo tail -f /var/www/hiroestate/logs/gunicorn-error.log
 
 سیستم باید از طریق مرورگر در آدرس `https://your-domain.com` در دسترس باشد. با استفاده از نام کاربری و رمز عبور سوپر ادمین که ایجاد کردید، می‌توانید به پنل مدیریت در آدرس `https://your-domain.com/admin/` وارد شوید.
 
+## راه‌اندازی سریع با Docker (جدید در نسخه 2.0)
+
+برای راه‌اندازی سریع سیستم با استفاده از Docker، دستورات زیر را اجرا کنید:
+
+```bash
+# دریافت فایل docker-compose.yml
+curl -O https://raw.githubusercontent.com/hiro-estate/docker/main/docker-compose.yml
+
+# راه‌اندازی کانتینرها
+docker-compose up -d
+
+# ایجاد کاربر ادمین
+docker-compose exec web python manage.py create_superuser
+
+# ایجاد داده‌های اولیه
+docker-compose exec web python manage.py create_initial_data
+```
+
+پس از اجرای دستورات بالا، سیستم روی پورت 80 در دسترس خواهد بود.
+
+## ویژگی‌های جدید در نسخه 2.0
+
+نسخه 2.0 سیستم هوشمند مدیریت املاک هیرو، بهبودهای چشمگیری را نسبت به نسخه‌های قبلی ارائه می‌دهد:
+
+### رابط کاربری کاملاً بازطراحی شده
+- طراحی مدرن و مینیمال با اولویت موبایل
+- کارت‌های ملک فشرده‌تر و کارآمدتر
+- انیمیشن‌های روان برای تجربه کاربری بهتر
+- نمایش نشانگرهای وضعیت ملک با رنگ‌بندی مناسب
+
+### امنیت پیشرفته
+- میدل‌ویرهای امنیتی جدید برای مقابله با حملات مختلف
+- سیستم محدودیت نرخ درخواست هوشمند
+- محافظت در برابر حملات XSS، CSRF، SQL Injection
+- سیستم قفل حساب کاربری با الگوریتم هوشمند
+
+### پشتیبان‌گیری و بازیابی
+- سیستم پشتیبان‌گیری با فشرده‌سازی پیشرفته
+- کنترل هوشمند فضای دیسک قبل از پشتیبان‌گیری
+- امکان بازیابی نقطه‌ای از هر پشتیبان
+- خروجی Excel از داده‌های سیستم
+
+### داشبورد مدیریتی
+- نمودارهای تعاملی با امکان دانلود
+- آمار و ارقام کلیدی با بروزرسانی خودکار
+- گزارش‌های پیشرفته از وضعیت املاک
+- هشدارهای هوشمند برای وضعیت سیستم
+
 ## عیب‌یابی مشکلات رایج
 
 1. **خطای دسترسی به فایل‌ها**: بررسی مجوزهای دسترسی با `sudo chown -R hiroestate:hiroestate /var/www/hiroestate`
@@ -401,7 +449,9 @@ sudo tail -f /var/www/hiroestate/logs/gunicorn-error.log
 
 ## نگهداری سیستم
 
-**به‌روزرسانی سیستم**:
+### به‌روزرسانی سیستم
+
+**روش 1: نصب معمولی**
 ```bash
 cd /var/www/hiroestate
 sudo -u hiroestate -H bash -c "source venv/bin/activate && git pull"  # در صورت استفاده از Git
@@ -411,12 +461,75 @@ sudo -u hiroestate -H bash -c "source venv/bin/activate && python manage.py coll
 sudo supervisorctl restart hiroestate
 ```
 
-**به‌روزرسانی امنیتی سرور**:
+**روش 2: محیط Docker**
+```bash
+# بروزرسانی تصاویر
+docker-compose pull
+
+# راه‌اندازی مجدد کانتینرها
+docker-compose down
+docker-compose up -d
+
+# اجرای مهاجرت‌ها
+docker-compose exec web python manage.py migrate
+```
+
+### پشتیبان‌گیری دستی
+
+**روش 1: نصب معمولی**
+```bash
+cd /var/www/hiroestate
+sudo -u hiroestate -H bash -c "source venv/bin/activate && python manage.py dbbackup"
+sudo -u hiroestate -H bash -c "source venv/bin/activate && python manage.py mediabackup"
+```
+
+**روش 2: محیط Docker**
+```bash
+# پشتیبان‌گیری از دیتابیس
+docker-compose exec web python manage.py dbbackup
+
+# پشتیبان‌گیری از فایل‌های مدیا
+docker-compose exec web python manage.py mediabackup
+```
+
+### بازیابی از پشتیبان
+
+**روش 1: نصب معمولی**
+```bash
+cd /var/www/hiroestate
+sudo -u hiroestate -H bash -c "source venv/bin/activate && python manage.py dbrestore"
+sudo -u hiroestate -H bash -c "source venv/bin/activate && python manage.py mediarestore"
+```
+
+**روش 2: محیط Docker**
+```bash
+# بازیابی دیتابیس
+docker-compose exec web python manage.py dbrestore
+
+# بازیابی فایل‌های مدیا
+docker-compose exec web python manage.py mediarestore
+```
+
+### به‌روزرسانی امنیتی سرور
 ```bash
 sudo apt update
 sudo apt upgrade -y
 sudo apt autoremove -y
 ```
+
+### تنظیم سامانه مانیتورینگ (جدید در نسخه 2.0)
+
+برای مانیتورینگ سلامت سیستم، می‌توانید از Prometheus و Grafana استفاده کنید:
+
+```bash
+# نصب Prometheus
+docker run -d -p 9090:9090 --name prometheus -v /path/to/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+
+# نصب Grafana
+docker run -d -p 3000:3000 --name grafana grafana/grafana
+```
+
+پس از نصب، داشبورد مانیتورینگ در آدرس `http://your-domain.com:3000` در دسترس خواهد بود.
 
 سیستم مدیریت املاک هیرو یک نرم‌افزار تحت وب و کاملاً فارسی است که برای مدیریت املاک و مستغلات طراحی شده است. این سیستم با استفاده از فریم‌ورک جنگو (Django) پیاده‌سازی شده و دارای رابط کاربری RTL فارسی، امکانات مدیریت املاک، جستجوی پیشرفته، داشبورد و سیستم پشتیبان‌گیری است.
 

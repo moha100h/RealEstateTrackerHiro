@@ -277,26 +277,33 @@ function initTooltips() {
 
 // فعال‌سازی select2 در صورت استفاده از این کتابخانه
 function initSelect2() {
-    try {
-        // بررسی وجود jQuery و کتابخانه select2 با روش مطمئن‌تر
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof jQuery !== 'undefined' && jQuery !== null) {
-                // استفاده از jQuery با نام کامل به جای $ برای اطمینان بیشتر
-                if (typeof jQuery.fn !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-                    jQuery('.select2').select2({
-                        dir: 'rtl',
-                        language: 'fa'
-                    });
-                } else {
-                    console.log('کتابخانه Select2 بارگذاری نشده است.');
-                }
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            // اطمینان از وجود jQuery
+            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
+                // استفاده از # به جای $ برای اطمینان بیشتر
+                window.jQuery('.select2').select2({
+                    dir: 'rtl',
+                    language: 'fa'
+                });
+                console.log('Select2 با موفقیت راه‌اندازی شد.');
             } else {
-                console.log('کتابخانه jQuery بارگذاری نشده است.');
+                console.log('کتابخانه Select2 یا jQuery به درستی بارگذاری نشده است.');
+                // تلاش مجدد پس از 2 ثانیه
+                setTimeout(function() {
+                    if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
+                        window.jQuery('.select2').select2({
+                            dir: 'rtl',
+                            language: 'fa'
+                        });
+                        console.log('Select2 با تأخیر راه‌اندازی شد.');
+                    }
+                }, 2000);
             }
-        });
-    } catch (e) {
-        console.log('خطا در راه‌اندازی Select2:', e);
-    }
+        } catch (e) {
+            console.log('خطا در راه‌اندازی Select2:', e);
+        }
+    });
 }
 
 // تبدیل اعداد لاتین به فارسی
