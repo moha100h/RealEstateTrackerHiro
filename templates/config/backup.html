@@ -756,10 +756,45 @@
                                     
                                     <form method="post" action="{% url 'config:create_backup' %}" class="mt-4">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-primary btn-download">
-                                            <i class="bi bi-download me-2"></i>
-                                            ایجاد و دانلود پشتیبان
-                                        </button>
+                                        
+                                        <div class="row mb-4">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="backup_type" class="form-label fw-bold">نوع پشتیبان‌گیری:</label>
+                                                <select name="backup_type" id="backup_type" class="form-select">
+                                                    <option value="full" selected>پشتیبان کامل (داده‌ها و فایل‌ها)</option>
+                                                    <option value="data_only">فقط داده‌ها (بدون فایل‌های مدیا)</option>
+                                                    <option value="media_only">فقط فایل‌های مدیا</option>
+                                                    <option value="config_only">فقط تنظیمات سیستم</option>
+                                                </select>
+                                                <div class="form-text">نوع پشتیبان را بر اساس نیاز خود انتخاب کنید.</div>
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <label for="compression_level" class="form-label fw-bold">سطح فشرده‌سازی:</label>
+                                                <div class="d-flex align-items-center">
+                                                    <input type="range" class="form-range" name="compression_level" id="compression_level" min="1" max="9" value="9">
+                                                    <span class="ms-2 fw-bold" id="compression_level_display">9</span>
+                                                </div>
+                                                <div class="form-text">مقدار بالاتر = حجم کمتر، اما زمان پشتیبان‌گیری بیشتر</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <label for="backup_description" class="form-label fw-bold">توضیحات پشتیبان (اختیاری):</label>
+                                            <textarea name="backup_description" id="backup_description" class="form-control" rows="3" placeholder="توضیحات خود را برای این پشتیبان وارد کنید..."></textarea>
+                                            <div class="form-text">توضیحات می‌تواند شامل هدف پشتیبان‌گیری یا تغییرات مهم سیستم باشد.</div>
+                                        </div>
+                                        
+                                        <div class="d-flex align-items-center">
+                                            <button type="submit" class="btn btn-primary btn-download">
+                                                <i class="bi bi-download me-2"></i>
+                                                ایجاد و دانلود پشتیبان
+                                            </button>
+                                            <div class="form-text me-3">
+                                                <i class="bi bi-info-circle me-1"></i> 
+                                                فایل پشتیبان به صورت خودکار دانلود خواهد شد.
+                                            </div>
+                                        </div>
                                     </form>
                                 </div>
                                 <div class="col-lg-5">
@@ -803,7 +838,13 @@
                                         <i class="bi bi-cloud-upload"></i>
                                     </div>
                                     <h5 class="file-upload-text">فایل پشتیبان را انتخاب کنید یا اینجا رها کنید</h5>
-                                    <p class="file-upload-info">فرمت مجاز: ZIP - حداکثر سایز: 100 مگابایت</p>
+                                    <p class="file-upload-info">فرمت مجاز: ZIP - حداکثر سایز: 200 مگابایت</p>
+                                </div>
+                                
+                                <div class="form-check form-switch my-3">
+                                    <input class="form-check-input" type="checkbox" name="clean_media" id="cleanMedia" checked>
+                                    <label class="form-check-label" for="cleanMedia">حذف فایل‌های مدیای موجود قبل از بازیابی</label>
+                                    <div class="form-text">در صورت فعال بودن، فایل‌های مدیای فعلی حذف و با فایل‌های موجود در پشتیبان جایگزین می‌شوند.</div>
                                 </div>
                                 
                                 <div id="selectedFileInfo" class="selected-file">
