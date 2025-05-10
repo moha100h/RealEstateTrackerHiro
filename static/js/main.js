@@ -277,11 +277,18 @@ function initTooltips() {
 
 // فعال‌سازی select2 در صورت استفاده از این کتابخانه
 function initSelect2() {
-    if (typeof($.fn.select2) !== 'undefined') {
-        $('.select2').select2({
-            dir: 'rtl',
-            language: 'fa'
-        });
+    try {
+        // بررسی وجود jQuery و کتابخانه select2
+        if (typeof($) !== 'undefined' && $ !== null && typeof($.fn) !== 'undefined' && typeof($.fn.select2) !== 'undefined') {
+            $('.select2').select2({
+                dir: 'rtl',
+                language: 'fa'
+            });
+        } else {
+            console.log('کتابخانه Select2 یا jQuery بارگذاری نشده است.');
+        }
+    } catch (e) {
+        console.log('خطا در راه‌اندازی Select2:', e);
     }
 }
 
