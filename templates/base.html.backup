@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="{{ system_config.site_description|default:'سیستم مدیریت املاک هیرو - مدیریت حرفه‌ای املاک شما' }}">
+    <meta name="keywords" content="{{ system_config.site_keywords|default:'مدیریت املاک، خرید ملک، فروش ملک، اجاره ملک' }}">
+    <meta name="author" content="{{ system_config.company_name|default:'هیرو املاک' }}">
+    <meta name="theme-color" content="#3F51B5">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#3F51B5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Open Graph meta tags for social sharing -->
+    <meta property="og:title" content="{% if title %}{{ title }} | {% endif %}{{ system_config.website_title }}">
+    <meta property="og:description" content="{{ system_config.site_description|default:'سیستم مدیریت املاک هیرو - مدیریت حرفه‌ای املاک شما' }}">
+    {% if system_config.logo %}
+    <meta property="og:image" content="{{ system_config.logo.url }}">
+    {% endif %}
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:type" content="website">
+    
+    <title>{% if title %}{{ title }} | {% endif %}{{ system_config.website_title }}</title>
+    
+    <!-- Favicon -->
+    {% if system_config.favicon %}
+    <link rel="icon" type="image/png" href="{{ system_config.favicon.url }}">
+    <link rel="apple-touch-icon" href="{{ system_config.favicon.url }}">
+    {% endif %}
+    
+    <!-- بوتسترپ RTL با آخرین نسخه -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-nU14brUcp6StFntEOOEBvcJm4huWjB0OcIeQ3fltAfSmuZFrkAif0T+UtNGlKKQv" crossorigin="anonymous">
+    
+    <!-- فونت‌های فارسی -->
+    {% if system_config.font_type == 'vazir' %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+    <style>
+        body, .font-vazir {
+            font-family: 'Vazir', 'Tahoma', sans-serif !important;
+        }
+    </style>
+    {% elif system_config.font_type == 'sahel' %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css">
+    <style>
+        body, .font-sahel {
+            font-family: 'Sahel', 'Tahoma', sans-serif !important;
+        }
+    </style>
+    {% else %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/iran-sans-web@master/dist/font-face.css">
+    <style>
+        body, .font-iransans {
+            font-family: 'Iran Sans Web', 'Tahoma', sans-serif !important;
+        }
+    </style>
+    {% endif %}
+    
+    <!-- فونت آیکون‌های Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    
+    <!-- Animate.css برای انیمیشن‌های CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- کتابخانه Select2 برای انتخاب‌های پیشرفته -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- استایل‌های سفارشی -->
+    <link rel="stylesheet" href="/static/css/rtl.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/property-cards.css">
+    
+    <!-- Dynamic Color Theme Based on System Config -->
+    <style>
+        /* حذف دکمه اضافه به علاقه‌مندی‌ها که در نوار بالایی نمایش داده می‌شود */
+        a[data-original-title="اضافه به علاقه‌مندی‌ها"],
+        button[data-original-title="اضافه به علاقه‌مندی‌ها"],
+        a[title="اضافه به علاقه‌مندی‌ها"],
+        button[title="اضافه به علاقه‌مندی‌ها"],
+        a[title*="نزدیک"],
+        button[title*="نزدیک"],
+        .favorite-button,
+        .add-to-favorites,
+        .add-to-favorite,
+        .wishlist-btn,
+        [id*="favorite"],
+        [class*="favorite"],
+        [id*="wishlist"],
+        [class*="wishlist"],
+        [data-action*="favorite"],
+        [data-action*="wishlist"],
+        a[href*="favorite"],
+        a[href*="wishlist"] {
+            display: none !important;
+        }
+        
+        :root {
+            --primary-color: {{ system_config.primary_color|default:'#3F51B5' }};
+            --primary-rgb: {{ system_config.primary_color|default:'63, 81, 181'|cut:'#' }};
+        }
+        
+        /* اگر حالت تاریک فعال باشد */
+        {% if system_config.enable_dark_mode %}
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #f8f9fa;
+                --card-bg: #1e1e1e;
+                --border-color: #333;
+            }
+            
+            body {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+            }
+            
+            .card {
+                background-color: var(--card-bg);
+                border-color: var(--border-color);
+            }
+            
+            .navbar, .bg-white, footer {
+                background-color: var(--card-bg) !important;
+                border-color: var(--border-color) !important;
+            }
+            
+            .text-dark {
+                color: var(--text-color) !important;
+            }
+            
+            .text-muted {
+                color: #adb5bd !important;
+            }
+            
+            .table {
+                color: var(--text-color);
+            }
+            
+            .form-control, .form-select {
+                background-color: #333;
+                border-color: #444;
+                color: var(--text-color);
+            }
+            
+            .form-control:focus, .form-select:focus {
+                background-color: #3a3a3a;
+            }
+            
+            .dropdown-menu {
+                background-color: var(--card-bg);
+                border-color: var(--border-color);
+            }
+            
+            .dropdown-item {
+                color: var(--text-color);
+            }
+            
+            .dropdown-item:hover {
+                background-color: #2c2c2c;
+            }
+        }
+        {% endif %}
+    </style>
+    
+    <!-- اسکریپت تشخیص خودکار دستگاه -->
+    <script>
+        // تشخیص نوع دستگاه
+        function detectDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            
+            if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+                document.body.classList.add('mobile-device');
+                if (width >= 768) {
+                    document.body.classList.add('tablet-device');
+                } else {
+                    document.body.classList.add('smartphone-device');
+                }
+            } else {
+                document.body.classList.add('desktop-device');
+                if (width < 992) {
+                    document.body.classList.add('small-desktop');
+                }
+            }
+            
+            // تنظیم اندازه فونت بر اساس عرض صفحه
+            const baseFontSize = Math.min(16, Math.max(14, width / 80));
+            document.documentElement.style.fontSize = baseFontSize + 'px';
+        }
+        
+        // اجرای تابع هنگام بارگذاری صفحه و تغییر اندازه
+        window.addEventListener('DOMContentLoaded', detectDevice);
+        window.addEventListener('resize', detectDevice);
+    </script>
+    
+    {% block extra_head %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-light">
+    <!-- ناوبری موبایل (فقط در نمایش‌های کوچک) -->
+    <div class="d-lg-none mobile-navbar">
+        <div class="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm">
+            <button class="btn btn-sm btn-light d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i data-feather="menu" width="20" height="20"></i>
+            </button>
+            
+            <a class="navbar-brand d-flex align-items-center justify-content-center" href="{% url 'home' %}">
+                {% if system_config.logo %}
+                    <img src="{{ system_config.logo.url }}" alt="{{ system_config.website_title }}" height="36" class="me-2">
+                {% else %}
+                    <div class="brand-icon-bg rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: rgba(var(--primary-rgb), 0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home" style="color: var(--primary-color);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+                {% endif %}
+                <span style="color: var(--primary-color); font-weight: 700; font-size: 0.95rem;">{{ system_config.website_title }}</span>
+            </a>
+            
+            <div class="d-flex">
+                {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}" class="btn btn-sm btn-light rounded-circle">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" class="rounded-circle" width="28" height="28" style="object-fit: cover;">
+                    {% else %}
+                        <i data-feather="user" width="18" height="18"></i>
+                    {% endif %}
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-primary">ورود</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- منوی آفکنوس موبایل -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="mobileMenuLabel">{{ system_config.website_title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="mb-4">
+                <form class="w-100" action="{% url 'properties:property_search' %}" method="get">
+                    <div class="input-group">
+                        <input class="form-control" type="search" name="query" placeholder="جستجوی ملک" aria-label="Search">
+                        <button class="btn btn-primary" type="submit">
+                            <i data-feather="search" width="18" height="18"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="list-group list-group-flush">
+                <a href="{% url 'home' %}" class="list-group-item list-group-item-action {% if request.path == '/' %}active{% endif %}">
+                    <i data-feather="home" class="me-2" width="18" height="18"></i> خانه
+                </a>
+                <a href="{% url 'properties:property_list' %}" class="list-group-item list-group-item-action {% if '/properties/' in request.path and '/search/' not in request.path %}active{% endif %}">
+                    <i data-feather="layers" class="me-2" width="18" height="18"></i> املاک
+                </a>
+                <a href="{% url 'properties:property_search' %}" class="list-group-item list-group-item-action {% if '/properties/search/' in request.path %}active{% endif %}">
+                    <i data-feather="search" class="me-2" width="18" height="18"></i> جستجوی ملک
+                </a>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action {% if '/accounts/profile/' in request.path %}active{% endif %}">
+                        <i data-feather="user" class="me-2" width="18" height="18"></i> پروفایل کاربری
+                    </a>
+                    
+                    {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'dashboard:home' %}" class="list-group-item list-group-item-action {% if '/dashboard/' in request.path %}active{% endif %}">
+                        <i data-feather="pie-chart" class="me-2" width="18" height="18"></i> داشبورد
+                    </a>
+                    
+                    <a href="{% url 'accounts:user_list' %}" class="list-group-item list-group-item-action {% if '/accounts/users/' in request.path %}active{% endif %}">
+                        <i data-feather="users" class="me-2" width="18" height="18"></i> مدیریت کاربران
+                    </a>
+                    
+                    <a href="{% url 'config:system_config' %}" class="list-group-item list-group-item-action {% if '/config/settings/' in request.path %}active{% endif %}">
+                        <i data-feather="settings" class="me-2" width="18" height="18"></i> تنظیمات سیستم
+                    </a>
+                    
+                    <a href="{% url 'config:backup' %}" class="list-group-item list-group-item-action {% if '/config/backup/' in request.path %}active{% endif %}">
+                        <i data-feather="database" class="me-2" width="18" height="18"></i> پشتیبان‌گیری
+                    </a>
+                    
+                    <a href="/admin/" class="list-group-item list-group-item-action">
+                        <i data-feather="shield" class="me-2" width="18" height="18"></i> پنل مدیریت
+                    </a>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'accounts:logout' %}" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="list-group-item list-group-item-action text-danger">
+                            <i data-feather="log-out" class="me-2" width="18" height="18"></i> خروج
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="list-group-item list-group-item-action {% if '/accounts/login/' in request.path %}active{% endif %}">
+                        <i data-feather="log-in" class="me-2" width="18" height="18"></i> ورود
+                    </a>
+                {% endif %}
+            </div>
+            
+            {% if system_config.company_phone or system_config.company_email %}
+            <div class="mt-4 px-3">
+                <h6 class="mb-2">ارتباط با ما:</h6>
+                {% if system_config.company_phone %}
+                <p class="mb-1 small">
+                    <i data-feather="phone" class="me-1" width="14" height="14"></i>
+                    {{ system_config.company_phone }}
+                </p>
+                {% endif %}
+                {% if system_config.company_email %}
+                <p class="mb-1 small">
+                    <i data-feather="mail" class="me-1" width="14" height="14"></i>
+                    {{ system_config.company_email }}
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- هدر دسکتاپ -->
+    <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm d-none d-lg-flex sticky-top" style="z-index: 1030;">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                {% if system_config.logo %}
+                    <img src="{{ system_config.logo.url }}" alt="{{ system_config.website_title }}" height="42" class="me-2">
+                {% else %}
+                    <div class="brand-icon-bg rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 42px; height: 42px; background-color: rgba(var(--primary-rgb), 0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home" style="color: var(--primary-color);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+                {% endif %}
+                <span style="color: var(--primary-color); font-weight: 700;">{{ system_config.website_title }}</span>
+            </a>
+            
+            <div class="collapse navbar-collapse" id="navbarSupportedContent" style="position: relative; z-index: 1030;">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="{% url 'home' %}">خانه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/properties/' in request.path and '/search/' not in request.path %}active{% endif %}" href="{% url 'properties:property_list' %}">املاک</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/properties/search/' in request.path %}active{% endif %}" href="{% url 'properties:property_search' %}">جستجوی ملک</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff or user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/dashboard/' in request.path %}active{% endif %}" href="{% url 'dashboard:home' %}">داشبورد</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" class="rounded-circle me-1" style="width: 24px; height: 24px; object-fit: cover;">
+                                {% endif %}
+                                {{ user.get_full_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}">
+                                    <i data-feather="user" class="me-2" width="14" height="14"></i> پروفایل کاربری
+                                </a></li>
+                                
+                                {% if user.is_staff or user.is_superuser %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'accounts:user_list' %}">
+                                    <i data-feather="users" class="me-2" width="14" height="14"></i> مدیریت کاربران
+                                </a></li>
+                                <li><a class="dropdown-item py-2" href="/admin/">
+                                    <i data-feather="shield" class="me-2" width="14" height="14"></i> پنل مدیریت
+                                </a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'config:system_config' %}">
+                                    <i data-feather="settings" class="me-2" width="14" height="14"></i> تنظیمات سیستم
+                                </a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'config:backup' %}">
+                                    <i data-feather="database" class="me-2" width="14" height="14"></i> پشتیبان‌گیری
+                                </a></li>
+                                {% endif %}
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item py-2 text-danger">
+                                            <i data-feather="log-out" class="me-2" width="14" height="14"></i> خروج
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-2">
+                            <a class="btn btn-primary btn-sm rounded-pill px-3" href="{% url 'accounts:login' %}">
+                                <i data-feather="log-in" class="me-1" width="16" height="16"></i> ورود
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <form class="d-flex ms-0 ms-lg-2" action="{% url 'properties:property_search' %}" method="get">
+                    <div class="input-group">
+                        <input class="form-control rounded-start-pill" type="search" name="query" placeholder="جستجوی ملک" aria-label="Search">
+                        <button class="btn btn-primary rounded-end-pill" type="submit">
+                            <i data-feather="search" width="16" height="16"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- محتوای اصلی با تشخیص اتوماتیک پدینگ مناسب برای موبایل -->
+    <main class="py-4">
+        {% if messages %}
+            <div class="container animate__animated animate__fadeIn" id="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if message.tags == 'success' %}
+                                <i data-feather="check-circle" class="me-2 text-success" width="18" height="18"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i data-feather="alert-triangle" class="me-2 text-danger" width="18" height="18"></i>
+                            {% elif message.tags == 'warning' %}
+                                <i data-feather="alert-circle" class="me-2 text-warning" width="18" height="18"></i>
+                            {% elif message.tags == 'info' %}
+                                <i data-feather="info" class="me-2 text-info" width="18" height="18"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+            <script>
+                // اسکریپت برای ناپدید شدن خودکار پیام‌ها پس از 5 ثانیه
+                document.addEventListener('DOMContentLoaded', function() {
+                    const alerts = document.querySelectorAll('#messages-container .alert');
+                    
+                    alerts.forEach(function(alert) {
+                        // تاخیر 5 ثانیه‌ای برای ناپدید شدن اتوماتیک
+                        setTimeout(function() {
+                            // اضافه کردن کلاس fade-out برای انیمیشن
+                            alert.classList.add('animate__animated', 'animate__fadeOut');
+                            
+                            // حذف المان بعد از تکمیل انیمیشن
+                            setTimeout(function() {
+                                alert.remove();
+                                
+                                // بررسی آیا دیگر پیامی باقی مانده است
+                                if (document.querySelectorAll('#messages-container .alert').length === 0) {
+                                    document.getElementById('messages-container').remove();
+                                }
+                            }, 500);
+                        }, 5000);
+                    });
+                });
+            </script>
+        {% endif %}
+        
+        <div class="animate__animated animate__fadeIn animate__faster">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- فوتر واکنش‌گرا -->
+    <footer class="py-3 text-center text-muted bg-white border-top mt-auto">
+        <div class="container">
+            <p class="small text-muted mb-0">
+                &copy; {{ system_config.website_title }} {% now "Y" %}. تمامی حقوق محفوظ است.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Button To Top -->
+    <div class="position-fixed bottom-0 end-0 mb-4 me-4 d-none" id="backToTop">
+        <button class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <i data-feather="chevron-up" width="20" height="20"></i>
+        </button>
+    </div>
+
+
+
+    <!-- جاوااسکریپت‌های بوتسترپ با آخرین نسخه -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <!-- جاوااسکریپت‌های واکنش‌گرا -->
+    <script>
+        // فعال‌سازی آیکون‌های Feather
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            
+            // نمایش دکمه بازگشت به بالا با اسکرول
+            const backToTopBtn = document.getElementById('backToTop');
+            if (backToTopBtn) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 500) {
+                        backToTopBtn.classList.remove('d-none');
+                        backToTopBtn.classList.add('animate__animated', 'animate__fadeIn');
+                    } else {
+                        backToTopBtn.classList.add('d-none');
+                        backToTopBtn.classList.remove('animate__animated', 'animate__fadeIn');
+                    }
+                });
+            }
+            
+            // تعیین ارتفاع مناسب برای حالت موبایل
+            function adjustMobileMainPadding() {
+                const mobileNavbar = document.querySelector('.mobile-navbar');
+                const mainContent = document.querySelector('main');
+                
+                if (mobileNavbar && mainContent && window.innerWidth < 992) {
+                    const navbarHeight = mobileNavbar.offsetHeight;
+                    mainContent.style.paddingTop = (navbarHeight + 16) + 'px';
+                    mainContent.style.minHeight = `calc(100vh - ${navbarHeight}px)`;
+                } else if (mainContent) {
+                    mainContent.style.paddingTop = '';
+                    mainContent.style.minHeight = '';
+                }
+            }
+            
+            // اجرای تابع هنگام بارگذاری و تغییر سایز
+            adjustMobileMainPadding();
+            window.addEventListener('resize', adjustMobileMainPadding);
+            
+            // بهینه‌سازی تصاویر با Lazy Loading
+            const images = document.querySelectorAll('img:not([loading])');
+            images.forEach(img => {
+                img.setAttribute('loading', 'lazy');
+            });
+            
+            // تنظیم‌کننده اسکرول صفحه به صورت نرم
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    
+                    if (targetId !== '#') {
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    
+    <!-- جاوااسکریپت سفارشی -->
+    <script src="/static/js/main.js"></script>
+    
+    <!-- اسکریپت مدیریت تغییر وضعیت املاک -->
+    <script src="/static/js/property-status.js"></script>
+    
+    <!-- بارگذاری jQuery و Select2 - رویکرد ساده‌ترشده -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+    jQuery(document).ready(function($) {
+        console.log('jQuery is loaded successfully');
+        
+        // راه‌اندازی Select2
+        if (typeof $.fn.select2 === 'function') {
+            $('.select2').select2({
+                dir: 'rtl',
+                language: 'fa'
+            });
+            console.log('Select2 initialized');
+        }
+    });
+    !function(e,t){"use strict";if(!e.jQuery){var n=function(e,t){return new n.fn.init(e,t)};n.fn=n.prototype={jquery:"3.6.4",constructor:n,length:0,toArray:function(){return t.call(this)},get:function(e){return null==e?t.call(this):e<0?this[e+this.length]:this[e]},pushStack:function(e){var t=n.merge(this.constructor(),e);return t.prevObject=this,t},each:function(e){return n.each(this,e)},map:function(e){return this.pushStack(n.map(this,function(t,n){return e.call(t,n,t)}))},slice:function(){return this.pushStack(t.apply(this,arguments))},first:function(){return this.eq(0)},last:function(){return this.eq(-1)},even:function(){return this.pushStack(n.grep(this,function(e,t){return(t+1)%2}))},odd:function(){return this.pushStack(n.grep(this,function(e,t){return t%2}))},eq:function(e){var t=this.length,n=+e+(e<0?t:0);return this.pushStack(n>=0&&n<t?[this[n]]:[])},end:function(){return this.prevObject||this.constructor()},push:[].push,sort:[].sort,splice:[].splice},n.extend=n.fn.extend=function(){var e,t,r,i,o,a,s=arguments[0]||{},u=1,l=arguments.length,c=!1;for("boolean"==typeof s&&(c=s,s=arguments[u]||{},u++),"object"==typeof s||n.isFunction(s)||(s={}),u===l&&(s=this,u--);u<l;u++)if(null!=(o=arguments[u]))for(i in o)e=s[i],s!==(r=o[i])&&(c&&r&&(n.isPlainObject(r)||(t=n.isArray(r)))?(t?(t=!1,a=e&&n.isArray(e)?e:[]):a=e&&n.isPlainObject(e)?e:{},s[i]=n.extend(c,a,r)):void 0!==r&&(s[i]=r));return s},n.extend({expando:"jQuery"+(3..toString().replace(/\D/g,"")+Math.random()).replace(/\D/g,""),isReady:!0,error:function(e){throw new Error(e)},noop:function(){},isPlainObject:function(e){var n,r;return!(!e||"[object Object]"!==t.call(e))&&(!(n=e.constructor)||"function"==typeof n&&t.call(n.prototype)==t.call({}))},isArray:Array.isArray,isWindow:function(e){return null!=e&&e===e.window},isNumeric:function(e){var t=n.type(e);return("number"===t||"string"===t)&&!isNaN(e-parseFloat(e))},isFunction:function(e){return"function"===n.type(e)},type:function(e){return null==e?e+"":"object"==typeof e||"function"==typeof e?{}.toString.call(e).match(/\s([a-z]+)/i)[1].toLowerCase():"string"},globalEval:function(t){e.execScript||function(t){e.eval.call(e,t)}(t)},camelCase:function(e){return e.replace(/^-ms-/,"ms-").replace(/-([\da-z])/gi,function(e,t){return t.toUpperCase()})},nodeName:function(e,t){return e.nodeName&&e.nodeName.toLowerCase()===t.toLowerCase()},each:function(e,t){var r,i=0;if(isArrayLike(e)){for(r=e.length;i<r;i++)if(!1===t.call(e[i],i,e[i]))break}else for(i in e)if(!1===t.call(e[i],i,e[i]))break;return e},trim:function(e){return null==e?"":(e+"").replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,"")},makeArray:function(e,t){var r=t||[];return null!=e&&(isArrayLike(Object(e))?n.merge(r,"string"==typeof e?[e]:e):a.call(r,e)),r},inArray:function(e,n,r){return null==n?-1:[].indexOf.call(n,e,r)},merge:function(e,t){for(var n=+t.length,r=0,i=e.length;r<n;r++)e[i++]=t[r];return e.length=i,e},grep:function(e,t,n){for(var r=[],i=0,o=e.length,a=!n;i<o;i++)!t(e[i],i)!==a&&r.push(e[i]);return r},map:function(e,t,n){var r,i,a=0,s=[];if(isArrayLike(e))for(r=e.length;a<r;a++)null!=(i=t(e[a],a,n))&&s.push(i);else for(a in e)null!=(i=t(e[a],a,n))&&s.push(i);return [].concat.apply([],s)},guid:1,proxy:function(e,t){var r,i,o;if("string"==typeof t&&(r=e[t],t=e,e=r),n.isFunction(e))return i=u.call(arguments,2),(o=function(){return e.apply(t||this,i.concat(u.call(arguments)))}).guid=e.guid=e.guid||n.guid++,o},now:Date.now,support:o}),"function"==typeof Symbol&&(n.fn[Symbol.iterator]=[].keys),n.each("Boolean Number String Function Array Date RegExp Object Error Symbol".split(" "),function(e,t){i["[object "+t+"]"]=t.toLowerCase()});function isArrayLike(e){var t=!!e&&"length"in e&&e.length,r=n.type(e);return"function"!==r&&!n.isWindow(e)&&("array"===r||0===t||"number"==typeof t&&t>0&&t-1 in e)}var r=function(e){var t,n,r,i,o,a,s,u,l,c,f,p,d,h,g,m,v,y,x,b="sizzle"+1*new Date,w=e.document,T=0,C=0,E=ae(),k=ae(),S=ae(),N=function(e,t){return e===t&&(f=!0),0},A={}.hasOwnProperty,D=[],j=D.pop,q=D.push,L=D.push,H=D.slice,O=function(e,t){for(var n=0,r=e.length;n<r;n++)if(e[n]===t)return n;return-1},P="checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped",R="[\\x20\\t\\r\\n\\f]",M="(?:\\\\.|[\\w-]|[^\0-\\xa0])+",I="\\["+R+"*("+M+")(?:"+R+"*([*^$|!~]?=)"+R+"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|("+M+"))|)"+R+"*\\]",W=":("+M+")(?:\\((('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|((?:\\\\.|[^\\\\()[\\]]|"+I+")*)|.*)\\)|)",$=new RegExp(R+"+","g"),B=new RegExp("^"+R+"+|((?:^|[^\\\\])(?:\\\\.)*)"+R+"+$","g"),F=new RegExp("^"+R+"*,"+R+"*"),_=new RegExp("^"+R+"*([>+~]|"+R+")"+R+"*"),z=new RegExp("="+R+"*([^\\]'\"]*?)"+R+"*\\]","g"),X=new RegExp(W),U=new RegExp("^"+M+"$"),V={ID:new RegExp("^#("+M+")"),CLASS:new RegExp("^\\.("+M+")"),TAG:new RegExp("^("+M+"|[*])"),ATTR:new RegExp("^"+I),PSEUDO:new RegExp("^"+W),CHILD:new RegExp("^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\("+R+"*(even|odd|(([+-]|)(\\d*)n|)"+R+"*(?:([+-]|)"+R+"*(\\d+)|))"+R+"*\\)|)","i"),bool:new RegExp("^(?:"+P+")$","i"),needsContext:new RegExp("^"+R+"*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\("+R+"*((?:-\\d)?\\d*)"+R+"*\\)|)(?=[^-]|$)","i")},G=/^(?:input|select|textarea|button)$/i,Y=/^h\d$/i,Q=/^[^{]+\{\s*\[native \w/,J=/^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,K=/[+~]/,Z=new RegExp("\\\\([\\da-f]{1,6}"+R+"?|("+R+")|.)","ig"),ee=function(e,t,n){var r="0x"+t-65536;return r!=r||n?t:r<0?String.fromCharCode(r+65536):String.fromCharCode(r>>10|55296,1023&r|56320)},te=/([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g,ne=function(e,t){return t?"\0"===e?"\ufffd":e.slice(0,-1)+"\\"+e.charCodeAt(e.length-1).toString(16)+" ":"\\"+e},re=function(){p()},ie=ye(function(e){return!0===e.disabled&&("form"in e||"label"in e)},{dir:"parentNode",next:"legend"});try{L.apply(D=H.call(w.childNodes),w.childNodes),D[w.childNodes.length].nodeType}catch(e){L={apply:D.length?function(e,t){q.apply(e,H.call(t))}:function(e,t){var n=e.length,r=0;while(e[n++]=t[r++]);e.length=n-1}}}function oe(e,t,r,i){var o,s,l,c,f,h,v,y=t&&t.ownerDocument,T=t?t.nodeType:9;if(r=r||[],"string"!=typeof e||!e||1!==T&&9!==T&&11!==T)return r;if(!i&&((t?t.ownerDocument||t:w)!==d&&p(t),t=t||d,g)){if(11!==T&&(f=J.exec(e)))if(o=f[1]){if(9===T){if(!(l=t.getElementById(o)))return r;if(l.id===o)return r.push(l),r}else if(y&&(l=y.getElementById(o))&&x(t,l)&&l.id===o)return r.push(l),r}else{if(f[2])return L.apply(r,t.getElementsByTagName(e)),r;if((o=f[3])&&n.getElementsByClassName&&t.getElementsByClassName)return L.apply(r,t.getElementsByClassName(o)),r}if(n.qsa&&!S[e+" "]&&(!m||!m.test(e))){if(1!==T)y=t,v=e;else if("object"!==t.nodeName.toLowerCase()){(c=t.getAttribute("id"))?c=c.replace(te,ne):t.setAttribute("id",c=b),s=(h=a(e)).length;while(s--)h[s]="#"+c+" "+ve(h[s]);v=h.join(","),y=K.test(e)&&ge(t.parentNode)||t}if(v)try{return L.apply(r,y.querySelectorAll(v)),r}catch(e){}finally{c===b&&t.removeAttribute("id")}}}return u(e.replace(B,"$1"),t,r,i)}function ae(){var e=[];function t(n,i){return e.push(n+" ")>r.cacheLength&&delete t[e.shift()],t[n+" "]=i}return t}function se(e){return e[b]=!0,e}function ue(e){var t=d.createElement("fieldset");try{return!!e(t)}catch(e){return!1}finally{t.parentNode&&t.parentNode.removeChild(t),t=null}}function le(e,t){var n=e.split("|"),i=n.length;while(i--)r.attrHandle[n[i]]=t}function ce(e,t){var n=t&&e,r=n&&1===e.nodeType&&1===t.nodeType&&e.sourceIndex-t.sourceIndex;if(r)return r;if(n)while(n=n.nextSibling)if(n===t)return-1;return e?1:-1}function fe(e){return function(t){return"input"===t.nodeName.toLowerCase()&&t.type===e}}function pe(e){return function(t){var n=t.nodeName.toLowerCase();return("input"===n||"button"===n)&&t.type===e}}function de(e){return function(t){return"form"in t?t.parentNode&&!1===t.disabled?"label"in t?"label"in t.parentNode?t.parentNode.disabled===e:t.disabled===e:t.isDisabled===e||t.isDisabled!==!e&&ie(t)===e:t.disabled===e:"label"in t&&t.disabled===e}}function he(e){return se(function(t){return t=+t,se(function(n,r){var i,o=e([],n.length,t),a=o.length;while(a--)n[i=o[a]]&&(n[i]=!(r[i]=n[i]))})})}function ge(e){return e&&"undefined"!=typeof e.getElementsByTagName&&e}n=oe.support={},o=oe.isXML=function(e){var t=e&&(e.ownerDocument||e).documentElement;return!!t&&"HTML"!==t.nodeName},p=oe.setDocument=function(e){var t,i,a=e?e.ownerDocument||e:w;return a!==d&&9===a.nodeType&&a.documentElement?(d=a,h=d.documentElement,g=!o(d),w!==d&&(i=d.defaultView)&&i.top!==i&&(i.addEventListener?i.addEventListener("unload",re,!1):i.attachEvent&&i.attachEvent("onunload",re)),n.attributes=ue(function(e){return e.className="i",!e.getAttribute("className")}),n.getElementsByTagName=ue(function(e){return e.appendChild(d.createComment("")),!e.getElementsByTagName("*").length}),n.getElementsByClassName=Q.test(d.getElementsByClassName),n.getById=ue(function(e){return h.appendChild(e).id=b,!d.getElementsByName||!d.getElementsByName(b).length}),n.getById?(r.filter.ID=function(e){var t=e.replace(Z,ee);return function(e){return e.getAttribute("id")===t}},r.find.ID=function(e,t){if("undefined"!=typeof t.getElementById&&g){var n=t.getElementById(e);return n?[n]:[]}}):(r.filter.ID=function(e){var t=e.replace(Z,ee);return function(e){var n="undefined"!=typeof e.getAttributeNode&&e.getAttributeNode("id");return n&&n.value===t}},r.find.ID=function(e,t){if("undefined"!=typeof t.getElementById&&g){var n,r,i,o=t.getElementById(e);if(o){if((n=o.getAttributeNode("id"))&&n.value===e)return[o];i=t.getElementsByName(e),r=0;while(o=i[r++])if((n=o.getAttributeNode("id"))&&n.value===e)return[o]}return[]}}),r.find.TAG=n.getElementsByTagName?function(e,t){return"undefined"!=typeof t.getElementsByTagName?t.getElementsByTagName(e):n.qsa?t.querySelectorAll(e):void 0}:function(e,t){var n,r=[],i=0,o=t.getElementsByTagName(e);if("*"===e){while(n=o[i++])1===n.nodeType&&r.push(n);return r}return o},r.find.CLASS=n.getElementsByClassName&&function(e,t){if("undefined"!=typeof t.getElementsByClassName&&g)return t.getElementsByClassName(e)},v=[],m=[],(n.qsa=Q.test(d.querySelectorAll))&&(ue(function(e){h.appendChild(e).innerHTML="<a id='"+b+"'></a><select id='"+b+"-\r\\' msallowcapture=''><option selected=''></option></select>",e.querySelectorAll("[msallowcapture^='']").length&&m.push("[*^$]="+R+"*(?:''|\"\")"),e.querySelectorAll("[selected]").length||m.push("\\["+R+"*(?:value|"+P+")"),e.querySelectorAll("[id~="+b+"-]").length||m.push("~="),e.querySelectorAll(":checked").length||m.push(":checked"),e.querySelectorAll("a#"+b+"+*").length||m.push(".#.+[+~]")}),ue(function(e){e.innerHTML="<a href='' disabled='disabled'></a><select disabled='disabled'><option/></select>";var t=d.createElement("input");t.setAttribute("type","hidden"),e.appendChild(t).setAttribute("name","D"),e.querySelectorAll("[name=d]").length&&m.push("name"+R+"*[*^$|!~]?="),2!==e.querySelectorAll(":enabled").length&&m.push(":enabled",":disabled"),h.appendChild(e).disabled=!0,2!==e.querySelectorAll(":disabled").length&&m.push(":enabled",":disabled"),e.querySelectorAll("*,:x"),m.push(",.*:")})),(n.matchesSelector=Q.test(y=h.matches||h.webkitMatchesSelector||h.mozMatchesSelector||h.oMatchesSelector||h.msMatchesSelector))&&ue(function(e){n.disconnectedMatch=y.call(e,"*"),y.call(e,"[s!='']:x"),v.push("!=",W)}),m=m.length&&new RegExp(m.join("|")),v=v.length&&new RegExp(v.join("|")),t=Q.test(h.compareDocumentPosition),x=t||Q.test(h.contains)?function(e,t){var n=9===e.nodeType?e.documentElement:e,r=t&&t.parentNode;return e===r||!(!r||1!==r.nodeType||!(n.contains?n.contains(r):e.compareDocumentPosition&&16&e.compareDocumentPosition(r)))}:function(e,t){if(t)while(t=t.parentNode)if(t===e)return!0;return!1},N=t?function(e,t){if(e===t)return f=!0,0;var r=!e.compareDocumentPosition-!t.compareDocumentPosition;return r||(1&(r=(e.ownerDocument||e)===(t.ownerDocument||t)?e.compareDocumentPosition(t):1)||!n.sortDetached&&t.compareDocumentPosition(e)===r?e===d||e.ownerDocument===w&&x(w,e)?-1:t===d||t.ownerDocument===w&&x(w,t)?1:c?O(c,e)-O(c,t):0:4&r?-1:1)}:function(e,t){if(e===t)return f=!0,0;var n,r=0,i=e.parentNode,o=t.parentNode,a=[e],s=[t];if(!i||!o)return e===d?-1:t===d?1:i?-1:o?1:c?O(c,e)-O(c,t):0;if(i===o)return ce(e,t);n=e;while(n=n.parentNode)a.unshift(n);n=t;while(n=n.parentNode)s.unshift(n);while(a[r]===s[r])r++;return r?ce(a[r],s[r]):a[r]===w?-1:s[r]===w?1:0},d):d},oe.matches=function(e,t){return oe(e,null,null,t)},oe.matchesSelector=function(e,t){if((e.ownerDocument||e)!==d&&p(e),t=t.replace(z,"='$1']"),n.matchesSelector&&g&&!S[t+" "]&&(!v||!v.test(t))&&(!m||!m.test(t)))try{var r=y.call(e,t);if(r||n.disconnectedMatch||e.document&&11!==e.document.nodeType)return r}catch(e){}return oe(t,d,null,[e]).length>0},oe.contains=function(e,t){return(e.ownerDocument||e)!==d&&p(e),x(e,t)},oe.attr=function(e,t){(e.ownerDocument||e)!==d&&p(e);var i=r.attrHandle[t.toLowerCase()],o=i&&A.call(r.attrHandle,t.toLowerCase())?i(e,t,!g):void 0;return void 0!==o?o:n.attributes||!g?e.getAttribute(t):(o=e.getAttributeNode(t))&&o.specified?o.value:null},oe.escape=function(e){return(e+"").replace(te,ne)},oe.error=function(e){throw new Error("Syntax error, unrecognized expression: "+e)},oe.uniqueSort=function(e){var t,r=[],i=0,o=0;if(f=!n.detectDuplicates,c=!n.sortStable&&e.slice(0),e.sort(N),f){while(t=e[o++])t===e[o]&&(i=r.push(o));while(i--)e.splice(r[i],1)}return c=null,e},i=oe.getText=function(e){var t,n="",r=0,o=e.nodeType;if(o){if(1===o||9===o||11===o){if("string"==typeof e.textContent)return e.textContent;for(e=e.firstChild;e;e=e.nextSibling)n+=i(e)}else if(3===o||4===o)return e.nodeValue}else while(t=e[r++])n+=i(t);return n},(r=oe.selectors={cacheLength:50,createPseudo:se,match:V,attrHandle:{},find:{},relative:{">":{dir:"parentNode",first:!0}," ":{dir:"parentNode"},"+":{dir:"previousSibling",first:!0},"~":{dir:"previousSibling"}},preFilter:{ATTR:function(e){return e[1]=e[1].replace(Z,ee),e[3]=(e[3]||e[4]||e[5]||"").replace(Z,ee),"~="===e[2]&&(e[3]=" "+e[3]+" "),e.slice(0,4)},CHILD:function(e){return e[1]=e[1].toLowerCase(),"nth"===e[1].slice(0,3)?(e[3]||oe.error(e[0]),e[4]=+(e[4]?e[5]+(e[6]||1):2*("even"===e[3]||"odd"===e[3])),e[5]=+(e[7]+e[8]||"odd"===e[3])):e[3]&&oe.error(e[0]),e},PSEUDO:function(e){var t,n=!e[6]&&e[2];return V.CHILD.test(e[0])?null:(e[3]?e[2]=e[4]||e[5]||"":n&&X.test(n)&&(t=a(n,!0))&&(t=n.indexOf(")",n.length-t)-n.length)&&(e[0]=e[0].slice(0,t),e[2]=n.slice(0,t)),e.slice(0,3))}},filter:{TAG:function(e){var t=e.replace(Z,ee).toLowerCase();return"*"===e?function(){return!0}:function(e){return e.nodeName&&e.nodeName.toLowerCase()===t}},CLASS:function(e){var t=E[e+" "];return t||(t=new RegExp("(^|"+R+")"+e+"("+R+"|$)"))&&E(e,function(e){return t.test("string"==typeof e.className&&e.className||"undefined"!=typeof e.getAttribute&&e.getAttribute("class")||"")})},ATTR:function(e,t,n){return function(r){var i=oe.attr(r,e);return null==i?"!="===t:!t||(i+="","="===t?i===n:"!="===t?i!==n:"^="===t?n&&0===i.indexOf(n):"*="===t?n&&i.indexOf(n)>-1:"$="===t?n&&i.slice(-n.length)===n:"~="===t?(" "+i.replace($," ")+" ").indexOf(n)>-1:"|="===t&&(i===n||i.slice(0,n.length+1)===n+"-"))}},CHILD:function(e,t,n,r,i){var o="nth"!==e.slice(0,3),a="last"!==e.slice(-4),s="of-type"===t;return 1===r&&0===i?function(e){return!!e.parentNode}:function(t,n,u){var l,c,f,p,d,h,g=o!==a?"nextSibling":"previousSibling",m=t.parentNode,v=s&&t.nodeName.toLowerCase(),y=!u&&!s,x=!1;if(m){if(o){while(g){p=t;while(p=p[g])if(s?p.nodeName.toLowerCase()===v:1===p.nodeType)return!1;h=g="only"===e&&!h&&"nextSibling"}return!0}if(h=[a?m.firstChild:m.lastChild],a&&y){x=(d=(l=(c=(f=(p=m)[b]||(p[b]={}))[p.uniqueID]||(f[p.uniqueID]={}))[e]||[])[0]===T&&l[1])&&l[2],p=d&&m.childNodes[d];while(p=++d&&p&&p[g]||(x=d=0)||h.pop())if(1===p.nodeType&&++x&&p===t){c[e]=[T,d,x];break}}else if(y&&(x=d=(l=(c=(f=(p=t)[b]||(p[b]={}))[p.uniqueID]||(f[p.uniqueID]={}))[e]||[])[0]===T&&l[1]),!1===x)while(p=++d&&p&&p[g]||(x=d=0)||h.pop())if((s?p.nodeName.toLowerCase()===v:1===p.nodeType)&&++x&&(y&&((c=(f=p[b]||(p[b]={}))[p.uniqueID]||(f[p.uniqueID]={}))[e]=[T,x]),p===t))break;return(x-=i)===r||x%r==0&&x/r>=0}}},PSEUDO:function(e,t){var n,i=r.pseudos[e]||r.setFilters[e.toLowerCase()]||oe.error("unsupported pseudo: "+e);return i[b]?i(t):i.length>1?(n=[e,e,"",t],r.setFilters.hasOwnProperty(e.toLowerCase())?se(function(e,n){var r,o=i(e,t),a=o.length;while(a--)e[r=O(e,o[a])]=!(n[r]=o[a])}):function(e){return i(e,0,n)}):i}},pseudos:{not:se(function(e){var t=[],n=[],r=s(e.replace(B,"$1"));return r[b]?se(function(e,t,n,i){var o,a=r(e,null,i,[]),s=e.length;while(s--)(o=a[s])&&(e[s]=!(t[s]=o))}):function(e,i,o){return t[0]=e,r(t,null,o,n),t[0]=null,!n.pop()}}),has:se(function(e){return function(t){return oe(e,t).length>0}}),contains:se(function(e){return e=e.replace(Z,ee),function(t){return(t.textContent||t.innerText||i(t)).indexOf(e)>-1}}),lang:se(function(e){return U.test(e||"")||oe.error("unsupported lang: "+e),e=e.replace(Z,ee).toLowerCase(),function(t){var n;do{if(n=g?t.lang:t.getAttribute("xml:lang")||t.getAttribute("lang"))return(n=n.toLowerCase())===e||0===n.indexOf(e+"-")}while((t=t.parentNode)&&1===t.nodeType);return!1}}),target:function(t){var n=e.location&&e.location.hash;return n&&n.slice(1)===t.id},root:function(e){return e===h},focus:function(e){return e===d.activeElement&&(!d.hasFocus||d.hasFocus())&&!!(e.type||e.href||~e.tabIndex)},enabled:de(!1),disabled:de(!0),checked:function(e){var t=e.nodeName.toLowerCase();return"input"===t&&!!e.checked||"option"===t&&!!e.selected},selected:function(e){return e.parentNode&&e.parentNode.selectedIndex,!0===e.selected},empty:function(e){for(e=e.firstChild;e;e=e.nextSibling)if(e.nodeType<6)return!1;return!0},parent:function(e){return!r.pseudos.empty(e)},header:function(e){return Y.test(e.nodeName)},input:function(e){return G.test(e.nodeName)},button:function(e){var t=e.nodeName.toLowerCase();return"input"===t&&"button"===e.type||"button"===t},text:function(e){var t;return"input"===e.nodeName.toLowerCase()&&"text"===e.type&&(null==(t=e.getAttribute("type"))||"text"===t.toLowerCase())},first:he(function(){return[0]}),last:he(function(e,t){return[t-1]}),eq:he(function(e,t,n){return[n<0?n+t:n]}),even:he(function(e,t){for(var n=0;n<t;n+=2)e.push(n);return e}),odd:he(function(e,t){for(var n=1;n<t;n+=2)e.push(n);return e}),lt:he(function(e,t,n){for(var r=n<0?n+t:n;--r>=0;)e.push(r);return e}),gt:he(function(e,t,n){for(var r=n<0?n+t:n;++r<t;)e.push(r);return e})}}).pseudos.nth=r.pseudos.eq;for(t in{radio:!0,checkbox:!0,file:!0,password:!0,image:!0})r.pseudos[t]=fe(t);for(t in{submit:!0,reset:!0})r.pseudos[t]=pe(t);function me(){}me.prototype=r.filters=r.pseudos,r.setFilters=new me,a=oe.tokenize=function(e,t){var n,i,o,a,s,u,l,c=k[e+" "];if(c)return t?0:c.slice(0);s=e,u=[],l=r.preFilter;while(s){n&&!(i=F.exec(s))||(i&&(s=s.slice(i[0].length)||s),u.push(o=[])),n=!1,(i=_.exec(s))&&(n=i.shift(),o.push({value:n,type:i[0].replace(B," ")}),s=s.slice(n.length));for(a in r.filter)!(i=V[a].exec(s))||l[a]&&!(i=l[a](i))||(n=i.shift(),o.push({value:n,type:a,matches:i}),s=s.slice(n.length));if(!n)break}return t?s.length:s?oe.error(e):k(e,u).slice(0)};function ve(e){for(var t=0,n=e.length,r="";t<n;t++)r+=e[t].value;return r}function ye(e,t,n){var r=t.dir,i=t.next,o=i||r,a=n&&"parentNode"===o,s=C++;return t.first?function(t,n,i){while(t=t[r])if(1===t.nodeType||a)return e(t,n,i);return!1}:function(t,n,u){var l,c,f,p=[T,s];if(u){while(t=t[r])if((1===t.nodeType||a)&&e(t,n,u))return!0}else while(t=t[r])if(1===t.nodeType||a)if(f=t[b]||(t[b]={}),c=f[t.uniqueID]||(f[t.uniqueID]={}),i&&i===t.nodeName.toLowerCase())t=t[r]||t;else{if((l=c[o])&&l[0]===T&&l[1]===s)return p[2]=l[2];if(c[o]=p,p[2]=e(t,n,u))return!0}return!1}}function xe(e){return e.length>1?function(t,n,r){var i=e.length;while(i--)if(!e[i](t,n,r))return!1;return!0}:e[0]}function be(e,t,n){for(var r=0,i=t.length;r<i;r++)oe(e,t[r],n);return n}function we(e,t,n,r,i){for(var o,a=[],s=0,u=e.length,l=null!=t;s<u;s++)(o=e[s])&&(n&&!n(o,r,i)||(a.push(o),l&&t.push(s)));return a}function Te(e,t,n,r,i,o){return r&&!r[b]&&(r=Te(r)),i&&!i[b]&&(i=Te(i,o)),se(function(o,a,s,u){var l,c,f,p=[],d=[],h=a.length,g=o||be(t||"*",s.nodeType?[s]:s,[]),m=!e||!o&&t?g:we(g,p,e,s,u),v=n?i||(o?e:h||r)?[]:a:m;if(n&&n(m,v,s,u),r){l=we(v,d),r(l,[],s,u),c=l.length;while(c--)(f=l[c])&&(v[d[c]]=!(m[d[c]]=f))}if(o){if(i||e){if(i){l=[],c=v.length;while(c--)(f=v[c])&&l.push(m[c]=f);i(null,v=[],l,u)}c=v.length;while(c--)(f=v[c])&&(l=i?O(o,f):p[c])>-1&&(o[l]=!(a[l]=f))}}else v=we(v===a?v.splice(h,v.length):v),i?i(null,a,v,u):L.apply(a,v)})}function Ce(e){for(var t,n,i,o=e.length,a=r.relative[e[0].type],s=a||r.relative[" "],u=a?1:0,c=ye(function(e){return e===t},s,!0),f=ye(function(e){return O(t,e)>-1},s,!0),p=[function(e,n,r){var i=!a&&(r||n!==l)||((t=n).nodeType?c(e,n,r):f(e,n,r));return t=null,i}];u<o;u++)if(n=r.relative[e[u].type])p=[ye(xe(p),n)];else{if((n=r.filter[e[u].type].apply(null,e[u].matches))[b]){for(i=++u;i<o;i++)if(r.relative[e[i].type])break;return Te(u>1&&xe(p),u>1&&ve(e.slice(0,u-1).concat({value:" "===e[u-2].type?"*":""})).replace(B,"$1"),n,u<i&&Ce(e.slice(u,i)),i<o&&Ce(e=e.slice(i)),i<o&&ve(e))}p.push(n)}return xe(p)}function Ee(e,t){var n=t.length>0,i=e.length>0,o=function(o,a,s,u,c){var f,h,m,v=0,y="0",x=o&&[],b=[],w=l,C=o||i&&r.find.TAG("*",c),E=T+=null==w?1:Math.random()||.1,k=C.length;for(c&&(l=a===d||a||c);y!==k&&null!=(f=C[y]);y++){if(i&&f){h=0,a||f.ownerDocument===d||(p(f),s=!g);while(m=e[h++])if(m(f,a||d,s)){u.push(f);break}c&&(T=E)}n&&((f=!m&&f)&&v--,o&&x.push(f))}if(v+=y,n&&y!==v){h=0;while(m=t[h++])m(x,b,a,s);if(o){if(v>0)while(y--)x[y]||b[y]||(b[y]=j.call(u));b=we(b)}L.apply(u,b),c&&!o&&b.length>0&&v+t.length>1&&oe.uniqueSort(u)}return c&&(T=E,l=w),x};return n?se(o):o}return s=oe.compile=function(e,t){var n,r=[],i=[],o=S[e+" "];if(!o){t||(t=a(e)),n=t.length;while(n--)(o=Ce(t[n]))[b]?r.push(o):i.push(o);(o=S(e,Ee(i,r))).selector=e}return o},u=oe.select=function(e,t,n,i){var o,u,l,c,f,p="function"==typeof e&&e,d=!i&&a(e=p.selector||e);if(n=n||[],1===d.length){if((u=d[0]=d[0].slice(0)).length>2&&"ID"===(l=u[0]).type&&9===t.nodeType&&g&&r.relative[u[1].type]){if(!(t=(r.find.ID(l.matches[0].replace(Z,ee),t)||[])[0]))return n;p&&(t=t.parentNode),e=e.slice(u.shift().value.length)}o=V.needsContext.test(e)?0:u.length;while(o--){if(l=u[o],r.relative[c=l.type])break;if((f=r.find[c])&&(i=f(l.matches[0].replace(Z,ee),K.test(u[0].type)&&ge(t.parentNode)||t))){if(u.splice(o,1),!(e=i.length&&ve(u)))return L.apply(n,i),n;break}}}return(p||s(e,d))(i,t,!g,n,!t||K.test(e)&&ge(t.parentNode)||t),n},n.sortStable=b.split("").sort(N).join("")===b,n.detectDuplicates=!!f,p(),n.sortDetached=ue(function(e){return 1&e.compareDocumentPosition(d.createElement("fieldset"))}),ue(function(e){return e.innerHTML="<a href='#'></a>","#"===e.firstChild.getAttribute("href")})||le("type|href|height|width",function(e,t,n){if(!n)return e.getAttribute(t,"type"===t.toLowerCase()?1:2)}),n.attributes&&ue(function(e){return e.innerHTML="<input/>",e.firstChild.setAttribute("value",""),""===e.firstChild.getAttribute("value")})||le("value",function(e,t,n){if(!n&&"input"===e.nodeName.toLowerCase())return e.defaultValue}),ue(function(e){return null==e.getAttribute("disabled")})||le(P,function(e,t,n){var r;if(!n)return!0===e[t]?t.toLowerCase():(r=e.getAttributeNode(t))&&r.specified?r.value:null}),oe}(e);n.find=r,n.expr=r.selectors,n.expr[":"]=n.expr.pseudos,n.uniqueSort=n.unique=r.uniqueSort,n.text=r.getText,n.isXMLDoc=r.isXML,n.contains=r.contains,n.escapeSelector=r.escape;var a=function(e,t,r){var i=[],o=void 0!==r;while((e=e[t])&&9!==e.nodeType)if(1===e.nodeType){if(o&&n(e).is(r))break;i.push(e)}return i},s=function(e,t){for(var r=[];e;e=e.nextSibling)1===e.nodeType&&e!==t&&r.push(e);return r},u=n.expr.match.needsContext;function l(e,t){return e.nodeName&&e.nodeName.toLowerCase()===t.toLowerCase()}var c=/^<([a-z][^\/\0>:\x20\t\r\n\f]*)[\x20\t\r\n\f]*\/?>(?:<\/\1>|)$/i,f=/^.[^:#\[\.,]*$/;function p(e,t,r){return n.isFunction(t)?n.grep(e,function(e,n){return!!t.call(e,n,e)!==r}):t.nodeType?n.grep(e,function(e){return e===t!==r}):"string"!=typeof t?n.grep(e,function(e){return u.call(t,e)>-1!==r}):f.test(t)?n.filter(t,e,r):(t=n.filter(t,e),n.grep(e,function(e){return u.call(t,e)>-1!==r&&1===e.nodeType}))}n.filter=function(e,t,r){var i=t[0];return r&&(e=":not("+e+")"),1===t.length&&1===i.nodeType?n.find.matchesSelector(i,e)?[i]:[]:n.find.matches(e,n.grep(t,function(e){return 1===e.nodeType}))},n.fn.extend({find:function(e){var t,r,i=this.length,o=this;if("string"!=typeof e)return this.pushStack(n(e).filter(function(){for(t=0;t<i;t++)if(n.contains(o[t],this))return!0}));for(r=this.pushStack([]),t=0;t<i;t++)n.find(e,o[t],r);return i>1?n.uniqueSort(r):r},filter:function(e){return this.pushStack(p(this,e||[],!1))},not:function(e){return this.pushStack(p(this,e||[],!0))},is:function(e){return!!p(this,"string"==typeof e&&u.test(e)?n(e):e||[],!1).length}});var d,h=/^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]+))$/;(n.fn.init=function(e,t,r){var i,o;if(!e)return this;if(r=r||d,"string"==typeof e){if(!(i="<"===e[0]&&">"===e[e.length-1]&&e.length>=3?[null,e,null]:h.exec(e))||!i[1]&&t)return!t||t.jquery?(t||r).find(e):this.constructor(t).find(e);if(i[1]){if(t=t instanceof n?t[0]:t,n.merge(this,n.parseHTML(i[1],t&&t.nodeType?t.ownerDocument||t:document,!0)),c.test(i[1])&&n.isPlainObject(t))for(i in t)n.isFunction(this[i])?this[i](t[i]):this.attr(i,t[i]);return this}return(o=document.getElementById(i[2]))&&(this[0]=o,this.length=1),this}return e.nodeType?(this[0]=e,this.length=1,this):n.isFunction(e)?void 0!==r.ready?r.ready(e):e(n):n.makeArray(e,this)}).prototype=n.fn,d=n(document);var g=/^(?:parents|prev(?:Until|All))/,m={children:!0,contents:!0,next:!0,prev:!0};n.fn.extend({has:function(e){var t=n(e,this),r=t.length;return this.filter(function(){for(var e=0;e<r;e++)if(n.contains(this,t[e]))return!0})},closest:function(e,t){var r,i=0,o=this.length,a=[],s="string"!=typeof e&&n(e);if(!u.test(e))for(;i<o;i++)for(r=this[i];r&&r!==t;r=r.parentNode)if(r.nodeType<11&&(s?s.index(r)>-1:1===r.nodeType&&n.find.matchesSelector(r,e))){a.push(r);break}return this.pushStack(a.length>1?n.uniqueSort(a):a)},index:function(e){return e?"string"==typeof e?u.call(n(e),this[0]):u.call(this,e.jquery?e[0]:e):this[0]&&this[0].parentNode?this.first().prevAll().length:-1},add:function(e,t){return this.pushStack(n.uniqueSort(n.merge(this.get(),n(e,t))))},addBack:function(e){return this.add(null==e?this.prevObject:this.prevObject.filter(e))}}),n.each({parent:function(e){var t=e.parentNode;return t&&11!==t.nodeType?t:null},parents:function(e){return a(e,"parentNode")},parentsUntil:function(e,t,n){return a(e,"parentNode",n)},next:function(e){return e.nextElementSibling},prev:function(e){return e.previousElementSibling},nextAll:function(e){return a(e,"nextSibling")},prevAll:function(e){return a(e,"previousSibling")},nextUntil:function(e,t,n){return a(e,"nextSibling",n)},prevUntil:function(e,t,n){return a(e,"previousSibling",n)},siblings:function(e){return s((e.parentNode||{}).firstChild,e)},children:function(e){return s(e.firstChild)},contents:function(e){return l(e,"iframe")?e.contentDocument:(l(e,"template")&&(e=e.content||e),n.merge([],e.childNodes))}},function(e,t){n.fn[e]=function(r,i){var o=n.map(this,t,r);return"Until"!==e.slice(-5)&&(i=r),i&&"string"==typeof i&&(o=n.filter(i,o)),this.length>1&&(m[e]||n.uniqueSort(o),g.test(e)&&o.reverse()),this.pushStack(o)}});var v=/[^\x20\t\r\n\f]+/g;function y(e){return e}function x(e){throw e}function b(e,t,n,r){var i;try{e&&n.isFunction(i=e.promise)?i.call(e).done(t).fail(n):e&&n.isFunction(i=e.then)?i.call(e,t,n):t.apply(void 0,[e].slice(r))}catch(e){n.apply(void 0,[e])}}n.Callbacks=function(e){e="string"==typeof e?function(e){var t={};return n.each(e.match(v)||[],function(e,n){t[n]=!0}),t}(e):{};var t,r,i,o,a=[],s=[],u=-1,l=function(){for(o=o||e.once,i=t=!0;s.length;u=-1){r=s.shift();while(++u<a.length)!1===a[u].apply(r[0],r[1])&&e.stopOnFalse&&(u=a.length,r=!1)}e.memory||(r=!1),t=!1,o&&(a=r?[]:"")},c={add:function(){return a&&(r&&!t&&(u=a.length-1,s.push(r)),function t(r){n.each(r,function(r,i){n.isFunction(i)?e.unique&&c.has(i)||a.push(i):i&&i.length&&"string"!==n.type(i)&&t(i)})}(arguments),r&&!t&&l()),this},remove:function(){return n.each(arguments,function(e,t){var r;while((r=n.inArray(t,a,r))>-1)a.splice(r,1),r<=u&&u--}),this},has:function(e){return e?n.inArray(e,a)>-1:a.length>0},empty:function(){return a&&(a=[]),this},disable:function(){return o=s=[],a=r="",this},disabled:function(){return!a},lock:function(){return o=s=[],r||t||(a=r=""),this},locked:function(){return!!o},fireWith:function(e,n){return o||(n=[e,(n=n||[]).slice?n.slice():n],s.push(n),t||l()),this},fire:function(){return c.fireWith(this,arguments),this},fired:function(){return!!i}};return c},n.extend({Deferred:function(t){var r=[["notify","progress",n.Callbacks("memory"),n.Callbacks("memory"),2],["resolve","done",n.Callbacks("once memory"),n.Callbacks("once memory"),0,"resolved"],["reject","fail",n.Callbacks("once memory"),n.Callbacks("once memory"),1,"rejected"]],i="pending",o={state:function(){return i},always:function(){return a.done(arguments).fail(arguments),this},"catch":function(e){return o.then(null,e)},pipe:function(){var e=arguments;return n.Deferred(function(t){n.each(r,function(r,i){var o=n.isFunction(e[i[4]])&&e[i[4]];a[i[1]](function(){var e=o&&o.apply(this,arguments);e&&n.isFunction(e.promise)?e.promise().progress(t.notify).done(t.resolve).fail(t.reject):t[i[0]+"With"](this,o?[e]:arguments)})}),e=null}).promise()},then:function(t,i,o){var a=0;function s(t,r,i,o){return function(){var u=this,l=arguments,c=function(){var e,c;if(!(t<a)){if((e=i.apply(u,l))===r.promise())throw new TypeError("Thenable self-resolution");c=e&&("object"==typeof e||"function"==typeof e)&&e.then,n.isFunction(c)?o?c.call(e,s(a,r,y,o),s(a,r,x,o)):(a++,c.call(e,s(a,r,y,o),s(a,r,x,o),s(a,r,y,r.notifyWith))):(i!==y&&(u=void 0,l=[e]),(o||r.resolveWith)(u,l))}},f=o?c:function(){try{c()}catch(e){n.Deferred.exceptionHook&&n.Deferred.exceptionHook(e,f.stackTrace),t+1>=a&&(i!==x&&(u=void 0,l=[e]),r.rejectWith(u,l))}};t?f():(n.Deferred.getStackHook&&(f.stackTrace=n.Deferred.getStackHook()),e.setTimeout(f))}}return n.Deferred(function(e){r[0][3].add(s(0,e,n.isFunction(o)?o:y,e.notifyWith)),r[1][3].add(s(0,e,n.isFunction(t)?t:y)),r[2][3].add(s(0,e,n.isFunction(i)?i:x))}).promise()},promise:function(e){return null!=e?n.extend(e,o):o}},a={};return n.each(r,function(e,t){var n=t[2],s=t[5];o[t[1]]=n.add,s&&n.add(function(){i=s},r[3-e][2].disable,r[0][2].lock),n.add(t[3].fire),a[t[0]]=function(){return a[t[0]+"With"](this===a?void 0:this,arguments),this},a[t[0]+"With"]=n.fireWith}),o.promise(a),t&&t.call(a,a),a},when:function(e){var t=arguments.length,r=t,i=Array(r),o=u.call(arguments),a=n.Deferred(),s=function(e){return function(r){i[e]=this,o[e]=arguments.length>1?u.call(arguments):r,--t||a.resolveWith(i,o)}};if(t<=1&&(b(e,a.done(s(r)).resolve,a.reject,!t),"pending"===a.state()||n.isFunction(o[r]&&o[r].then)))return a.then();while(r--)b(o[r],s(r),a.reject);return a.promise()}});var w=/^(Eval|Internal|Range|Reference|Syntax|Type|URI)Error$/;n.Deferred.exceptionHook=function(t,n){e.console&&e.console.warn&&t&&w.test(t.name)&&e.console.warn("jQuery.Deferred exception: "+t.message,t.stack,n)},n.readyException=function(t){e.setTimeout(function(){throw t})};var T=n.Deferred();n.fn.ready=function(e){return T.then(e)["catch"](function(e){n.readyException(e)}),this},n.extend({isReady:!1,readyWait:1,ready:function(e){(!0===e?--n.readyWait:n.isReady)||(n.isReady=!0,!0!==e&&--n.readyWait>0||T.resolveWith(document,[n]))}}),n.ready.then=T.then;function C(){document.removeEventListener("DOMContentLoaded",C),e.removeEventListener("load",C),n.ready()}"complete"===document.readyState||"loading"!==document.readyState&&!document.documentElement.doScroll?e.setTimeout(n.ready):(document.addEventListener("DOMContentLoaded",C),e.addEventListener("load",C));var E=function(e,t,r,i,o,a,s){var u=0,l=e.length,c=null==r;if("object"===n.type(r)){o=!0;for(u in r)E(e,t,u,r[u],!0,a,s)}else if(void 0!==i&&(o=!0,n.isFunction(i)||(s=!0),c&&(s?(t.call(e,i),t=null):(c=t,t=function(e,t,r){return c.call(n(e),r)})),t))for(;u<l;u++)t(e[u],r,s?i:i.call(e[u],u,t(e[u],r)));return o?e:c?t.call(e):l?t(e[0],r):a},k=function(e){return 1===e.nodeType||9===e.nodeType||!+e.nodeType};function S(){this.expando=n.expando+S.uid++}S.uid=1,S.prototype={cache:function(e){var t=e[this.expando];return t||(t={},k(e)&&(e.nodeType?e[this.expando]=t:Object.defineProperty(e,this.expando,{value:t,configurable:!0}))),t},set:function(e,t,n){var r,i=this.cache(e);if("string"==typeof t)i[n.camelCase(t)]=n;else for(r in t)i[n.camelCase(r)]=t[r];return i},get:function(e,t){return void 0===t?this.cache(e):e[this.expando]&&e[this.expando][n.camelCase(t)]},access:function(e,t,r){return void 0===t||t&&"string"==typeof t&&void 0===r?this.get(e,t):(this.set(e,t,r),void 0!==r?r:t)},remove:function(e,t){var r,i=e[this.expando];if(void 0!==i){if(void 0!==t){n.isArray(t)?t=t.map(n.camelCase):(t=n.camelCase(t),t=t in i?[t]:t.match(v)||[]),r=t.length;while(r--)delete i[t[r]]}(void 0===t||n.isEmptyObject(i))&&(e.nodeType?e[this.expando]=void 0:delete e[this.expando])}},hasData:function(e){var t=e[this.expando];return void 0!==t&&!n.isEmptyObject(t)}};var N=new S,A=new S,D=/^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,j=/[A-Z]/g;function q(e,t,n){var r;if(void 0===n&&1===e.nodeType)if(r="data-"+t.replace(j,"-$&").toLowerCase(),"string"==typeof(n=e.getAttribute(r))){try{n="true"===n||"false"!==n&&("null"===n?null:+n+""===n?+n:D.test(n)?JSON.parse(n):n)}catch(e){}A.set(e,t,n)}else n=void 0;return n}n.extend({hasData:function(e){return A.hasData(e)||N.hasData(e)},data:function(e,t,n){return A.access(e,t,n)},removeData:function(e,t){A.remove(e,t)},_data:function(e,t,n){return N.access(e,t,n)},_removeData:function(e,t){N.remove(e,t)}}),n.fn.extend({data:function(e,t){var r,i,o,a=this[0],s=a&&a.attributes;if(void 0===e){if(this.length&&(o=A.get(a),1===a.nodeType&&!N.get(a,"hasDataAttrs"))){r=s.length;while(r--)s[r]&&0===(i=s[r].name).indexOf("data-")&&(i=n.camelCase(i.slice(5)),q(a,i,o[i]));N.set(a,"hasDataAttrs",!0)}return o}return"object"==typeof e?this.each(function(){A.set(this,e)}):E(this,function(t){var r;if(a&&void 0===t){if(void 0!==(r=A.get(a,e)))return r;if(void 0!==(r=q(a,e)))return r}else this.each(function(){A.set(this,e,t)})},null,t,arguments.length>1,null,!0)},removeData:function(e){return this.each(function(){A.remove(this,e)})}}),n.extend({queue:function(e,t,r){var i;if(e)return t=(t||"fx")+"queue",i=N.get(e,t),r&&(!i||n.isArray(r)?i=N.access(e,t,n.makeArray(r)):i.push(r)),i||[]},dequeue:function(e,t){t=t||"fx";var r=n.queue(e,t),i=r.length,o=r.shift(),a=n._queueHooks(e,t),s=function(){n.dequeue(e,t)};"inprogress"===o&&(o=r.shift(),i--),o&&("fx"===t&&r.unshift("inprogress"),delete a.stop,o.call(e,s,a)),!i&&a&&a.empty.fire()},_queueHooks:function(e,t){var r=t+"queueHooks";return N.get(e,r)||N.access(e,r,{empty:n.Callbacks("once memory").add(function(){N.remove(e,[t+"queue",r])})})}}),n.fn.extend({queue:function(e,t){var r=2;return"string"!=typeof e&&(t=e,e="fx",r--),arguments.length<r?n.queue(this[0],e):void 0===t?this:this.each(function(){var r=n.queue(this,e,t);n._queueHooks(this,e),"fx"===e&&"inprogress"!==r[0]&&n.dequeue(this,e)})},dequeue:function(e){return this.each(function(){n.dequeue(this,e)})},clearQueue:function(e){return this.queue(e||"fx",[])},promise:function(e,t){var r,i=1,o=n.Deferred(),a=this,s=this.length,u=function(){--i||o.resolveWith(a,[a])};"string"!=typeof e&&(t=e,e=void 0),e=e||"fx";while(s--)(r=N.get(a[s],e+"queueHooks"))&&r.empty&&(i++,r.empty.add(u));return u(),o.promise(t)}});var L=/[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,H=new RegExp("^(?:([+-])=|)("+L+")([a-z%]*)$","i"),O=["Top","Right","Bottom","Left"],P=function(e,t){return"none"===(e=t||e).style.display||""===e.style.display&&n.contains(e.ownerDocument,e)&&"none"===n.css(e,"display")},R=function(e,t,n,r){var i,o,a={};for(o in t)a[o]=e.style[o],e.style[o]=t[o];i=n.apply(e,r||[]);for(o in t)e.style[o]=a[o];return i};function M(e,t,n,r){var i,o=1,a=20,s=r?function(){return r.cur()}:function(){return n.css(e,t,"")},u=s(),l=n.unit||"px";if(u!==l){n.unit=l,u=+u/1;n.start=u,n.end=+t}return u}var I={};function W(e){var t,r=e.ownerDocument,i=e.nodeName,o=I[i];return o||(t=r.body.appendChild(r.createElement(i)),o=n.css(t,"display"),t.parentNode.removeChild(t),"none"===o&&(o="block"),I[i]=o,o)}function $(e,t){for(var n,r,i=[],o=0,a=e.length;o<a;o++)(r=e[o]).style&&(n=r.style.display,t?("none"===n&&(i[o]=N.get(r,"display")||null,i[o]||(r.style.display="")),""===r.style.display&&P(r)&&(i[o]=W(r))):"none"!==n&&(i[o]="none",N.set(r,"display",n)));for(o=0;o<a;o++)null!=i[o]&&(e[o].style.display=i[o]);return e}n.fn.extend({show:function(){return $(this,!0)},hide:function(){return $(this)},toggle:function(e){return"boolean"==typeof e?e?this.show():this.hide():this.each(function(){P(this)?n(this).show():n(this).hide()})}});var B=/^(?:checkbox|radio)$/i,F=/<([a-z][^\/\0>\x20\t\r\n\f]+)/i,_=/^$|\/(?:java|ecma)script/i,z={option:[1,"<select multiple='multiple'>","</select>"],thead:[1,"<table>","</table>"],col:[2,"<table><colgroup>","</colgroup></table>"],tr:[2,"<table><tbody>","</tbody></table>"],td:[3,"<table><tbody><tr>","</tr></tbody></table>"],_default:[0,"",""]};z.optgroup=z.option,z.tbody=z.tfoot=z.colgroup=z.caption=z.thead,z.th=z.td;function X(e,t){var r;return r="undefined"!=typeof e.getElementsByTagName?e.getElementsByTagName(t||"*"):"undefined"!=typeof e.querySelectorAll?e.querySelectorAll(t||"*"):[],void 0===t||t&&l(e,t)?n.merge([e],r):r}function U(e,t){for(var n=0,r=e.length;n<r;n++)N.set(e[n],"globalEval",!t||N.get(t[n],"globalEval"))}var V=/<|&#?\w+;/;function G(e,t,r,i,o){for(var a,s,u,l,c,f,p=t.createDocumentFragment(),d=[],h=0,g=e.length;h<g;h++)if((a=e[h])||0===a)if("object"===n.type(a))n.merge(d,a.nodeType?[a]:a);else if(V.test(a)){s=s||p.appendChild(t.createElement("div")),u=(F.exec(a)||["",""])[1].toLowerCase(),l=z[u]||z._default,s.innerHTML=l[1]+n.htmlPrefilter(a)+l[2],f=l[0];while(f--)s=s.lastChild;n.merge(d,s.childNodes),(s=p.firstChild).textContent=""}else d.push(t.createTextNode(a));p.textContent="",h=0;while(a=d[h++])if(i&&n.inArray(a,i)>-1)o&&o.push(a);else if(c=n.contains(a.ownerDocument,a),s=X(p.appendChild(a),"script"),c&&U(s),r){f=0;while(a=s[f++])_.test(a.type||"")&&r.push(a)}return p}!function(){var e=document.createDocumentFragment().appendChild(document.createElement("div")),t=document.createElement("input");t.setAttribute("type","radio"),t.setAttribute("checked","checked"),t.setAttribute("name","t"),e.appendChild(t),o.checkClone=e.cloneNode(!0).cloneNode(!0).lastChild.checked,e.innerHTML="<textarea>x</textarea>",o.noCloneChecked=!!e.cloneNode(!0).lastChild.defaultValue}();var Y=document.documentElement,Q=/^key/,J=/^(?:mouse|pointer|contextmenu|drag|drop)|click/,K=/^([^.]*)(?:\.(.+)|)/;function Z(){return!0}function ee(){return!1}function te(){try{return document.activeElement}catch(e){}}function ne(e,t,r,i,o,a){var s,u;if("object"==typeof t){"string"!=typeof r&&(i=i||r,r=void 0);for(u in t)ne(e,u,r,i,t[u],a);return e}if(null==i&&null==o?(o=r,i=r=void 0):null==o&&("string"==typeof r?(o=i,i=void 0):(o=i,i=r,r=void 0)),!1===o)o=ee;else if(!o)return e;return 1===a&&(s=o,(o=function(e){return n().off(e),s.apply(this,arguments)}).guid=s.guid||(s.guid=n.guid++)),e.each(function(){n.event.add(this,t,o,i,r)})}n.event={global:{},add:function(e,t,r,i,o){var a,s,u,l,c,f,p,d,h,g,m,v=N.get(e);if(v){r.handler&&(r=(a=r).handler,o=a.selector),o&&n.find.matchesSelector(Y,o),r.guid||(r.guid=n.guid++),(l=v.events)||(l=v.events={}),(s=v.handle)||(s=v.handle=function(t){return"undefined"!=typeof n&&n.event.triggered!==t.type?n.event.dispatch.apply(e,arguments):void 0}),c=(t=(t||"").match(v)||[""]).length;while(c--)h=m=(u=K.exec(t[c])||[])[1],g=(u[2]||"").split(".").sort(),h&&(p=n.event.special[h]||{},h=(o?p.delegateType:p.bindType)||h,p=n.event.special[h]||{},f=n.extend({type:h,origType:m,data:i,handler:r,guid:r.guid,selector:o,needsContext:o&&n.expr.match.needsContext.test(o),namespace:g.join(".")},a),(d=l[h])||((d=l[h]=[]).delegateCount=0,p.setup&&!1!==p.setup.call(e,i,g,s)||e.addEventListener&&e.addEventListener(h,s)),p.add&&(p.add.call(e,f),f.handler.guid||(f.handler.guid=r.guid)),o?d.splice(d.delegateCount++,0,f):d.push(f),n.event.global[h]=!0)}},remove:function(e,t,r,i,o){var a,s,u,l,c,f,p,d,h,g,m,y=N.hasData(e)&&N.get(e);if(y&&(l=y.events)){c=(t=(t||"").match(v)||[""]).length;while(c--)if(u=K.exec(t[c])||[],h=m=u[1],g=(u[2]||"").split(".").sort(),h){p=n.event.special[h]||{},d=l[h=(i?p.delegateType:p.bindType)||h]||[],u=u[2]&&new RegExp("(^|\\.)"+g.join("\\.(?:.*\\.|)")+"(\\.|$)"),s=a=d.length;while(a--)f=d[a],!o&&m!==f.origType||r&&r.guid!==f.guid||u&&!u.test(f.namespace)||i&&i!==f.selector&&("**"!==i||!f.selector)||(d.splice(a,1),f.selector&&d.delegateCount--,p.remove&&p.remove.call(e,f));s&&!d.length&&(p.teardown&&!1!==p.teardown.call(e,g,y.handle)||n.removeEvent(e,h,y.handle),delete l[h])}else for(h in l)n.event.remove(e,h+t[c],r,i,!0);n.isEmptyObject(l)&&N.remove(e,"handle events")}},dispatch:function(e){var t=n.event.fix(e),r,i,o,a,s,u,l=new Array(arguments.length),c=(N.get(this,"events")||{})[t.type]||[],f=n.event.special[t.type]||{};for(l[0]=t,r=1;r<arguments.length;r++)l[r]=arguments[r];if(t.delegateTarget=this,!f.preDispatch||!1!==f.preDispatch.call(this,t)){u=n.event.handlers.call(this,t,c),r=0;while((a=u[r++])&&!t.isPropagationStopped()){t.currentTarget=a.elem,i=0;while((s=a.handlers[i++])&&!t.isImmediatePropagationStopped())t.rnamespace&&!t.rnamespace.test(s.namespace)||(t.handleObj=s,t.data=s.data,void 0!==(o=((n.event.special[s.origType]||{}).handle||s.handler).apply(a.elem,l))&&!1===(t.result=o)&&(t.preventDefault(),t.stopPropagation()))}return f.postDispatch&&f.postDispatch.call(this,t),t.result}},handlers:function(e,t){var r,i,o,a,s,u=[],l=t.delegateCount,c=e.target;if(l&&c.nodeType&&!("click"===e.type&&e.button>=1))for(;c!==this;c=c.parentNode||this)if(1===c.nodeType&&("click"!==e.type||!0!==c.disabled)){for(a=[],s={},r=0;r<l;r++)void 0===s[o=(i=t[r]).selector+" "]&&(s[o]=i.needsContext?n(o,this).index(c)>-1:n.find(o,this,null,[c]).length),s[o]&&a.push(i);a.length&&u.push({elem:c,handlers:a})}return c=this,l<t.length&&u.push({elem:c,handlers:t.slice(l)}),u},addProp:function(e,t){Object.defineProperty(n.Event.prototype,e,{enumerable:!0,configurable:!0,get:n.isFunction(t)?function(){if(this.originalEvent)return t(this.originalEvent)}:function(){if(this.originalEvent)return this.originalEvent[e]},set:function(t){Object.defineProperty(this,e,{enumerable:!0,configurable:!0,writable:!0,value:t})}})},fix:function(e){return e[n.expando]?e:new n.Event(e)},special:{load:{noBubble:!0},focus:{trigger:function(){if(this!==te()&&this.focus)return this.focus(),!1},delegateType:"focusin"},blur:{trigger:function(){if(this===te()&&this.blur)return this.blur(),!1},delegateType:"focusout"},click:{trigger:function(){if("checkbox"===this.type&&this.click&&l(this,"input"))return this.click(),!1},_default:function(e){return l(e.target,"a")}},beforeunload:{postDispatch:function(e){void 0!==e.result&&e.originalEvent&&(e.originalEvent.returnValue=e.result)}}}},n.removeEvent=function(e,t,n){e.removeEventListener&&e.removeEventListener(t,n)},n.Event=function(e,t){if(!(this instanceof n.Event))return new n.Event(e,t);e&&e.type?(this.originalEvent=e,this.type=e.type,this.isDefaultPrevented=e.defaultPrevented||void 0===e.defaultPrevented&&!1===e.returnValue?Z:ee,this.target=e.target&&3===e.target.nodeType?e.target.parentNode:e.target,this.currentTarget=e.currentTarget,this.relatedTarget=e.relatedTarget):this.type=e,t&&n.extend(this,t),this.timeStamp=e&&e.timeStamp||n.now(),this[n.expando]=!0},n.Event.prototype={constructor:n.Event,isDefaultPrevented:ee,isPropagationStopped:ee,isImmediatePropagationStopped:ee,isSimulated:!1,preventDefault:function(){var e=this.originalEvent;this.isDefaultPrevented=Z,e&&!this.isSimulated&&e.preventDefault()},stopPropagation:function(){var e=this.originalEvent;this.isPropagationStopped=Z,e&&!this.isSimulated&&e.stopPropagation()},stopImmediatePropagation:function(){var e=this.originalEvent;this.isImmediatePropagationStopped=Z,e&&!this.isSimulated&&e.stopImmediatePropagation(),this.stopPropagation()}},n.each({altKey:!0,bubbles:!0,cancelable:!0,changedTouches:!0,ctrlKey:!0,detail:!0,eventPhase:!0,metaKey:!0,pageX:!0,pageY:!0,shiftKey:!0,view:!0,"char":!0,charCode:!0,key:!0,keyCode:!0,button:!0,buttons:!0,clientX:!0,clientY:!0,offsetX:!0,offsetY:!0,pointerId:!0,pointerType:!0,screenX:!0,screenY:!0,targetTouches:!0,toElement:!0,touches:!0,which:function(e){var t=e.button;return null==e.which&&Q.test(e.type)?null!=e.charCode?e.charCode:e.keyCode:!e.which&&void 0!==t&&J.test(e.type)?1&t?1:2&t?3:4&t?2:0:e.which}},n.event.addProp),n.each({mouseenter:"mouseover",mouseleave:"mouseout",pointerenter:"pointerover",pointerleave:"pointerout"},function(e,t){n.event.special[e]={delegateType:t,bindType:t,handle:function(e){var r,i=this,o=e.relatedTarget,a=e.handleObj;return o&&(o===i||n.contains(i,o))||(e.type=a.origType,r=a.handler.apply(this,arguments),e.type=t),r}}}),n.fn.extend({on:function(e,t,n,r){return ne(this,e,t,n,r)},one:function(e,t,n,r){return ne(this,e,t,n,r,1)},off:function(e,t,r){var i,o;if(e&&e.preventDefault&&e.handleObj)return i=e.handleObj,n(e.delegateTarget).off(i.namespace?i.origType+"."+i.namespace:i.origType,i.selector,i.handler),this;if("object"==typeof e){for(o in e)this.off(o,t,e[o]);return this}return!1!==t&&"function"!=typeof t||(r=t,t=void 0),!1===r&&(r=ee),this.each(function(){n.event.remove(this,e,r,t)})}});if(!o.focusin){n.each({focus:"focusin",blur:"focusout"},function(e,t){var r=function(e){n.event.simulate(t,e.target,n.event.fix(e))};n.event.special[t]={setup:function(){var n=this.ownerDocument||this,i=N.access(n,t);i||n.addEventListener(e,r,!0),N.access(n,t,(i||0)+1)},teardown:function(){var n=this.ownerDocument||this,i=N.access(n,t)-1;i?N.access(n,t,i):(n.removeEventListener(e,r,!0),N.remove(n,t))}}})}},a=u=s=h=m=c=t.all=document.all||void 0;return window.jQuery=window.$=n}}
+    
+    // بارگذاری Select2 و راه‌اندازی آن
+    $(document).ready(function() {
+        console.log('jQuery loaded successfully from inline code!');
+        
+        // بارگذاری CSS برای Select2
+        if (!document.getElementById('select2-css')) {
+            var select2CSS = document.createElement('link');
+            select2CSS.id = 'select2-css';
+            select2CSS.rel = 'stylesheet';
+            select2CSS.href = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css';
+            document.head.appendChild(select2CSS);
+        }
+        
+        // بارگذاری و راه‌اندازی Select2 به صورت ایمن
+        var loadSelect2 = function() {
+            $.getScript('https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js')
+                .done(function() {
+                    console.log('Select2 loaded successfully');
+                    $('.select2').select2({
+                        dir: 'rtl',
+                        language: 'fa'
+                    });
+                })
+                .fail(function(jqxhr, settings, exception) {
+                    console.log('Failed to load Select2: ' + exception);
+                });
+        };
+        
+        loadSelect2();
+    });
+    </script>
+    
+    <!-- اسکریپت‌های اضافه شده توسط بلاک‌ها -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
