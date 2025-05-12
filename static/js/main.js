@@ -277,33 +277,42 @@ function initTooltips() {
 
 // فعال‌سازی select2 در صورت استفاده از این کتابخانه
 function initSelect2() {
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            // اطمینان از وجود jQuery
-            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
-                // استفاده از # به جای $ برای اطمینان بیشتر
-                window.jQuery('.select2').select2({
-                    dir: 'rtl',
-                    language: 'fa'
-                });
-                console.log('Select2 با موفقیت راه‌اندازی شد.');
-            } else {
-                console.log('کتابخانه Select2 یا jQuery به درستی بارگذاری نشده است.');
-                // تلاش مجدد پس از 2 ثانیه
-                setTimeout(function() {
-                    if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
-                        window.jQuery('.select2').select2({
+    // استفاده از مرجع jQuery جهانی و حالت امن
+    if (typeof jQuery !== 'undefined') {
+        (function($) {
+            try {
+                // اضافه کردن تابع راه‌اندازی به رویداد DOMContentLoaded
+                document.addEventListener('DOMContentLoaded', function() {
+                    // اطمینان از وجود jQuery و select2
+                    if (typeof $.fn === 'object' && typeof $.fn.select2 === 'function') {
+                        $('.select2').select2({
                             dir: 'rtl',
                             language: 'fa'
                         });
-                        console.log('Select2 با تأخیر راه‌اندازی شد.');
+                        console.log('Select2 با موفقیت راه‌اندازی شد.');
+                    } else {
+                        console.log('کتابخانه Select2 به درستی بارگذاری نشده است.');
+                        // تلاش مجدد پس از 1 ثانیه
+                        setTimeout(function() {
+                            if (typeof $.fn === 'object' && typeof $.fn.select2 === 'function') {
+                                $('.select2').select2({
+                                    dir: 'rtl',
+                                    language: 'fa'
+                                });
+                                console.log('Select2 با تأخیر راه‌اندازی شد.');
+                            }
+                        }, 1000);
                     }
-                }, 2000);
+                });
+            } catch (e) {
+                console.log('خطا در راه‌اندازی Select2:', e);
             }
-        } catch (e) {
-            console.log('خطا در راه‌اندازی Select2:', e);
-        }
-    });
+        })(jQuery);
+    } else {
+        console.log('jQuery هنوز بارگذاری نشده است.');
+        // تلاش مجدد پس از 1.5 ثانیه
+        setTimeout(initSelect2, 1500);
+    }
 }
 
 // تبدیل اعداد لاتین به فارسی
